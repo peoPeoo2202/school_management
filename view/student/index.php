@@ -2,80 +2,102 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Kết quả học tập - vnEdu Giả Lập</title>
-  <link rel="stylesheet" href="../student/style.css">
+  <title>Học sinh - Hệ thống Quản lý Giáo dục</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 220px;
+      background: #f2f3f5;
+      padding: 15px;
+      border-right: 1px solid #ddd;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #333;
+      border-radius: 6px;
+    }
+    .sidebar a.active,
+    .sidebar a:hover {
+      background: #2f6bff;
+      color: #fff;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 80px);
+      border: none;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">vnEdu</div>
-  <div class="user-info">
-    Xin chào PHHS, <strong>Võ Thị Thương Hoài</strong>
-  </div>
+<header style="background:#2f6bff;color:white;padding:10px 20px;">
+  <h3>Xin chào học sinh, <strong>Võ Thị Thương Hoài</strong></h3>
 </header>
 
-<main class="container">
-  <h3>Kết quả học tập: Võ Thị Thương Hoài - 12C9</h3>
-  <p><strong>Trường:</strong> THPT Nam Đàn 2 | <strong>Năm học:</strong> 2021–2022 | <strong>Học kỳ:</strong> Cả năm</p>
+<div class="container">
+  <!-- Content left -->
+  <div id="sidebar">
+    <?php include('../layouts/navigate.php'); ?>
+  </div>
 
-  <section class="summary">
-    <div class="card">
-      <h4>Điểm trung bình</h4>
-      <p>Học kỳ 1: 8.8</p>
-      <p>Học kỳ 2: 8.7</p>
-      <p><strong>Cả năm: 8.7</strong></p>
-    </div>
-    <div class="card">
-      <h4>Học lực</h4>
-      <p>Học kỳ 1: Giỏi</p>
-      <p>Học kỳ 2: Giỏi</p>
-    </div>
-    <div class="card">
-      <h4>Hạnh kiểm</h4>
-      <p>Học kỳ 1: Tốt</p>
-      <p>Học kỳ 2: Tốt</p>
-    </div>
-  </section>
+  <!-- Content right -->
+  <div class="main" id="content-right">
+    <!-- Mặc định load thời khóa biểu -->
+    <?php include('timeTable.php'); ?>
+  </div>
+</div>
 
-  <section class="attendance">
-    <div class="card small">
-      <h4>Chuyên cần</h4>
-      <p>Nghỉ có phép: 0 buổi</p>
-      <p>Nghỉ không phép: 0 buổi</p>
-    </div>
-    <div class="card small">
-      <h4>Khen thưởng</h4>
-      <p>Danh hiệu: Học sinh giỏi</p>
-      <p>Thành tích đặc biệt: Không có</p>
-    </div>
-  </section>
-
-  <section class="grades">
-    <h4>BẢNG ĐIỂM</h4>
-    <table>
-      <thead>
-        <tr>
-          <th>Môn học</th>
-          <th>Học kỳ 1</th>
-          <th>Học kỳ 2</th>
-          <th>Trung bình</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Toán học</td><td>9.0</td><td>8.6</td><td>8.7</td></tr>
-        <tr><td>Vật lí</td><td>8.7</td><td>9.1</td><td>9.0</td></tr>
-        <tr><td>Hóa học</td><td>8.8</td><td>8.8</td><td>8.8</td></tr>
-        <tr><td>Sinh học</td><td>8.4</td><td>8.9</td><td>8.7</td></tr>
-        <tr><td>Tin học</td><td>9.1</td><td>9.1</td><td>9.1</td></tr>
-        <tr><td>Ngữ văn</td><td>9.1</td><td>8.2</td><td>8.5</td></tr>
-      </tbody>
-    </table>
-  </section>
-</main>
-
-<footer>
-  <p>© 2025 Hệ thống quản lý học sinh - Demo giao diện</p>
+<footer style="background:#2f6bff;color:white;text-align:center;padding:10px;">
+  © 2025 Hệ thống Quản lý Học sinh - Demo giao diện
 </footer>
+
+<script>
+  // Lấy phần tử menu
+  const menuLinks = document.querySelectorAll('.sidebar a');
+  const contentRight = document.getElementById('content-right');
+
+  menuLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // Xóa class active cũ
+      menuLinks.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+
+      // Lấy URL của file tương ứng
+      let href = this.getAttribute('href');
+      let fileToLoad = '';
+
+      if (href.includes('grades')) fileToLoad = 'grades.php';
+      else fileToLoad = 'timeTable.php';
+
+      // Dùng AJAX load nội dung mới
+      fetch(fileToLoad)
+        .then(res => res.text())
+        .then(html => {
+          contentRight.innerHTML = html;
+        })
+        .catch(err => {
+          contentRight.innerHTML = '<p style="color:red;">Không thể tải nội dung.</p>';
+        });
+    });
+  });
+</script>
 
 </body>
 </html>

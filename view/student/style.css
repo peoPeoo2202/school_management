@@ -74,3 +74,28 @@ footer {
   margin-top: 40px;
   color: #666;
 }
+.schedule table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.schedule th, .schedule td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.schedule th {
+  background-color: #2f6bff;
+  color: #fff;
+}
+
+.note h4 {
+  color: #2f6bff;
+  margin-bottom: 8px;
+}
+
+.note ul {
+  line-height: 1.6;
+}
