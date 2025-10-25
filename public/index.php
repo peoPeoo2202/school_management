@@ -9,48 +9,56 @@
 
 <div class="login-container">
   <h2>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h2>
-  <form action="#" method="post" class="login-form">
+  <form action="" method="post" class="login-form">
     <label for="username">Tên đăng nhập</label>
-    <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập">
+    <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập" required>
 
     <label for="password">Mật khẩu</label>
-    <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu">
+    <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu" required>
 
-    <button type="submit">Đăng nhập</button>
+    <button type="submit" name="btnSub">Đăng nhập</button>
   </form>
 </div>
 
 <?php
-        if(isset($_POST["btnSub"])){
-            include_once("controller/cUser.php");
-            $p = new cUser();
+session_start(); // cần có để lưu thông tin đăng nhập
 
-            if($p->clogin($_REQUEST["txtName"],$_REQUEST["txtPass"])){
-                echo "<script>alert('Bạn đã đăng nhập tài khoản thành công!')</script>";
-                switch ($_SESSION["loaiTaiKhoan"]) {
-                    case 'admin':
-                        echo "Đây là trang quản trị viên."; // khi nào có giao diện thì điều hướng
-                        break;
-                    case 'hocsinh':
-                        echo "Đây là trang học sinh.";
-                        break;
-                    case 'phuhuynh':
-                        echo "Đây là trang phụ huynh.";
-                        break;
-                    case 'giaovien':
-                        echo "Đây là trang giáo viên.";
-                        break;
-                    case 'bangiamhieu':
-                        echo "Đây là trang ban giám hiệu.";
-                        break;
-                }
-            }else{
-                echo "<script>alert('Bạn đã đăng nhập tài khoản không thành công!')</script>";
-                header("refresh:0.5; url=index.php?page=login");
-                exit();
-            }
+if (isset($_POST["btnSub"])) {
+    include_once("controller/cUser.php");
+    $p = new cUser();
+
+    $username = $_POST["txtName"];
+    $password = $_POST["txtPass"];
+
+    if ($p->clogin($username, $password)) {
+        echo "<script>alert('Đăng nhập thành công!');</script>";
+
+        // điều hướng đến trang tương ứng
+        switch ($_SESSION["loaiTaiKhoan"]) {
+            case 'admin':
+                header("Location: view/admin/index.php");
+                break;
+            case 'hocsinh':
+                header("Location: view/student/index.php");
+                break;
+            case 'phuhuynh':
+                header("Location: view/parent/index.php");
+                break;
+            case 'giaovien':
+                header("Location: view/teacher/index.php");
+                break;
+            case 'bangiamhieu':
+                header("Location: view/bgh/index.php");
+                break;
+            default:
+                echo "<script>alert('Không xác định loại tài khoản!');</script>";
         }
-    ?>
+        exit();
+    } else {
+        echo "<script>alert('Tên đăng nhập hoặc mật khẩu sai!');</script>";
+    }
+}
+?>
 
 </body>
 </html>
