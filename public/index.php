@@ -1,59 +1,74 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Đăng nhập - Hệ thống Quản lý Giáo dục</title>
-  <link rel="stylesheet" href="./css/style.css">
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Hệ thống Quản lý Giáo dục</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
+
 <body class="login-body">
 
-<div class="login-container">
-  <h2>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h2>
-  <form action="" method="post" class="login-form">
-    <label for="username">Tên đăng nhập</label>
-    <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập" required>
+    <div class="login-container">
+        <h2>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h2>
+        <form action="" method="post" class="login-form">
+            <label for="username">Tên đăng nhập</label>
+            <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập" required>
 
-    <label for="password">Mật khẩu</label>
-    <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu" required>
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu" required>
+            <?php
+            // Hiển thị lỗi nếu có
+            if (isset($login_error)) {
+                echo '<p style="color: red;">' . $login_error . '</p>';
+            }
+            ?>
+            <button type="submit" name="btnSub">Đăng nhập</button>
+        </form>
+    </div>
 
-    <button type="submit" name="btnSub">Đăng nhập</button>
-  </form>
-</div>
-
-<?php
-session_start(); // cần có để lưu thông tin đăng nhập
+    <?php
+// session_start(); // Bạn cần gọi session_start() ở ĐẦU file
 
 if (isset($_POST["btnSub"])) {
-    include_once("controller/cUser.php");
+    include_once("../controller/cLogin.php");
     $p = new cUser();
 
     $username = $_POST["txtName"];
     $password = $_POST["txtPass"];
 
     if ($p->clogin($username, $password)) {
-        echo "<script>alert('Đăng nhập thành công!');</script>";
+        
+        // !!! BẮT BUỘC XÓA DÒNG ECHO NÀY ĐI !!!
+        // echo "<script>alert('Đăng nhập thành công!');</script>";
 
         // điều hướng đến trang tương ứng
         switch ($_SESSION["loaiTaiKhoan"]) {
             case 'admin':
-                header("Location: view/admin/index.php");
-                break;
+                // Thêm ../ vào tất cả các đường dẫn
+                header("Location: ../view/admin/index.php");
+                exit(); // Thêm exit()
             case 'hocsinh':
-                header("Location: view/student/index.php");
-                break;
+                header("Location: ../view/student/index.php");
+                exit();
             case 'phuhuynh':
-                header("Location: view/parent/index.php");
-                break;
+                header("Location: ../view/parent/index.php");
+                exit();
             case 'giaovien':
-                header("Location: view/teacher/index.php");
-                break;
+                header("Location: ../view/teacher/index.php");
+                exit();
             case 'bangiamhieu':
-                header("Location: view/bgh/index.php");
-                break;
+                // Sửa lại đúng đường dẫn
+                header("Location: ../view/student/index.php"); 
+                exit();
             default:
-                echo "<script>alert('Không xác định loại tài khoản!');</script>";
+                // Điều hướng về trang login nếu có lỗi
+                header("Location: index.php?error=unknown");
+                exit();
         }
-        exit();
     } else {
         echo "<script>alert('Tên đăng nhập hoặc mật khẩu sai!');</script>";
     }
@@ -61,4 +76,5 @@ if (isset($_POST["btnSub"])) {
 ?>
 
 </body>
+
 </html>
