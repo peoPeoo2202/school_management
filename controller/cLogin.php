@@ -1,5 +1,5 @@
 <?php
-    include_once("model/mUser.php");
+    include_once("../model/mUser.php");
     class cUser{
         public function cLogin($name, $pass){
             $p = new mUser();
