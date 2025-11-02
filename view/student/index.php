@@ -31,7 +31,7 @@ $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
     <div class="container">
     <!-- Content left (Menu) -->
     <div class="sidebar-container">
-      <?php include('../layouts/navigate.php'); ?>
+      <?php include('../layouts/navigate/navigateStudent.php'); ?>
     </div>
 
     <!-- Main content -->
