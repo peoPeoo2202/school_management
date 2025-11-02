@@ -19,21 +19,37 @@ class mStudent
      */
 public function getStudentInfoByAccount($tenDangNhap)
 {
-    $sql = "SELECT hs.maHS, hs.hoTen, lh.tenLop, kh.khoiLop
-            FROM taikhoan tk
-            JOIN hocsinh hs ON tk.maTaiKhoan = hs.maHS
-            JOIN lophoc lh ON hs.maLop = lh.maLop
-            JOIN khoi kh ON lh.maKhoi = kh.maKhoi
-            WHERE tk.tenDangNhap = ?";
+    if (!$this->conn) {
+        return null;
+    }
+
+    $sql = "SELECT hs.maHS, hs.hoTen, hs.ngaySinh, hs.gioiTinh, hs.diaChi, 
+                   hs.trangThaiHocTap, hs.maLop, l.tenLop, k.khoiLop
+            FROM hocsinh hs
+            LEFT JOIN lophoc l ON hs.maLop = l.maLop
+            LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+            JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
+            WHERE tk.tenDangNhap = ? AND tk.trangThaiTaiKhoan = 1";
+    
     $stmt = $this->conn->prepare($sql);
+    if (!$stmt) {
+        error_log("Prepare failed: " . $this->conn->error);
+        return null;
+    }
+
     $stmt->bind_param("s", $tenDangNhap);
     $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        $stmt->close();
+        return null;
+    }
+
+    $info = $result->fetch_assoc();
+    $stmt->close();
+    return $info;
 }
-
-
-
-
 
     /**
      * Lấy điểm trung bình của học sinh theo từng môn
@@ -57,16 +73,60 @@ public function getStudentInfoByAccount($tenDangNhap)
      */
     public function getStudentSchedule($maHS)
     {
-        $sql = "SELECT mh.tenMonHoc, ld.thu, ld.tietBatDau, ld.tietKetThuc
-                FROM hocsinh hs
-                JOIN lichday ld ON hs.maLop = ld.maLop
-                JOIN monhoc mh ON ld.maMonHoc = mh.maMonHoc
-                WHERE hs.maHS = ?
-                ORDER BY ld.thu, ld.tietBatDau";
+        if (!$this->conn || !$maHS) {
+            return false;
+        }
+
+        // Lấy maLop từ maHS
+        $sql = "SELECT maLop FROM hocsinh WHERE maHS = ?";
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+        
         $stmt->bind_param("i", $maHS);
         $stmt->execute();
-        return $stmt->get_result();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            $stmt->close();
+            return false;
+        }
+        
+        $row = $result->fetch_assoc();
+        $maLop = $row['maLop'];
+        $stmt->close();
+        
+        if (!$maLop) {
+            return false;
+        }
+
+        // Lấy thời khóa biểu từ bảng thoikhoabieu
+        // Chuyển đổi thuNgay (date) thành thứ (2-6)
+        $sql = "SELECT 
+                    tkb.maTKB,
+                    DAYOFWEEK(tkb.thuNgay) as thu,
+                    tkb.tietHoc,
+                    tkb.tenMonHoc,
+                    tkb.gv as tenGiaoVien,
+                    tkb.phong as tenPhong,
+                    tkb.thuNgay,
+                    mh.tenMonHoc as tenMonHocFull
+                FROM thoikhoabieu tkb
+                LEFT JOIN monhoc mh ON tkb.maMonHoc = mh.maMonHoc
+                WHERE tkb.maLop = ?
+                ORDER BY tkb.thuNgay, tkb.thoiGianHoc";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param("i", $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result;
     }
 
     /**
@@ -256,6 +316,176 @@ public function getStudentInfoByAccount($tenDangNhap)
     }
 
     /**
+     * Lấy danh sách năm học có trong bảng điểm của học sinh
+     */
+    public function getAvailableYears($maHS)
+    {
+        if (!$this->conn || !$maHS) {
+            error_log("getAvailableYears: conn or maHS is null");
+            return [];
+        }
+
+        $sql = "SELECT DISTINCT namHoc 
+                FROM bangdiem 
+                WHERE maHS = ? 
+                ORDER BY namHoc DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("getAvailableYears prepare failed: " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->bind_param("i", $maHS);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $years = [];
+        while ($row = $result->fetch_assoc()) {
+            $years[] = $row['namHoc'];
+        }
+        $stmt->close();
+        
+        error_log("getAvailableYears: Found " . count($years) . " years for maHS=$maHS");
+        return $years;
+    }
+
+    /**
+     * Lấy danh sách học kỳ theo năm học và mã học sinh
+     * Luôn trả về [1, 2, 'canam'] bất kể có dữ liệu hay không
+     */
+    public function getAvailableSemesters($maHS, $namHoc)
+    {
+        // Luôn trả về học kỳ 1, 2 và cả năm
+        return [1, 2, 'canam'];
+    }
+
+    /**
+     * Lấy kết quả học tập chi tiết theo học kỳ và năm học
+     */
+    public function getDetailedGrades($maHS, $namHoc, $hocKy)
+    {
+        if (!$this->conn || !$maHS || !$namHoc || !$hocKy) {
+            error_log("getDetailedGrades: Invalid parameters");
+            return [];
+        }
+
+        $sql = "SELECT 
+                    mh.tenMonHoc,
+                    MAX(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem END) as diemMieng,
+                    MAX(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem END) as diem15Phut,
+                    MAX(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem END) as diem1Tiet,
+                    MAX(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem END) as diemGiuaKy,
+                    MAX(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem END) as diemCuoiKy,
+                    ROUND(
+                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem * 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem * 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem * 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem * 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem * 3 END), 0)) /
+                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN 3 END), 0) + 0.0001),
+                    2) as diemTB
+                FROM bangdiem bd
+                INNER JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
+                WHERE bd.maHS = ? AND bd.namHoc = ? AND bd.hocKy = ?
+                GROUP BY mh.maMonHoc, mh.tenMonHoc
+                ORDER BY mh.tenMonHoc";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("getDetailedGrades prepare failed: " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->bind_param("isi", $maHS, $namHoc, $hocKy);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $grades = [];
+        while ($row = $result->fetch_assoc()) {
+            $grades[] = $row;
+        }
+        $stmt->close();
+        
+        error_log("getDetailedGrades: Found " . count($grades) . " grades for maHS=$maHS, namHoc=$namHoc, hocKy=$hocKy");
+        return $grades;
+    }
+
+    /**
+     * Lấy điểm trung bình cả năm học theo môn
+     * Trả về điểm TB học kỳ 1 và học kỳ 2 riêng biệt
+     */
+    public function getYearlyGrades($maHS, $namHoc)
+    {
+        if (!$this->conn || !$maHS || !$namHoc) {
+            error_log("getYearlyGrades: Invalid parameters");
+            return [];
+        }
+
+        // Lấy điểm TB của từng học kỳ
+        $sql = "SELECT 
+                    mh.tenMonHoc,
+                    bd.hocKy,
+                    ROUND(
+                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem * 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem * 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem * 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem * 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem * 3 END), 0)) /
+                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN 1 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN 2 END), 0) +
+                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN 3 END), 0) + 0.0001),
+                    2) as diemTB
+                FROM bangdiem bd
+                INNER JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
+                WHERE bd.maHS = ? AND bd.namHoc = ?
+                GROUP BY mh.maMonHoc, mh.tenMonHoc, bd.hocKy
+                ORDER BY mh.tenMonHoc, bd.hocKy";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("getYearlyGrades prepare failed: " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->bind_param("is", $maHS, $namHoc);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        // Tổ chức dữ liệu theo môn học
+        $grades = [];
+        while ($row = $result->fetch_assoc()) {
+            $tenMonHoc = $row['tenMonHoc'];
+            if (!isset($grades[$tenMonHoc])) {
+                $grades[$tenMonHoc] = [
+                    'tenMonHoc' => $tenMonHoc,
+                    'hocKy1' => null,
+                    'hocKy2' => null
+                ];
+            }
+            
+            if ($row['hocKy'] == 1) {
+                $grades[$tenMonHoc]['hocKy1'] = $row['diemTB'];
+            } else if ($row['hocKy'] == 2) {
+                $grades[$tenMonHoc]['hocKy2'] = $row['diemTB'];
+            }
+        }
+        $stmt->close();
+        
+        // Chuyển từ associative array sang indexed array
+        $result = array_values($grades);
+        
+        error_log("getYearlyGrades: Found " . count($result) . " yearly grades for maHS=$maHS, namHoc=$namHoc");
+        return $result;
+    }
+
+    /**
      * Ngắt kết nối
      */
     public function __destruct()
@@ -265,3 +495,4 @@ public function getStudentInfoByAccount($tenDangNhap)
         }
     }
 }
+?>

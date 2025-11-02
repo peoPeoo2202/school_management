@@ -45,7 +45,7 @@ if (isset($_GET['logout'])) {
     <?php
 
 if (isset($_POST["btnSub"])) {
-    include_once("../controller/cLogin.php");
+    include_once("../controller/cUser.php");
     $p = new cUser();
 
     $username = $_POST["txtName"];
@@ -77,7 +77,7 @@ if (isset($_POST["btnSub"])) {
                 exit();
             default:
                 // Điều hướng về trang login nếu có lỗi
-                header("Location: index.php?error=unknown");
+                echo "<script>alert('Đăng nhập không thành công!');</script>";
                 exit();
         }
     } else {
