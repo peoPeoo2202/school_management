@@ -4,8 +4,8 @@ class mConnect
     public function mConnect()
     {
         $host = "localhost";
-        $user = "school_management";                
-        $pass = "123";                 
+        $user = "root";                
+        $pass = "";                 
         $db   = "school_management";   
 
         $conn = mysqli_connect($host, $user, $pass, $db);

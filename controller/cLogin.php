@@ -5,18 +5,27 @@ class cUser
     public function cLogin($name, $pass)
     {
         $p = new mUser();
-        $pass = MD5($pass);
-        $result = $p->mLogin($name, $pass);
-        if ($result->num_rows > 0) {
-            while ($r = $result->fetch_assoc()) {
-                $_SESSION["login"] = true;
-                $_SESSION["loaiTaiKhoan"] = $r["loaiTaiKhoan"];
-                $_SESSION["maTaiKhoan"] = $r["maTaiKhoan"];
-                $_SESSION["hoTen"] = $r["hoTen"];
-                $_SESSION["tenDangNhap"] = $r["tenDangNhap"];
-                $_SESSION["maNhom"] = $r["maNhom"];
-                return true;
+        // mLogin() tự xử lý cả MD5 và bcrypt, không cần hash trước
+        $user = $p->mLogin($name, $pass);
+        
+        // mLogin() trả về array (user info) hoặc false
+        if ($user !== false && is_array($user)) {
+            // Set session variables
+            $_SESSION["login"] = true;
+            $_SESSION["loaiTaiKhoan"] = $user["loaiTaiKhoan"];
+            $_SESSION["maTaiKhoan"] = $user["maTaiKhoan"];
+            $_SESSION["hoTen"] = $user["hoTen"];
+            $_SESSION["tenDangNhap"] = $user["tenDangNhap"];
+            
+            // Nếu là giáo viên, lấy thêm maGV để sử dụng cho chức năng tra cứu giảng dạy
+            if ($user["loaiTaiKhoan"] === 'giaovien') {
+                $maGV = $p->getTeacherIdByAccountId($user["maTaiKhoan"]);
+                if ($maGV !== null) {
+                    $_SESSION["maGV"] = $maGV;
+                }
             }
+            
+            return true;
         } else {
             return false;
         }

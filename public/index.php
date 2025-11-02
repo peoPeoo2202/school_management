@@ -1,5 +1,12 @@
 <?php
 session_start();
+
+// Xử lý logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: index.php");
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -22,6 +29,11 @@ session_start();
             <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu" required>
             <?php
             // Hiển thị lỗi nếu có
+            if (isset($_GET['error'])) {
+                if ($_GET['error'] == 'access_denied') {
+                    echo '<p style="color: red;">Bạn không có quyền truy cập!</p>';
+                }
+            }
             if (isset($login_error)) {
                 echo '<p style="color: red;">' . $login_error . '</p>';
             }
@@ -31,7 +43,6 @@ session_start();
     </div>
 
     <?php
-// session_start(); // Bạn cần gọi session_start() ở ĐẦU file
 
 if (isset($_POST["btnSub"])) {
     include_once("../controller/cLogin.php");
