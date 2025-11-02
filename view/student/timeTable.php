@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once("../../model/mStudent.php");
 
 if (!isset($_SESSION["login"]) || $_SESSION["loaiTaiKhoan"] != "hocsinh") {
@@ -40,7 +42,7 @@ while ($row = $schedule->fetch_assoc()) {
       echo "<tr><td>$tiet</td>";
       for ($thu = 2; $thu <= 6; $thu++) {
         $mon = isset($timetable[$tiet][$thu]) ? $timetable[$tiet][$thu] : "-";
-        echo "<td>$mon</td>";
+        echo "<td>$mon</  d>";
       }
       echo "</tr>";
     }

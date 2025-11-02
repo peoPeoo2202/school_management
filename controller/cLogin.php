@@ -14,6 +14,7 @@ class cUser
                 $_SESSION["maTaiKhoan"] = $r["maTaiKhoan"];
                 $_SESSION["hoTen"] = $r["hoTen"];
                 $_SESSION["tenDangNhap"] = $r["tenDangNhap"];
+                $_SESSION["maNhom"] = $r["maNhom"];
                 return true;
             }
         } else {
