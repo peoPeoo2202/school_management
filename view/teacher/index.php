@@ -271,13 +271,14 @@ $maGV = $_SESSION['maGV'] ?? null;
                 <p>Xem thông tin học sinh trong các lớp phụ trách</p>
             </a>
 
-            <!-- Báo cáo -->
-            <a href="#" class="menu-card" onclick="alert('Chức năng đang phát triển!'); return false;">
+            <!-- Báo cáo & Thống kê -->
+            <a href="../../controller/cReport.php" class="menu-card">
                 <div class="icon">
                     <i class="fas fa-chart-bar"></i>
                 </div>
-                <h3>Báo cáo</h3>
-                <p>Xem các báo cáo thống kê và phân tích</p>
+                <h3>Báo cáo & Thống kê</h3>
+                <p>Tạo báo cáo kết quả học tập, chuyên cần và thống kê dữ liệu</p>
+                <span class="badge">Mới</span>
             </a>
 
             <!-- Tài liệu -->
