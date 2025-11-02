@@ -3,9 +3,9 @@ include_once("mConnect.php");
 include_once("mAccount.php");
 
 /**
- * Model xử lý giáo viên (giaovien)
+ * Model xử lý Ban Giám Hiệu (bgh)
  */
-class mTeacher
+class mBGH
 {
     private $conn;
     private $mAccount;
@@ -18,12 +18,12 @@ class mTeacher
     }
 
     /**
-     * Tạo giáo viên mới (kèm tài khoản)
-     * @param array $data - Dữ liệu giáo viên: hoTen, ngaySinh, gioiTinh, email, soDienThoai, toBoMon
+     * Tạo BGH mới (kèm tài khoản)
+     * @param array $data - Dữ liệu BGH: hoTen, ngaySinh, gioiTinh, email, soDienThoai
      * @param array $accountData - Dữ liệu tài khoản: tenDangNhap, matKhau
-     * @return array - ['success' => bool, 'maGV' => int, 'maTaiKhoan' => int, 'message' => string]
+     * @return array - ['success' => bool, 'maBGH' => int, 'maTaiKhoan' => int, 'message' => string]
      */
-    public function createTeacher($data, $accountData)
+    public function createBGH($data, $accountData)
     {
         // Kiểm tra tài khoản đã tồn tại chưa
         if ($this->mAccount->accountExists($accountData['tenDangNhap'])) {
@@ -39,17 +39,17 @@ class mTeacher
                 $accountData['tenDangNhap'],
                 $accountData['matKhau'],
                 $data['hoTen'],
-                'giaovien',
-                3003 // maNhom giáo viên
+                'bangiamhieu',
+                3002 // maNhom BGH
             );
 
             if (!$maTaiKhoan) {
                 throw new Exception("Không thể tạo tài khoản");
             }
 
-            // 2. Tạo giáo viên với maTaiKhoan
-            $sql = "INSERT INTO giaovien (hoTen, ngaySinh, gioiTinh, email, soDienThoai, maTaiKhoan, toBoMon) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            // 2. Tạo BGH với maTaiKhoan
+            $sql = "INSERT INTO bgh (hoTen, ngaySinh, gioiTinh, email, soDienThoai, maTaiKhoan, maYeuCau, maDeThi) 
+                    VALUES (?, ?, ?, ?, ?, ?, NULL, NULL)";
             
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
@@ -57,21 +57,20 @@ class mTeacher
             }
 
             $stmt->bind_param(
-                "sssssss",
+                "sssssi",
                 $data['hoTen'],
                 $data['ngaySinh'],
                 $data['gioiTinh'],
                 $data['email'],
                 $data['soDienThoai'],
-                $maTaiKhoan,
-                $data['toBoMon']
+                $maTaiKhoan
             );
 
             if (!$stmt->execute()) {
-                throw new Exception("Không thể tạo giáo viên: " . $stmt->error);
+                throw new Exception("Không thể tạo BGH: " . $stmt->error);
             }
 
-            $maGV = $this->conn->insert_id;
+            $maBGH = $this->conn->insert_id;
             $stmt->close();
 
             // Commit transaction
@@ -79,9 +78,9 @@ class mTeacher
 
             return [
                 'success' => true,
-                'maGV' => $maGV,
+                'maBGH' => $maBGH,
                 'maTaiKhoan' => $maTaiKhoan,
-                'message' => 'Tạo giáo viên thành công'
+                'message' => 'Tạo BGH thành công'
             ];
 
         } catch (Exception $e) {
@@ -95,24 +94,23 @@ class mTeacher
     }
 
     /**
-     * Cập nhật thông tin giáo viên
+     * Cập nhật thông tin BGH
      */
-    public function updateTeacher($maGV, $data)
+    public function updateBGH($maBGH, $data)
     {
-        $sql = "UPDATE giaovien 
-                SET hoTen = ?, ngaySinh = ?, gioiTinh = ?, email = ?, soDienThoai = ?, toBoMon = ?
-                WHERE maGV = ?";
+        $sql = "UPDATE bgh 
+                SET hoTen = ?, ngaySinh = ?, gioiTinh = ?, email = ?, soDienThoai = ?
+                WHERE maBGH = ?";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param(
-            "ssssssi",
+            "sssssi",
             $data['hoTen'],
             $data['ngaySinh'],
             $data['gioiTinh'],
             $data['email'],
             $data['soDienThoai'],
-            $data['toBoMon'],
-            $maGV
+            $maBGH
         );
 
         $success = $stmt->execute();
@@ -121,17 +119,17 @@ class mTeacher
     }
 
     /**
-     * Lấy thông tin giáo viên theo maGV
+     * Lấy thông tin BGH theo maBGH
      */
-    public function getTeacherById($maGV)
+    public function getBGHById($maBGH)
     {
-        $sql = "SELECT gv.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
-                FROM giaovien gv
-                LEFT JOIN taikhoan tk ON gv.maTaiKhoan = tk.maTaiKhoan
-                WHERE gv.maGV = ?";
+        $sql = "SELECT bgh.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
+                FROM bgh
+                LEFT JOIN taikhoan tk ON bgh.maTaiKhoan = tk.maTaiKhoan
+                WHERE bgh.maBGH = ?";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $maGV);
+        $stmt->bind_param("i", $maBGH);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
@@ -139,53 +137,53 @@ class mTeacher
     }
 
     /**
-     * Lấy danh sách tất cả giáo viên
+     * Lấy danh sách tất cả BGH
      */
-    public function getAllTeachers()
+    public function getAllBGH()
     {
-        $sql = "SELECT gv.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
-                FROM giaovien gv
-                LEFT JOIN taikhoan tk ON gv.maTaiKhoan = tk.maTaiKhoan
-                ORDER BY gv.maGV DESC";
+        $sql = "SELECT bgh.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
+                FROM bgh
+                LEFT JOIN taikhoan tk ON bgh.maTaiKhoan = tk.maTaiKhoan
+                ORDER BY bgh.maBGH DESC";
         
         $result = $this->conn->query($sql);
-        $teachers = [];
+        $bghList = [];
         while ($row = $result->fetch_assoc()) {
-            $teachers[] = $row;
+            $bghList[] = $row;
         }
-        return $teachers;
+        return $bghList;
     }
 
     /**
-     * Xóa giáo viên (cũng xóa tài khoản liên kết)
+     * Xóa BGH (cũng xóa tài khoản liên kết)
      */
-    public function deleteTeacher($maGV)
+    public function deleteBGH($maBGH)
     {
         $this->conn->begin_transaction();
 
         try {
             // Lấy maTaiKhoan trước
-            $teacher = $this->getTeacherById($maGV);
-            if (!$teacher) {
-                throw new Exception("Không tìm thấy giáo viên");
+            $bgh = $this->getBGHById($maBGH);
+            if (!$bgh) {
+                throw new Exception("Không tìm thấy BGH");
             }
 
-            // Xóa giáo viên
-            $sql = "DELETE FROM giaovien WHERE maGV = ?";
+            // Xóa BGH
+            $sql = "DELETE FROM bgh WHERE maBGH = ?";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("i", $maGV);
+            $stmt->bind_param("i", $maBGH);
             if (!$stmt->execute()) {
-                throw new Exception("Không thể xóa giáo viên");
+                throw new Exception("Không thể xóa BGH");
             }
             $stmt->close();
 
             // Xóa tài khoản nếu có
-            if ($teacher['maTaiKhoan']) {
-                $this->mAccount->deleteAccount($teacher['maTaiKhoan']);
+            if ($bgh['maTaiKhoan']) {
+                $this->mAccount->deleteAccount($bgh['maTaiKhoan']);
             }
 
             $this->conn->commit();
-            return ['success' => true, 'message' => 'Xóa giáo viên thành công'];
+            return ['success' => true, 'message' => 'Xóa BGH thành công'];
 
         } catch (Exception $e) {
             $this->conn->rollback();
