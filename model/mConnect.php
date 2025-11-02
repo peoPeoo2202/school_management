@@ -1,15 +1,25 @@
 <?php
-    class mConnect{
-        public function mConnect(){
-            $host = "localhost";
-            $name = "duyen";
-            $pass = "123";
-            $db = "csdl";
-            return mysqli_connect($host, $name, $pass, $db);
+class mConnect
+{
+    public function mConnect()
+    {
+        $host = "localhost";
+        $user = "school_management";                
+        $pass = "123";                 
+        $db   = "school_management";   
+
+        $conn = mysqli_connect($host, $user, $pass, $db);
+        if (!$conn) {
+            die("Kết nối thất bại: " . mysqli_connect_error());
         }
 
-        public function mDisconnect($conn){
-            $conn->close();
-        }
+        mysqli_set_charset($conn, "utf8mb4");
+        return $conn;
     }
+
+    public function mDisconnect($conn)
+    {
+        mysqli_close($conn);
+    }
+}
 ?>

@@ -1,56 +1,80 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Đăng nhập - Hệ thống Quản lý Giáo dục</title>
-  <link rel="stylesheet" href="./css/style.css">
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Hệ thống Quản lý Giáo dục</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
+
 <body class="login-body">
 
-<div class="login-container">
-  <h2>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h2>
-  <form action="#" method="post" class="login-form">
-    <label for="username">Tên đăng nhập</label>
-    <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập">
+    <div class="login-container">
+        <h2>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h2>
+        <form action="" method="post" class="login-form">
+            <label for="username">Tên đăng nhập</label>
+            <input type="text" id="username" name="txtName" placeholder="Nhập tên đăng nhập" required>
 
-    <label for="password">Mật khẩu</label>
-    <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu">
-
-    <button type="submit">Đăng nhập</button>
-  </form>
-</div>
-
-<?php
-        if(isset($_POST["btnSub"])){
-            include_once("controller/cUser.php");
-            $p = new cUser();
-
-            if($p->clogin($_REQUEST["txtName"],$_REQUEST["txtPass"])){
-                echo "<script>alert('Bạn đã đăng nhập tài khoản thành công!')</script>";
-                switch ($_SESSION["loaiTaiKhoan"]) {
-                    case 'admin':
-                        echo "Đây là trang quản trị viên."; // khi nào có giao diện thì điều hướng
-                        break;
-                    case 'hocsinh':
-                        echo "Đây là trang học sinh.";
-                        break;
-                    case 'phuhuynh':
-                        echo "Đây là trang phụ huynh.";
-                        break;
-                    case 'giaovien':
-                        echo "Đây là trang giáo viên.";
-                        break;
-                    case 'bangiamhieu':
-                        echo "Đây là trang ban giám hiệu.";
-                        break;
-                }
-            }else{
-                echo "<script>alert('Bạn đã đăng nhập tài khoản không thành công!')</script>";
-                header("refresh:0.5; url=index.php?page=login");
-                exit();
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" name="txtPass" placeholder="Nhập mật khẩu" required>
+            <?php
+            // Hiển thị lỗi nếu có
+            if (isset($login_error)) {
+                echo '<p style="color: red;">' . $login_error . '</p>';
             }
+            ?>
+            <button type="submit" name="btnSub">Đăng nhập</button>
+        </form>
+    </div>
+
+    <?php
+// session_start(); // Bạn cần gọi session_start() ở ĐẦU file
+
+if (isset($_POST["btnSub"])) {
+    include_once("../controller/cLogin.php");
+    $p = new cUser();
+
+    $username = $_POST["txtName"];
+    $password = $_POST["txtPass"];
+
+    if ($p->clogin($username, $password)) {
+        
+        // !!! BẮT BUỘC XÓA DÒNG ECHO NÀY ĐI !!!
+        // echo "<script>alert('Đăng nhập thành công!');</script>";
+
+        // điều hướng đến trang tương ứng
+        switch ($_SESSION["loaiTaiKhoan"]) {
+            case 'admin':
+                // Thêm ../ vào tất cả các đường dẫn
+                header("Location: ../view/admin/index.php");
+                exit(); // Thêm exit()
+            case 'hocsinh':
+                header("Location: ../view/student/index.php");
+                exit();
+            case 'phuhuynh':
+                header("Location: ../view/parent/index.php");
+                exit();
+            case 'giaovien':
+                header("Location: ../view/teacher/index.php");
+                exit();
+            case 'bangiamhieu':
+                // Sửa lại đúng đường dẫn
+                header("Location: ../view/student/index.php"); 
+                exit();
+            default:
+                // Điều hướng về trang login nếu có lỗi
+                header("Location: index.php?error=unknown");
+                exit();
         }
-    ?>
+    } else {
+        echo "<script>alert('Tên đăng nhập hoặc mật khẩu sai!');</script>";
+    }
+}
+?>
 
 </body>
+
 </html>
