@@ -23,13 +23,26 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 250px;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -299,151 +312,157 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <i class="fas fa-upload"></i>
-                Nộp báo cáo
-            </h1>
-            <div class="user-info">
-                <span>
-                    <i class="fas fa-user"></i>
-                    <?php echo htmlspecialchars($hoTen); ?>
-                </span>
-            </div>
-        </div>
-
-        <a href="cReport.php" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách báo cáo
-        </a>
-
-        <?php if (isset($_GET['error'])): ?>
-            <div class="alert alert-error">
-                <?php
-                switch ($_GET['error']) {
-                    case 'upload_failed':
-                        echo '<i class="fas fa-exclamation-circle"></i> Lỗi upload file! Vui lòng thử lại.';
-                        break;
-                    case 'save_failed':
-                        echo '<i class="fas fa-exclamation-circle"></i> Lỗi lưu báo cáo! Vui lòng thử lại.';
-                        break;
-                    case 'no_file':
-                        echo '<i class="fas fa-exclamation-circle"></i> Vui lòng chọn file báo cáo để upload!';
-                        break;
-                    default:
-                        echo '<i class="fas fa-exclamation-circle"></i> Có lỗi xảy ra! Vui lòng thử lại.';
-                }
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <div class="instructions">
-            <h3>
-                <i class="fas fa-info-circle"></i>
-                Hướng dẫn nộp báo cáo
-            </h3>
-            <ul>
-                <li>Chọn loại báo cáo phù hợp với nội dung bạn muốn nộp</li>
-                <li>File upload hỗ trợ các định dạng: PDF, DOC, DOCX, XLS, XLSX</li>
-                <li>Kích thước file tối đa: 10MB</li>
-                <li>Điền đầy đủ thông tin bắt buộc được đánh dấu (*)</li>
-                <li>Mô tả chi tiết nội dung báo cáo để Ban Giám Hiệu dễ dàng xem xét</li>
-            </ul>
-        </div>
-
-        <div class="upload-section">
-            <div class="section-title">
-                <i class="fas fa-file-upload"></i>
-                Thông tin báo cáo
-            </div>
-
-            <form action="cReport.php?action=xu-ly-upload" method="POST" enctype="multipart/form-data" id="uploadForm">
-                <div class="form-group">
-                    <label for="tenBaoCao">Tên báo cáo <span class="required">*</span></label>
-                    <input type="text" id="tenBaoCao" name="tenBaoCao" required 
-                           placeholder="Nhập tên báo cáo">
-                </div>
-
-                <div class="form-group">
-                    <label for="loaiBaoCao">Loại báo cáo <span class="required">*</span></label>
-                    <select id="loaiBaoCao" name="loaiBaoCao" required>
-                        <option value="">Chọn loại báo cáo</option>
-                        <option value="hoc-tap">Báo cáo kết quả học tập</option>
-                        <option value="chuyen-can">Báo cáo chuyên cần</option>
-                        <option value="giang-day">Báo cáo giảng dạy</option>
-                        <option value="tong-hop">Báo cáo tổng hợp</option>
-                        <option value="danh-gia">Báo cáo kết quả đánh giá</option>
-                        <option value="thong-ke-diem">Thống kê điểm môn học</option>
-                        <option value="thong-ke-hoc-sinh">Thống kê số liệu học sinh</option>
-                        <option value="khac">Khác</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="hocKy">Học kỳ <span class="required">*</span></label>
-                    <select id="hocKy" name="hocKy" required>
-                        <option value="1" selected>Học kỳ 1</option>
-                        <option value="2">Học kỳ 2</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="namHoc">Năm học <span class="required">*</span></label>
-                    <select id="namHoc" name="namHoc" required>
-                        <option value="2024-2025" selected>2024-2025</option>
-                        <option value="2023-2024">2023-2024</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="maLop">Lớp (tùy chọn)</label>
-                    <select id="maLop" name="maLop">
-                        <option value="">Áp dụng cho tất cả lớp</option>
-                        <!-- Danh sách lớp sẽ được load bằng JavaScript -->
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="moTa">Mô tả báo cáo</label>
-                    <textarea id="moTa" name="moTa" 
-                              placeholder="Mô tả chi tiết nội dung báo cáo, mục đích và những điểm quan trọng cần lưu ý..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="fileBaoCao">File báo cáo <span class="required">*</span></label>
-                    <div class="file-upload" id="fileUpload">
-                        <div class="file-upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <div class="file-upload-text">
-                            Kéo thả file vào đây hoặc click để chọn file
-                        </div>
-                        <button type="button" class="file-upload-button" onclick="document.getElementById('fileBaoCao').click()">
-                            <i class="fas fa-folder-open"></i>
-                            Chọn file
-                        </button>
-                        <input type="file" id="fileBaoCao" name="fileBaoCao" 
-                               accept=".pdf,.doc,.docx,.xls,.xlsx" 
-                               style="display: none;" required>
-                    </div>
-                    <div class="file-info" id="fileInfo">
-                        <div class="file-name" id="fileName"></div>
-                        <div class="file-size" id="fileSize"></div>
-                    </div>
-                </div>
-
-                <div class="submit-section">
-                    <a href="cReport.php" class="btn btn-secondary">
-                        <i class="fas fa-times"></i>
-                        Hủy bỏ
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i>
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
+        
+        <div class="content-area">
+            <div class="container">
+                <div class="header">
+                    <h1>
+                        <i class="fas fa-upload"></i>
                         Nộp báo cáo
-                    </button>
+                    </h1>
+                    <div class="user-info">
+                        <span>
+                            <i class="fas fa-user"></i>
+                            <?php echo htmlspecialchars($hoTen); ?>
+                        </span>
+                    </div>
                 </div>
-            </form>
+
+                <a href="../../controller/cReport.php?action=list" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại danh sách báo cáo
+                </a>
+
+                <?php if (isset($_GET['error'])): ?>
+                    <div class="alert alert-error">
+                        <?php
+                        switch ($_GET['error']) {
+                            case 'upload_failed':
+                                echo '<i class="fas fa-exclamation-circle"></i> Lỗi upload file! Vui lòng thử lại.';
+                                break;
+                            case 'save_failed':
+                                echo '<i class="fas fa-exclamation-circle"></i> Lỗi lưu báo cáo! Vui lòng thử lại.';
+                                break;
+                            case 'no_file':
+                                echo '<i class="fas fa-exclamation-circle"></i> Vui lòng chọn file báo cáo để upload!';
+                                break;
+                            default:
+                                echo '<i class="fas fa-exclamation-circle"></i> Có lỗi xảy ra! Vui lòng thử lại.';
+                        }
+                        ?>
+                    </div>
+                <?php endif; ?>
+
+                <div class="instructions">
+                    <h3>
+                        <i class="fas fa-info-circle"></i>
+                        Hướng dẫn nộp báo cáo
+                    </h3>
+                    <ul>
+                        <li>Chọn loại báo cáo phù hợp với nội dung bạn muốn nộp</li>
+                        <li>File upload hỗ trợ các định dạng: PDF, DOC, DOCX, XLS, XLSX</li>
+                        <li>Kích thước file tối đa: 10MB</li>
+                        <li>Điền đầy đủ thông tin bắt buộc được đánh dấu (*)</li>
+                        <li>Mô tả chi tiết nội dung báo cáo để Ban Giám Hiệu dễ dàng xem xét</li>
+                    </ul>
+                </div>
+
+                <div class="upload-section">
+                    <div class="section-title">
+                        <i class="fas fa-file-upload"></i>
+                        Thông tin báo cáo
+                    </div>
+
+                    <form action="../../controller/cReport.php?action=submit" method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="form-group">
+                            <label for="tenBaoCao">Tên báo cáo <span class="required">*</span></label>
+                            <input type="text" id="tenBaoCao" name="tenBaoCao" required 
+                                   placeholder="Nhập tên báo cáo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loaiBaoCao">Loại báo cáo <span class="required">*</span></label>
+                            <select id="loaiBaoCao" name="loaiBaoCao" required>
+                                <option value="">Chọn loại báo cáo</option>
+                                <option value="hoc-tap">Báo cáo kết quả học tập</option>
+                                <option value="chuyen-can">Báo cáo chuyên cần</option>
+                                <option value="giang-day">Báo cáo giảng dạy</option>
+                                <option value="tong-hop">Báo cáo tổng hợp</option>
+                                <option value="danh-gia">Báo cáo kết quả đánh giá</option>
+                                <option value="thong-ke-diem">Thống kê điểm môn học</option>
+                                <option value="thong-ke-hoc-sinh">Thống kê số liệu học sinh</option>
+                                <option value="khac">Khác</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hocKy">Học kỳ <span class="required">*</span></label>
+                            <select id="hocKy" name="hocKy" required>
+                                <option value="1" selected>Học kỳ 1</option>
+                                <option value="2">Học kỳ 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="namHoc">Năm học <span class="required">*</span></label>
+                            <select id="namHoc" name="namHoc" required>
+                                <option value="2024-2025" selected>2024-2025</option>
+                                <option value="2023-2024">2023-2024</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maLop">Lớp (tùy chọn)</label>
+                            <select id="maLop" name="maLop">
+                                <option value="">Áp dụng cho tất cả lớp</option>
+                                <!-- Danh sách lớp sẽ được load bằng JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="moTa">Mô tả báo cáo</label>
+                            <textarea id="moTa" name="moTa" 
+                                      placeholder="Mô tả chi tiết nội dung báo cáo, mục đích và những điểm quan trọng cần lưu ý..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fileBaoCao">File báo cáo <span class="required">*</span></label>
+                            <div class="file-upload" id="fileUpload">
+                                <div class="file-upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="file-upload-text">
+                                    Kéo thả file vào đây hoặc click để chọn file
+                                </div>
+                                <button type="button" class="file-upload-button" onclick="document.getElementById('fileBaoCao').click()">
+                                    <i class="fas fa-folder-open"></i>
+                                    Chọn file
+                                </button>
+                                <input type="file" id="fileBaoCao" name="fileBaoCao" 
+                                       accept=".pdf,.doc,.docx,.xls,.xlsx" 
+                                       style="display: none;" required>
+                            </div>
+                            <div class="file-info" id="fileInfo">
+                                <div class="file-name" id="fileName"></div>
+                                <div class="file-size" id="fileSize"></div>
+                            </div>
+                        </div>
+
+                        <div class="submit-section">
+                            <a href="../../controller/cReport.php?action=list" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Nộp báo cáo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -569,5 +588,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             }
         });
     </script>
+</body>
+</html>
 </body>
 </html>

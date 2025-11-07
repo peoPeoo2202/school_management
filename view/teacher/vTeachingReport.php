@@ -23,9 +23,22 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 250px;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .container {
@@ -324,66 +337,70 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <i class="fas fa-chalkboard-teacher"></i>
-                Báo cáo giảng dạy
-            </h1>
-            <div class="user-info">
-                <span>
-                    <i class="fas fa-user"></i>
-                    <?php echo htmlspecialchars($hoTen); ?>
-                </span>
-            </div>
-        </div>
-
-        <a href="cReport.php" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách báo cáo
-        </a>
-
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Bộ lọc báo cáo
-            </div>
-            <form method="GET" action="cReport.php" class="filter-form">
-                <input type="hidden" name="action" value="giang-day">
-                
-                <div class="form-group">
-                    <label for="hocKy">Học kỳ:</label>
-                    <select name="hocKy" id="hocKy">
-                        <option value="">Tất cả học kỳ</option>
-                        <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                        <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                    </select>
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
+        
+        <div class="content-area">
+            <div class="container">
+                <div class="header">
+                    <h1>
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        Báo cáo giảng dạy
+                    </h1>
+                    <div class="user-info">
+                        <span>
+                            <i class="fas fa-user"></i>
+                            <?php echo htmlspecialchars($hoTen); ?>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="namHoc">Năm học:</label>
-                    <select name="namHoc" id="namHoc">
-                        <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                        <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                    </select>
-                </div>
-            </form>
-
-            <div class="filter-buttons">
-                <button type="submit" form="filter-form" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Lọc kết quả
-                </button>
-                <a href="cReport.php?action=xuat-excel&type=giang-day&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
+                <a href="../../controller/cReport.php?action=list" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại danh sách báo cáo
                 </a>
-            </div>
-        </div>
 
-        <?php if (!empty($duLieuBaoCao)): ?>
-            <!-- Overview Cards -->
-            <div class="schedule-overview">
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        Bộ lọc báo cáo
+                    </div>
+                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
+                        <input type="hidden" name="action" value="teaching">
+                        
+                        <div class="form-group">
+                            <label for="hocKy">Học kỳ:</label>
+                            <select name="hocKy" id="hocKy">
+                                <option value="">Tất cả học kỳ</option>
+                                <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="namHoc">Năm học:</label>
+                            <select name="namHoc" id="namHoc">
+                                <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                                <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <div class="filter-buttons">
+                        <button type="submit" form="filter-form" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Lọc kết quả
+                        </button>
+                        <a href="../../controller/cReport.php?action=export&type=teaching&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i>
+                            Xuất Excel
+                        </a>
+                    </div>
+                </div>
+
+                <?php if (!empty($duLieuBaoCao)): ?>
+                    <!-- Overview Cards -->
+                    <div class="schedule-overview">
                 <div class="overview-card">
                     <div class="overview-icon classes">
                         <i class="fas fa-door-open"></i>
@@ -519,6 +536,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 <br>Vui lòng kiểm tra lại bộ lọc hoặc liên hệ quản trị viên để thiết lập kế hoạch giảng dạy.
             </div>
         <?php endif; ?>
+            </div>
+        </div>
     </div>
 
     <script>

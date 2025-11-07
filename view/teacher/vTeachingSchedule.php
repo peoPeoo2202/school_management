@@ -1,3 +1,18 @@
+<?php
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+    header("Location: ../../public/index.php");
+    exit();
+}
+
+// Kiểm tra role
+if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
+    header("Location: ../../public/index.php");
+    exit();
+}
+
+$hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -14,20 +29,35 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
+            background: #f5f7fa;
             color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            overflow-y: auto;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: #333;
             padding: 20px 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .header-content {
             max-width: 1400px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -36,11 +66,12 @@
         .header h1 {
             font-size: 24px;
             font-weight: 600;
+            color: #333;
         }
 
         .logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: #6c757d;
+            border: none;
             color: white;
             padding: 8px 20px;
             border-radius: 5px;
@@ -49,13 +80,12 @@
         }
 
         .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: #545b62;
         }
 
         .container {
             max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+            margin: 0 auto;
         }
 
         .nav-tabs {
@@ -289,68 +319,56 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <h1><i class="fas fa-calendar-alt"></i> Lịch dạy - Thời khóa biểu</h1>
-            <a href="../public/logout.php" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Đăng xuất
-            </a>
-        </div>
-    </div>
-
-    <div class="container">
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <a href="?action=dashboard" class="nav-tab">
-                <i class="fas fa-home"></i> Tổng quan
-            </a>
-            <a href="?action=viewClasses" class="nav-tab">
-                <i class="fas fa-users"></i> Danh sách lớp
-            </a>
-            <a href="?action=viewSchedule" class="nav-tab active">
-                <i class="fas fa-calendar-alt"></i> Lịch dạy
-            </a>
-            <a href="?action=viewExamSupervision" class="nav-tab">
-                <i class="fas fa-clipboard-check"></i> Coi thi
-            </a>
-            <a href="?action=viewGradingAssignment" class="nav-tab">
-                <i class="fas fa-edit"></i> Chấm điểm
-            </a>
-        </div>
-
-        <!-- Main Card -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title"><i class="fas fa-calendar-week"></i> Thời khóa biểu</h2>
-                <button onclick="window.print()" class="btn btn-primary">
-                    <i class="fas fa-print"></i> In lịch
-                </button>
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
+        
+        <div class="content-area">
+            <div class="header">
+                <div class="header-content">
+                    <h1><i class="fas fa-calendar-alt"></i> Lịch dạy - Thời khóa biểu</h1>
+                    <div class="user-info">
+                        <span>
+                            <i class="fas fa-user"></i>
+                            <?php echo htmlspecialchars($hoTen); ?>
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Filter Section -->
-            <form method="GET" action="">
-                <input type="hidden" name="action" value="viewSchedule">
-                <div class="filter-section">
-                    <div class="filter-group">
-                        <label>Học kỳ</label>
-                        <select name="hocKy">
-                            <option value="1" <?php echo ($data['filters']['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                            <option value="2" <?php echo ($data['filters']['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                        </select>
+            <div class="container">
+                <!-- Main Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-calendar-week"></i> Thời khóa biểu</h2>
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <i class="fas fa-print"></i> In lịch
+                        </button>
                     </div>
 
-                    <div class="filter-group">
-                        <label>Năm học</label>
-                        <select name="namHoc">
-                            <option value="2024-2025" <?php echo ($data['filters']['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                            <option value="2023-2024" <?php echo ($data['filters']['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                        </select>
-                    </div>
+                    <!-- Filter Section -->
+                    <form method="GET" action="../../controller/cTeachingSchedule.php">
+                        <input type="hidden" name="action" value="schedule">
+                        <div class="filter-section">
+                            <div class="filter-group">
+                                <label>Học kỳ</label>
+                                <select name="hocKy">
+                                    <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                    <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                                </select>
+                            </div>
 
-                    <div class="filter-group">
-                        <label>Lọc theo lớp</label>
-                        <select name="maLop">
-                            <option value="">Tất cả các lớp</option>
+                            <div class="filter-group">
+                                <label>Năm học</label>
+                                <select name="namHoc">
+                                    <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                                    <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Lọc theo lớp</label>
+                                <select name="maLop">
+                                    <option value="">Tất cả các lớp</option>
                             <?php if ($data['classes']['success'] && count($data['classes']['data']) > 0): ?>
                                 <?php foreach ($data['classes']['data'] as $class): ?>
                                     <option value="<?php echo $class['maLop']; ?>" 
@@ -490,17 +508,21 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-            </div>
+                            </div>
 
-            <!-- Legend -->
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color morning"></div>
-                    <span>Tiết học có lịch</span>
-                </div>
-                <div class="legend-item">
-                    <i class="fas fa-info-circle" style="color: #667eea;"></i>
-                    <span>Click vào ô tiết để xem chi tiết</span>
+                            <!-- Legend -->
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <div class="legend-color morning"></div>
+                                    <span>Tiết học có lịch</span>
+                                </div>
+                                <div class="legend-item">
+                                    <i class="fas fa-info-circle" style="color: #667eea;"></i>
+                                    <span>Click vào ô tiết để xem chi tiết</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

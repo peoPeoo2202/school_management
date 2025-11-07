@@ -1,3 +1,20 @@
+<?php
+// Session đã được start từ controller, không cần start lại
+
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+    header("Location: ../../public/index.php");
+    exit();
+}
+
+// Kiểm tra quyền giáo viên
+if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
+    header("Location: ../../public/index.php?error=access_denied");
+    exit();
+}
+
+$hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,18 +33,33 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
             color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            overflow-y: auto;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: #333;
             padding: 20px 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .header-content {
             max-width: 1400px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -36,6 +68,7 @@
         .header h1 {
             font-size: 24px;
             font-weight: 600;
+            color: #333;
         }
 
         .header-info {
@@ -65,8 +98,8 @@
         }
 
         .back-btn, .logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: #6c757d;
+            border: none;
             color: white;
             padding: 8px 20px;
             border-radius: 5px;
@@ -78,13 +111,12 @@
         }
 
         .back-btn:hover, .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: #545b62;
         }
 
         .container {
             max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+            margin: 0 auto;
         }
 
         .nav-tabs {
@@ -311,53 +343,35 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div>
-                <h1><i class="fas fa-chalkboard-teacher"></i> TRA CỨU LỊCH DẠY</h1>
-                <p style="margin-top: 5px; opacity: 0.9;">Học kỳ <?php echo htmlspecialchars($data['hocKy']); ?> - Năm học <?php echo htmlspecialchars($data['namHoc']); ?></p>
-            </div>
-            <div class="header-info">
-                <div class="user-info">
-                    <div class="name">
-                        <?php echo isset($_SESSION['hoTen']) ? htmlspecialchars($_SESSION['hoTen']) : 'Giáo viên'; ?>
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
+        
+        <div class="content-area">
+            <div class="container">
+                <div class="header">
+                    <div class="header-content">
+                        <div>
+                            <h1><i class="fas fa-chalkboard-teacher"></i> TRA CỨU LỊCH DẠY</h1>
+                            <p style="margin-top: 5px; opacity: 0.9;">Học kỳ <?php echo htmlspecialchars($data['hocKy']); ?> - Năm học <?php echo htmlspecialchars($data['namHoc']); ?></p>
+                        </div>
+                        <div class="header-info">
+                            <div class="user-info">
+                                <div class="name">
+                                    <?php echo htmlspecialchars($hoTen); ?>
+                                </div>
+                                <div class="role">Giáo viên</div>
+                            </div>
+                            <div class="header-buttons">
+                                <a href="../../controller/cTeachingSchedule.php?action=viewSchedule" class="back-btn">
+                                    <i class="fas fa-calendar-alt"></i> Lịch dạy chi tiết
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="role">Giáo viên</div>
                 </div>
-                <div class="header-buttons">
-                    <a href="../view/teacher/index.php" class="back-btn">
-                        <i class="fas fa-home"></i> Dashboard chính
-                    </a>
-                    <a href="../public/index.php?logout=1" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="container">
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <a href="?action=dashboard" class="nav-tab active">
-                <i class="fas fa-home"></i> Tổng quan
-            </a>
-            <a href="?action=viewClasses" class="nav-tab">
-                <i class="fas fa-users"></i> Danh sách lớp
-            </a>
-            <a href="?action=viewSchedule" class="nav-tab">
-                <i class="fas fa-calendar-alt"></i> Lịch dạy
-            </a>
-            <a href="?action=viewExamSupervision" class="nav-tab">
-                <i class="fas fa-clipboard-check"></i> Coi thi
-            </a>
-            <a href="?action=viewGradingAssignment" class="nav-tab">
-                <i class="fas fa-edit"></i> Chấm điểm
-            </a>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon blue">
                     <i class="fas fa-users"></i>
@@ -413,7 +427,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-calendar-day"></i> Lịch dạy hôm nay</h2>
-                    <a href="?action=viewSchedule" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                    <a href="../../controller/cTeachingSchedule.php?action=viewSchedule" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
                 </div>
                 
                 <?php if ($data['scheduleToday']['success'] && count($data['scheduleToday']['data']) > 0): ?>
@@ -442,7 +456,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-clipboard-check"></i> Ca thi sắp tới</h2>
-                    <a href="?action=viewExamSupervision" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                    <a href="../../view/teacher/vExamSupervision.php" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
                 </div>
                 
                 <?php if ($data['upcomingExams']['success'] && count($data['upcomingExams']['data']) > 0): ?>
@@ -477,7 +491,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-edit"></i> Chấm điểm đang làm</h2>
-                    <a href="?action=viewGradingAssignment" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                    <a href="../../view/teacher/vGradingAssignment.php" class="view-all-link">Xem tất cả <i class="fas fa-arrow-right"></i></a>
                 </div>
                 
                 <?php if ($data['ongoingGrading']['success'] && count($data['ongoingGrading']['data']) > 0): ?>
@@ -502,6 +516,7 @@
                         <p>Không có công việc chấm điểm đang làm</p>
                     </div>
                 <?php endif; ?>
+            </div>
             </div>
         </div>
     </div>
