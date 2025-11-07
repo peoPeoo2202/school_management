@@ -1,7 +1,13 @@
 <?php
+
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: ../../public/index.php");
+    exit();
+}
+
+if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
+    header("Location: ../../public/index.php?error=access_denied");
     exit();
 }
 
@@ -9,6 +15,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,32 +30,36 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .main-wrapper {
+            display: flex;
             min-height: 100vh;
-            padding: 20px;
+        }
+
+        .content-area {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+            transition: margin-left 0.3s;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 100%;
         }
 
         .header {
             background: white;
-            padding: 20px 30px;
+            padding: 25px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .header h1 {
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            color: #667eea;
         }
 
         .header h1 i {
@@ -406,226 +417,223 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <i class="fas fa-users"></i>
-                Thống kê số liệu học sinh
-            </h1>
-            <div class="user-info">
-                <span>
-                    <i class="fas fa-user"></i>
-                    <?php echo htmlspecialchars($hoTen); ?>
-                </span>
-            </div>
-        </div>
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
 
-        <a href="cReport.php" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách báo cáo
-        </a>
+        <!-- Main Content -->
+        <div class="content-area">
+            <div class="container">
+                <div class="header">
+                    <h1>
+                        <i class="fas fa-users"></i>
+                        Thống kê số liệu học sinh
+                    </h1>
+                </div>
 
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Bộ lọc thống kê
-            </div>
-            <form method="GET" action="cReport.php" class="filter-form">
-                <input type="hidden" name="action" value="thong-ke-hoc-sinh">
-                
-                <div class="form-group">
-                    <label for="maLop">Lớp:</label>
-                    <select name="maLop" id="maLop">
-                        <option value="">Tất cả lớp</option>
-                        <?php foreach ($danhSachLop as $lop): ?>
-                            <option value="<?php echo $lop['maLop']; ?>" 
-                                    <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($lop['tenLop']); ?>
-                            </option>
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        Bộ lọc thống kê
+                    </div>
+                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
+                        <input type="hidden" name="action" value="student_stats">
+
+                        <div class="form-group">
+                            <label for="maLop">Lớp:</label>
+                            <select name="maLop" id="maLop">
+                                <option value="">Tất cả lớp</option>
+                                <?php foreach ($danhSachLop as $lop): ?>
+                                    <option value="<?php echo $lop['maLop']; ?>"
+                                        <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($lop['tenLop']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </form>
+
+                    <div class="filter-buttons">
+                        <button type="submit" form="filter-form" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Lọc kết quả
+                        </button>
+                        <a href="cReport.php?action=xuat-excel&type=thong-ke-hoc-sinh&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i>
+                            Xuất Excel
+                        </a>
+                    </div>
+                </div>
+
+                <?php if (!empty($duLieuBaoCao)): ?>
+                    <div class="class-cards">
+                        <?php foreach ($duLieuBaoCao as $lop): ?>
+                            <div class="class-card">
+                                <div class="class-header">
+                                    <div class="class-icon">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div class="class-info">
+                                        <h3><?php echo htmlspecialchars($lop['tenLop']); ?></h3>
+                                        <div class="siso">Sĩ số: <?php echo $lop['siSo']; ?> học sinh</div>
+                                    </div>
+                                </div>
+
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-value"><?php echo $lop['soHSNam']; ?></div>
+                                        <div class="stat-label">Nam</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value"><?php echo $lop['soHSNu']; ?></div>
+                                        <div class="stat-label">Nữ</div>
+                                    </div>
+                                </div>
+
+                                <div class="gender-chart">
+                                    <div class="gender-bar gender-male" style="flex-basis: <?php echo $lop['siSo'] > 0 ? ($lop['soHSNam'] / $lop['siSo'] * 100) : 0; ?>%;">
+                                        Nam: <?php echo $lop['siSo'] > 0 ? round($lop['soHSNam'] / $lop['siSo'] * 100, 1) : 0; ?>%
+                                    </div>
+                                    <div class="gender-bar gender-female" style="flex-basis: <?php echo $lop['siSo'] > 0 ? ($lop['soHSNu'] / $lop['siSo'] * 100) : 0; ?>%;">
+                                        Nữ: <?php echo $lop['siSo'] > 0 ? round($lop['soHSNu'] / $lop['siSo'] * 100, 1) : 0; ?>%
+                                    </div>
+                                </div>
+
+                                <div class="performance-section">
+                                    <div class="performance-title">
+                                        <i class="fas fa-chart-pie"></i>
+                                        Phân loại học sinh
+                                    </div>
+                                    <div class="performance-bars">
+                                        <div class="performance-category">
+                                            <div class="category-title">Học lực</div>
+                                            <div class="performance-items">
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Giỏi:</span>
+                                                    <span class="performance-value perf-excellent"><?php echo $lop['soHSGioi']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Khá:</span>
+                                                    <span class="performance-value perf-good"><?php echo $lop['soHSKha']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">TB:</span>
+                                                    <span class="performance-value perf-average"><?php echo $lop['soHSTB']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Yếu:</span>
+                                                    <span class="performance-value perf-weak"><?php echo $lop['soHSYeu']; ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="performance-category">
+                                            <div class="category-title">Hạnh kiểm</div>
+                                            <div class="performance-items">
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Tốt:</span>
+                                                    <span class="performance-value perf-excellent"><?php echo $lop['soHSHKTot']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Khá:</span>
+                                                    <span class="performance-value perf-good"><?php echo $lop['soHSHKKha']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">TB:</span>
+                                                    <span class="performance-value perf-average"><?php echo $lop['soHSHKTB']; ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
-                    </select>
-                </div>
-            </form>
-
-            <div class="filter-buttons">
-                <button type="submit" form="filter-form" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Lọc kết quả
-                </button>
-                <a href="cReport.php?action=xuat-excel&type=thong-ke-hoc-sinh&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-            </div>
-        </div>
-
-        <?php if (!empty($duLieuBaoCao)): ?>
-            <div class="class-cards">
-                <?php foreach ($duLieuBaoCao as $lop): ?>
-                <div class="class-card">
-                    <div class="class-header">
-                        <div class="class-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div class="class-info">
-                            <h3><?php echo htmlspecialchars($lop['tenLop']); ?></h3>
-                            <div class="siso">Sĩ số: <?php echo $lop['siSo']; ?> học sinh</div>
-                        </div>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value"><?php echo $lop['soHSNam']; ?></div>
-                            <div class="stat-label">Nam</div>
+                    <!-- Summary Section -->
+                    <div class="summary-section">
+                        <div class="summary-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Tổng kết thống kê
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value"><?php echo $lop['soHSNu']; ?></div>
-                            <div class="stat-label">Nữ</div>
-                        </div>
-                    </div>
-
-                    <div class="gender-chart">
-                        <div class="gender-bar gender-male" style="flex-basis: <?php echo $lop['siSo'] > 0 ? ($lop['soHSNam'] / $lop['siSo'] * 100) : 0; ?>%;">
-                            Nam: <?php echo $lop['siSo'] > 0 ? round($lop['soHSNam'] / $lop['siSo'] * 100, 1) : 0; ?>%
-                        </div>
-                        <div class="gender-bar gender-female" style="flex-basis: <?php echo $lop['siSo'] > 0 ? ($lop['soHSNu'] / $lop['siSo'] * 100) : 0; ?>%;">
-                            Nữ: <?php echo $lop['siSo'] > 0 ? round($lop['soHSNu'] / $lop['siSo'] * 100, 1) : 0; ?>%
-                        </div>
-                    </div>
-
-                    <div class="performance-section">
-                        <div class="performance-title">
-                            <i class="fas fa-chart-pie"></i>
-                            Phân loại học sinh
-                        </div>
-                        <div class="performance-bars">
-                            <div class="performance-category">
-                                <div class="category-title">Học lực</div>
-                                <div class="performance-items">
-                                    <div class="performance-item">
-                                        <span class="performance-label">Giỏi:</span>
-                                        <span class="performance-value perf-excellent"><?php echo $lop['soHSGioi']; ?></span>
-                                    </div>
-                                    <div class="performance-item">
-                                        <span class="performance-label">Khá:</span>
-                                        <span class="performance-value perf-good"><?php echo $lop['soHSKha']; ?></span>
-                                    </div>
-                                    <div class="performance-item">
-                                        <span class="performance-label">TB:</span>
-                                        <span class="performance-value perf-average"><?php echo $lop['soHSTB']; ?></span>
-                                    </div>
-                                    <div class="performance-item">
-                                        <span class="performance-label">Yếu:</span>
-                                        <span class="performance-value perf-weak"><?php echo $lop['soHSYeu']; ?></span>
-                                    </div>
+                        <div class="summary-stats">
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongSiSo = array_sum(array_column($duLieuBaoCao, 'siSo'));
+                                    echo $tongSiSo;
+                                    ?>
                                 </div>
+                                <div class="summary-label">Tổng học sinh</div>
                             </div>
-                            
-                            <div class="performance-category">
-                                <div class="category-title">Hạnh kiểm</div>
-                                <div class="performance-items">
-                                    <div class="performance-item">
-                                        <span class="performance-label">Tốt:</span>
-                                        <span class="performance-value perf-excellent"><?php echo $lop['soHSHKTot']; ?></span>
-                                    </div>
-                                    <div class="performance-item">
-                                        <span class="performance-label">Khá:</span>
-                                        <span class="performance-value perf-good"><?php echo $lop['soHSHKKha']; ?></span>
-                                    </div>
-                                    <div class="performance-item">
-                                        <span class="performance-label">TB:</span>
-                                        <span class="performance-value perf-average"><?php echo $lop['soHSHKTB']; ?></span>
-                                    </div>
+
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongNam = array_sum(array_column($duLieuBaoCao, 'soHSNam'));
+                                    echo $tongNam;
+                                    ?>
                                 </div>
+                                <div class="summary-label">Tổng HS Nam</div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongNu = array_sum(array_column($duLieuBaoCao, 'soHSNu'));
+                                    echo $tongNu;
+                                    ?>
+                                </div>
+                                <div class="summary-label">Tổng HS Nữ</div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongGioi = array_sum(array_column($duLieuBaoCao, 'soHSGioi'));
+                                    echo $tongGioi;
+                                    ?>
+                                </div>
+                                <div class="summary-label">Tổng HS Giỏi</div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongKha = array_sum(array_column($duLieuBaoCao, 'soHSKha'));
+                                    echo $tongKha;
+                                    ?>
+                                </div>
+                                <div class="summary-label">Tổng HS Khá</div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-number">
+                                    <?php
+                                    $tongHKTot = array_sum(array_column($duLieuBaoCao, 'soHSHKTot'));
+                                    echo $tongHKTot;
+                                    ?>
+                                </div>
+                                <div class="summary-label">Tổng HK Tốt</div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="no-data">
+                        <i class="fas fa-info-circle"></i>
+                        Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
+                    </div>
+                <?php endif; ?>
             </div>
 
-            <!-- Summary Section -->
-            <div class="summary-section">
-                <div class="summary-title">
-                    <i class="fas fa-chart-bar"></i>
-                    Tổng kết thống kê
-                </div>
-                <div class="summary-stats">
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongSiSo = array_sum(array_column($duLieuBaoCao, 'siSo'));
-                            echo $tongSiSo;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng học sinh</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongNam = array_sum(array_column($duLieuBaoCao, 'soHSNam'));
-                            echo $tongNam;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng HS Nam</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongNu = array_sum(array_column($duLieuBaoCao, 'soHSNu'));
-                            echo $tongNu;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng HS Nữ</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongGioi = array_sum(array_column($duLieuBaoCao, 'soHSGioi'));
-                            echo $tongGioi;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng HS Giỏi</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongKha = array_sum(array_column($duLieuBaoCao, 'soHSKha'));
-                            echo $tongKha;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng HS Khá</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="summary-number">
-                            <?php 
-                            $tongHKTot = array_sum(array_column($duLieuBaoCao, 'soHSHKTot'));
-                            echo $tongHKTot;
-                            ?>
-                        </div>
-                        <div class="summary-label">Tổng HK Tốt</div>
-                    </div>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="no-data">
-                <i class="fas fa-info-circle"></i>
-                Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <script>
-        // Auto submit form when filter changes
-        document.getElementById('maLop').addEventListener('change', function() {
-            document.querySelector('form').submit();
-        });
-    </script>
+            <script>
+                // Auto submit form when filter changes
+                document.getElementById('maLop').addEventListener('change', function() {
+                    document.querySelector('form').submit();
+                });
+            </script>
 </body>
+
 </html>
