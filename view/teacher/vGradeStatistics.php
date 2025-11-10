@@ -5,10 +5,16 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     exit();
 }
 
+if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
+    header("Location: ../../public/index.php?error=access_denied");
+    exit();
+}
+
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,32 +29,36 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .main-wrapper {
+            display: flex;
             min-height: 100vh;
-            padding: 20px;
+        }
+
+        .content-area {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+            transition: margin-left 0.3s;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 100%;
         }
 
         .header {
             background: white;
-            padding: 20px 30px;
+            padding: 25px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .header h1 {
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            color: #667eea;
         }
 
         .header h1 i {
@@ -388,248 +398,254 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <i class="fas fa-chart-line"></i>
-                Thống kê điểm môn học
-            </h1>
-            <div class="user-info">
-                <span>
-                    <i class="fas fa-user"></i>
-                    <?php echo htmlspecialchars($hoTen); ?>
-                </span>
-            </div>
-        </div>
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
 
-        <a href="cReport.php" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách báo cáo
-        </a>
+        <!-- Main Content -->
+        <div class="content-area">
+            <div class="container">
+                <div class="header">
+                    <h1>
+                        <i class="fas fa-chart-line"></i>
+                        Thống kê điểm môn học
+                    </h1>
+                </div>
 
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Chọn môn học để thống kê
-            </div>
-            <form method="GET" action="cReport.php" class="filter-form">
-                <input type="hidden" name="action" value="thong-ke-diem">
-                
-                <div class="form-group">
-                    <label for="maMonHoc">Môn học: <span style="color: #dc3545;">*</span></label>
-                    <select name="maMonHoc" id="maMonHoc" required>
-                        <option value="">Chọn môn học</option>
-                        <?php foreach ($danhSachMonHoc as $monHoc): ?>
-                            <option value="<?php echo $monHoc['maMonHoc']; ?>" 
-                                    <?php echo (isset($_GET['maMonHoc']) && $_GET['maMonHoc'] == $monHoc['maMonHoc']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($monHoc['tenMonHoc']); ?>
-                            </option>
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        Chọn môn học để thống kê
+                    </div>
+                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
+                        <input type="hidden" name="action" value="grade_stats">
+
+                        <div class="form-group">
+                            <label for="maMonHoc">Môn học: <span style="color: #dc3545;">*</span></label>
+                            <?php if (count($danhSachMonHoc) == 1): ?>
+                                <!-- Nếu chỉ dạy 1 môn, hiển thị tên môn và set hidden input -->
+                                <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;">
+                                    <strong><?php echo htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']); ?></strong>
+                                </div>
+                                <input type="hidden" name="maMonHoc" value="<?php echo $danhSachMonHoc[0]['maMonHoc']; ?>">
+                            <?php else: ?>
+                                <!-- Nếu dạy nhiều môn, cho phép chọn -->
+                                <select name="maMonHoc" id="maMonHoc" required>
+                                    <option value="">Chọn môn học</option>
+                                    <?php foreach ($danhSachMonHoc as $monHoc): ?>
+                                        <option value="<?php echo $monHoc['maMonHoc']; ?>"
+                                            <?php echo (isset($_GET['maMonHoc']) && $_GET['maMonHoc'] == $monHoc['maMonHoc']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($monHoc['tenMonHoc']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hocKy">Học kỳ:</label>
+                            <select name="hocKy" id="hocKy">
+                                <option value="">Tất cả học kỳ</option>
+                                <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="namHoc">Năm học:</label>
+                            <select name="namHoc" id="namHoc">
+                                <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                                <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <div class="filter-buttons">
+                        <button type="submit" form="filter-form" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i>
+                            Xem thống kê
+                        </button>
+                        <?php if (!empty($duLieuBaoCao)): ?>
+                            <a href="cReport.php?action=xuat-excel&type=thong-ke-diem&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
+                                <i class="fas fa-file-excel"></i>
+                                Xuất Excel
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if (!isset($_GET['maMonHoc']) || empty($_GET['maMonHoc'])): ?>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Vui lòng chọn môn học để xem thống kê điểm.
+                    </div>
+                <?php elseif (!empty($duLieuBaoCao)): ?>
+                    <?php foreach ($duLieuBaoCao as $row): ?>
+                        <!-- Stats Cards -->
+                        <div class="stats-cards">
+                            <div class="stat-card">
+                                <div class="stat-icon students">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-value"><?php echo $row['soHocSinh']; ?></div>
+                                <div class="stat-label">Tổng học sinh</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon average">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div class="stat-value"><?php echo number_format($row['diemTrungBinh'], 2); ?></div>
+                                <div class="stat-label">Điểm trung bình</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon high">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="stat-value"><?php echo number_format($row['diemCaoNhat'], 1); ?></div>
+                                <div class="stat-label">Điểm cao nhất</div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon low">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="stat-value"><?php echo number_format($row['diemThapNhat'], 1); ?></div>
+                                <div class="stat-label">Điểm thấp nhất</div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Table -->
+                        <div class="report-section">
+                            <div class="report-header">
+                                <h3>
+                                    <i class="fas fa-table"></i>
+                                    Chi tiết thống kê - <?php echo htmlspecialchars($row['tenMonHoc']); ?>
+                                </h3>
+                            </div>
+                            <div class="table-container">
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Môn học</th>
+                                            <th>Học kỳ</th>
+                                            <th>Năm học</th>
+                                            <th>Số học sinh</th>
+                                            <th>Điểm TB</th>
+                                            <th>Điểm cao nhất</th>
+                                            <th>Điểm thấp nhất</th>
+                                            <th>HS Giỏi</th>
+                                            <th>HS Khá</th>
+                                            <th>HS TB</th>
+                                            <th>HS Yếu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
+                                            <td><?php echo $row['hocKy']; ?></td>
+                                            <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
+                                            <td><?php echo $row['soHocSinh']; ?></td>
+                                            <td><strong><?php echo number_format($row['diemTrungBinh'], 2); ?></strong></td>
+                                            <td><?php echo number_format($row['diemCaoNhat'], 1); ?></td>
+                                            <td><?php echo number_format($row['diemThapNhat'], 1); ?></td>
+                                            <td><span style="color: #28a745; font-weight: 600;"><?php echo $row['soHSGioi']; ?></span></td>
+                                            <td><span style="color: #17a2b8; font-weight: 600;"><?php echo $row['soHSKha']; ?></span></td>
+                                            <td><span style="color: #ffc107; font-weight: 600;"><?php echo $row['soHSTB']; ?></span></td>
+                                            <td><span style="color: #dc3545; font-weight: 600;"><?php echo $row['soHSYeu']; ?></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Distribution Chart -->
+                        <div class="distribution-section">
+                            <div class="distribution-title">
+                                <i class="fas fa-chart-pie"></i>
+                                Phân bố xếp loại học sinh
+                            </div>
+                            <div class="distribution-chart">
+                                <div class="grade-bar">
+                                    <div class="grade-label">Giỏi (≥ 8.0)</div>
+                                    <div class="bar-container">
+                                        <div class="bar excellent" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSGioi'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                            <?php echo $row['soHSGioi']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="grade-count">
+                                        <?php echo $row['soHocSinh'] > 0 ? round($row['soHSGioi'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                                    </div>
+                                </div>
+
+                                <div class="grade-bar">
+                                    <div class="grade-label">Khá (6.5 - 7.9)</div>
+                                    <div class="bar-container">
+                                        <div class="bar good" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSKha'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                            <?php echo $row['soHSKha']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="grade-count">
+                                        <?php echo $row['soHocSinh'] > 0 ? round($row['soHSKha'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                                    </div>
+                                </div>
+
+                                <div class="grade-bar">
+                                    <div class="grade-label">TB (5.0 - 6.4)</div>
+                                    <div class="bar-container">
+                                        <div class="bar average" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSTB'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                            <?php echo $row['soHSTB']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="grade-count">
+                                        <?php echo $row['soHocSinh'] > 0 ? round($row['soHSTB'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                                    </div>
+                                </div>
+
+                                <div class="grade-bar">
+                                    <div class="grade-label">Yếu (< 5.0)</div>
+                                            <div class="bar-container">
+                                                <div class="bar weak" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSYeu'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                                    <?php echo $row['soHSYeu']; ?>
+                                                </div>
+                                            </div>
+                                            <div class="grade-count">
+                                                <?php echo $row['soHocSinh'] > 0 ? round($row['soHSYeu'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="hocKy">Học kỳ:</label>
-                    <select name="hocKy" id="hocKy">
-                        <option value="">Tất cả học kỳ</option>
-                        <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                        <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="namHoc">Năm học:</label>
-                    <select name="namHoc" id="namHoc">
-                        <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                        <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                    </select>
-                </div>
-            </form>
-
-            <div class="filter-buttons">
-                <button type="submit" form="filter-form" class="btn btn-primary">
-                    <i class="fas fa-chart-bar"></i>
-                    Xem thống kê
-                </button>
-                <?php if (!empty($duLieuBaoCao)): ?>
-                <a href="cReport.php?action=xuat-excel&type=thong-ke-diem&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <?php if (!isset($_GET['maMonHoc']) || empty($_GET['maMonHoc'])): ?>
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i>
-            Vui lòng chọn môn học để xem thống kê điểm.
-        </div>
-        <?php elseif (!empty($duLieuBaoCao)): ?>
-            <?php foreach ($duLieuBaoCao as $row): ?>
-            <!-- Stats Cards -->
-            <div class="stats-cards">
-                <div class="stat-card">
-                    <div class="stat-icon students">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-value"><?php echo $row['soHocSinh']; ?></div>
-                    <div class="stat-label">Tổng học sinh</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon average">
-                        <i class="fas fa-calculator"></i>
-                    </div>
-                    <div class="stat-value"><?php echo number_format($row['diemTrungBinh'], 2); ?></div>
-                    <div class="stat-label">Điểm trung bình</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon high">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="stat-value"><?php echo number_format($row['diemCaoNhat'], 1); ?></div>
-                    <div class="stat-label">Điểm cao nhất</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon low">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="stat-value"><?php echo number_format($row['diemThapNhat'], 1); ?></div>
-                    <div class="stat-label">Điểm thấp nhất</div>
-                </div>
-            </div>
-
-            <!-- Detailed Table -->
-            <div class="report-section">
-                <div class="report-header">
-                    <h3>
-                        <i class="fas fa-table"></i>
-                        Chi tiết thống kê - <?php echo htmlspecialchars($row['tenMonHoc']); ?>
-                    </h3>
-                </div>
-                <div class="table-container">
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>Môn học</th>
-                                <th>Học kỳ</th>
-                                <th>Năm học</th>
-                                <th>Số học sinh</th>
-                                <th>Điểm TB</th>
-                                <th>Điểm cao nhất</th>
-                                <th>Điểm thấp nhất</th>
-                                <th>HS Giỏi</th>
-                                <th>HS Khá</th>
-                                <th>HS TB</th>
-                                <th>HS Yếu</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
-                                <td><?php echo $row['hocKy']; ?></td>
-                                <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
-                                <td><?php echo $row['soHocSinh']; ?></td>
-                                <td><strong><?php echo number_format($row['diemTrungBinh'], 2); ?></strong></td>
-                                <td><?php echo number_format($row['diemCaoNhat'], 1); ?></td>
-                                <td><?php echo number_format($row['diemThapNhat'], 1); ?></td>
-                                <td><span style="color: #28a745; font-weight: 600;"><?php echo $row['soHSGioi']; ?></span></td>
-                                <td><span style="color: #17a2b8; font-weight: 600;"><?php echo $row['soHSKha']; ?></span></td>
-                                <td><span style="color: #ffc107; font-weight: 600;"><?php echo $row['soHSTB']; ?></span></td>
-                                <td><span style="color: #dc3545; font-weight: 600;"><?php echo $row['soHSYeu']; ?></span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Distribution Chart -->
-            <div class="distribution-section">
-                <div class="distribution-title">
-                    <i class="fas fa-chart-pie"></i>
-                    Phân bố xếp loại học sinh
-                </div>
-                <div class="distribution-chart">
-                    <div class="grade-bar">
-                        <div class="grade-label">Giỏi (≥ 8.0)</div>
-                        <div class="bar-container">
-                            <div class="bar excellent" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSGioi'] / $row['soHocSinh'] * 100) : 0; ?>%;">
-                                <?php echo $row['soHSGioi']; ?>
-                            </div>
+                    <?php else: ?>
+                        <div class="no-data">
+                            <i class="fas fa-chart-line"></i><br><br>
+                            Không có dữ liệu thống kê cho môn học đã chọn.<br>
+                            Vui lòng kiểm tra lại môn học, học kỳ và năm học.
                         </div>
-                        <div class="grade-count">
-                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSGioi'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                    <?php endif; ?>
                         </div>
-                    </div>
-                    
-                    <div class="grade-bar">
-                        <div class="grade-label">Khá (6.5 - 7.9)</div>
-                        <div class="bar-container">
-                            <div class="bar good" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSKha'] / $row['soHocSinh'] * 100) : 0; ?>%;">
-                                <?php echo $row['soHSKha']; ?>
-                            </div>
-                        </div>
-                        <div class="grade-count">
-                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSKha'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
-                        </div>
-                    </div>
-                    
-                    <div class="grade-bar">
-                        <div class="grade-label">TB (5.0 - 6.4)</div>
-                        <div class="bar-container">
-                            <div class="bar average" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSTB'] / $row['soHocSinh'] * 100) : 0; ?>%;">
-                                <?php echo $row['soHSTB']; ?>
-                            </div>
-                        </div>
-                        <div class="grade-count">
-                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSTB'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
-                        </div>
-                    </div>
-                    
-                    <div class="grade-bar">
-                        <div class="grade-label">Yếu (< 5.0)</div>
-                        <div class="bar-container">
-                            <div class="bar weak" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSYeu'] / $row['soHocSinh'] * 100) : 0; ?>%;">
-                                <?php echo $row['soHSYeu']; ?>
-                            </div>
-                        </div>
-                        <div class="grade-count">
-                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSYeu'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="no-data">
-                <i class="fas fa-chart-line"></i><br><br>
-                Không có dữ liệu thống kê cho môn học đã chọn.<br>
-                Vui lòng kiểm tra lại môn học, học kỳ và năm học.
-            </div>
-        <?php endif; ?>
-    </div>
 
-    <script>
-        // Auto submit form when subject changes
-        document.getElementById('maMonHoc').addEventListener('change', function() {
-            if (this.value) {
-                document.querySelector('form').submit();
-            }
-        });
+                        <script>
+                            // Auto submit form when subject changes
+                            document.getElementById('maMonHoc').addEventListener('change', function() {
+                                if (this.value) {
+                                    document.querySelector('form').submit();
+                                }
+                            });
 
-        // Auto submit when other filters change
-        document.querySelectorAll('#hocKy, #namHoc').forEach(function(select) {
-            select.addEventListener('change', function() {
-                const maMonHoc = document.getElementById('maMonHoc').value;
-                if (maMonHoc) {
-                    document.querySelector('form').submit();
-                }
-            });
-        });
-    </script>
+                            // Auto submit when other filters change
+                            document.querySelectorAll('#hocKy, #namHoc').forEach(function(select) {
+                                select.addEventListener('change', function() {
+                                    const maMonHoc = document.getElementById('maMonHoc').value;
+                                    if (maMonHoc) {
+                                        document.querySelector('form').submit();
+                                    }
+                                });
+                            });
+                        </script>
 </body>
+
 </html>

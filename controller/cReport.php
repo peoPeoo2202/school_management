@@ -28,21 +28,27 @@ class cReport {
             case 'index':
                 $this->hienThiDanhSachBaoCao();
                 break;
+            case 'academic':
             case 'hoc-tap':
                 $this->xemBaoCaoKetQuaHocTap();
                 break;
+            case 'attendance':
             case 'chuyen-can':
                 $this->xemBaoCaoChuyenCan();
                 break;
+            case 'teaching':
             case 'giang-day':
                 $this->xemBaoCaoGiangDay();
                 break;
+            case 'grade_stats':
             case 'thong-ke-diem':
                 $this->xemThongKeDiemMonHoc();
                 break;
+            case 'student_stats':
             case 'thong-ke-hoc-sinh':
                 $this->xemThongKeSoLieuHocSinh();
                 break;
+            case 'submit':
             case 'nop-bao-cao':
                 $this->nopBaoCao();
                 break;
