@@ -22,45 +22,42 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo & Thống kê - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #333;
+            margin: 0
         }
 
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            width: 100%;
         }
 
         .content-area {
-            margin-left: 250px;
             flex: 1;
-            padding: 30px;
-            transition: margin-left 0.3s;
+            padding: 32px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
         .header {
             background: white;
-            padding: 25px 30px;
+            padding: 24px;
             border-radius: 12px;
-            margin-bottom: 30px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header h1 {
-            color: #667eea;
+            color: #5081BE;
         }
 
         .header h1 i {
-            color: #667eea;
+            color: #5081BE;
         }
 
         .user-info {
@@ -133,7 +130,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .report-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5081BE, #2d5a8c);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -158,7 +155,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .report-button {
-            background: #667eea;
+            background: #5081BE;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -170,7 +167,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .report-button:hover {
-            background: #764ba2;
+            background: #2d5a8c;
         }
 
         .submit-section {

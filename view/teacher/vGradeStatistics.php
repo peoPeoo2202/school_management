@@ -20,29 +20,22 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thống kê điểm môn học - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #333;
+            margin: 0
         }
 
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .content-area {
-            margin-left: 250px;
             flex: 1;
-            padding: 30px;
-            transition: margin-left 0.3s;
+            padding: 32px;
+            overflow-y: auto;
         }
 
         .container {
@@ -51,14 +44,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .header {
             background: white;
-            padding: 25px 30px;
+            padding: 24px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header h1 {
-            color: #667eea;
+            color: #5081BE;
         }
 
         .header h1 i {
@@ -147,7 +141,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #5081BE;
             color: white;
         }
 
@@ -192,7 +186,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .stat-icon.students {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5081BE, #2d5a8c);
         }
 
         .stat-icon.average {

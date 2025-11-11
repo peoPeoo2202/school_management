@@ -1,9 +1,14 @@
+/* CSS Reset - chỉ reset body, không reset tất cả elements */
+html, body {
+	margin: 0 !important;
+	padding: 0 !important;
+}
+
 /* Toàn trang học sinh */
 body {
 	font-family: "Segoe UI", sans-serif;
 	background: #f8fafc;
 	color: #222;
-	margin: 0;
 }
 
 /* HEADER & FOOTER */

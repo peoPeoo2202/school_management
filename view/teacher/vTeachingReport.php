@@ -14,30 +14,17 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo giảng dạy - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-        }
-
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .content-area {
             flex: 1;
-            margin-left: 250px;
-            padding: 20px;
+            padding: 16px 8px;
             overflow-y: auto;
         }
 
@@ -48,13 +35,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .header {
             background: white;
-            padding: 20px 30px;
+            padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header h1 {
@@ -150,7 +135,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #5081BE;
             color: white;
         }
 
@@ -195,7 +180,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .overview-icon.classes {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5081BE, #2d5a8c);
         }
 
         .overview-icon.subjects {
