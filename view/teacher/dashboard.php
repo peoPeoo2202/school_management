@@ -26,46 +26,38 @@ $maGV = $_SESSION['maGV'] ?? null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            width: 100%;
         }
 
         .content-area {
-            margin-left: 250px;
             flex: 1;
-            padding: 30px;
-            transition: margin-left 0.3s;
+            padding: 32px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
         .header-section {
             background: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 12px;
-            margin-bottom: 30px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
 
-        .header-left h1 {
-            color: #667eea;
-            font-size: 28px;
-            margin-bottom: 5px;
+        }
+       
+        .header-left h2 {
+            color: #5081BE;
+            margin:0;
         }
 
         .header-left p {
@@ -80,13 +72,15 @@ $maGV = $_SESSION['maGV'] ?? null;
         .header-right .welcome-text {
             color: #666;
             font-size: 14px;
+            font-weight: 500;
             margin-bottom: 10px;
+            margin-top: 8px;
         }
 
         .header-right .user-name {
-            color: #667eea;
+            color: #5081BE;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .stats-grid {
@@ -124,7 +118,7 @@ $maGV = $_SESSION['maGV'] ?? null;
         }
 
         .stat-icon.blue {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5081BE 0%, #2d5a8c 100%);
         }
 
         .stat-icon.green {
@@ -153,7 +147,7 @@ $maGV = $_SESSION['maGV'] ?? null;
 
         .stat-value {
             display: block;
-            color: #667eea;
+            color: #5081BE;
             font-size: 24px;
             font-weight: 700;
             margin-top: 5px;
@@ -191,12 +185,12 @@ $maGV = $_SESSION['maGV'] ?? null;
         }
 
         .card-title i {
-            color: #667eea;
+            color: #5081BE;
             font-size: 20px;
         }
 
         .view-link {
-            color: #667eea;
+            color: #5081BE;
             text-decoration: none;
             font-size: 14px;
             transition: all 0.3s;
@@ -206,7 +200,7 @@ $maGV = $_SESSION['maGV'] ?? null;
         }
 
         .view-link:hover {
-            color: #764ba2;
+            color: #2d5a8c;
             gap: 10px;
         }
 
@@ -229,26 +223,26 @@ $maGV = $_SESSION['maGV'] ?? null;
         }
 
         .quick-link:hover {
-            background: #f0f4ff;
-            color: #667eea;
+            background: #E0F2FC;
+            color: #5081BE;
             padding-left: 17px;
         }
 
         .quick-link i {
             width: 20px;
             text-align: center;
-            color: #667eea;
+            color: #5081BE;
         }
 
         .info-box {
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            background: linear-gradient(135deg, #5081BE15 0%, #2d5a8c15 100%);
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #5081BE;
         }
 
         .info-box h4 {
-            color: #667eea;
+            color: #5081BE;
             margin: 0 0 10px 0;
             font-size: 14px;
         }
@@ -270,11 +264,10 @@ $maGV = $_SESSION['maGV'] ?? null;
                 padding: 15px;
             }
 
-            .header-section {
+            /* .header-section {
                 flex-direction: column;
                 text-align: center;
-                gap: 15px;
-            }
+            } */
 
             .header-right {
                 text-align: center;
@@ -301,7 +294,7 @@ $maGV = $_SESSION['maGV'] ?? null;
             <!-- Header -->
             <div class="header-section">
                 <div class="header-left">
-                    <h1><i class="fas fa-home"></i> Dashboard</h1>
+                    <h2><i class="fas fa-home"></i> Dashboard</h2>
                     <p>Chào mừng bạn trở lại</p>
                 </div>
                 <div class="header-right">

@@ -47,44 +47,34 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách lớp - Giáo viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
-            
+            height: 100vh;
+            overflow: hidden;
         }
 
         .content-area {
-            margin-left: 250px;
             flex: 1;
-            padding: 30px;
-            transition: margin-left 0.3s;
+            padding: 32px;
+            overflow-y: auto;
         }
 
         .header {
             background: white;
-            padding: 25px 30px;
+            padding: 24px;
             border-radius: 12px;
-            margin-bottom: 30px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header h1 {
             font-size: 26px;
             font-weight: 600;
-            color: #667eea;
+            color: #5081BE;
+            margin: 0;
         }
 
         .nav-tabs {
@@ -100,21 +90,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             border: none;
             border-radius: 8px;
             text-decoration: none;
-            color: #667eea;
+            color: #5081BE;
             font-weight: 500;
             transition: all 0.3s;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
         .nav-tab:hover {
-            background: #667eea;
+            background: #5081BE;
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 10px rgba(80, 129, 190, 0.3);
         }
 
         .nav-tab.active {
-            background: #667eea;
+            background: #5081BE;
             color: white;
         }
 
