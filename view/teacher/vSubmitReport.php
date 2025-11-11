@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: ../../public/index.php");
@@ -9,36 +13,32 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nộp báo cáo - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
     <style>
         * {
             margin: 0;
-            padding: 0;
             box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
         }
 
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            width: 100%;
         }
 
         .content-area {
             flex: 1;
-            margin-left: 250px;
-            padding: 20px;
+            padding: 32px;
             overflow-y: auto;
+            overflow-x: hidden;
+            height: 100vh;
         }
 
         .container {
@@ -48,13 +48,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .header {
             background: white;
-            padding: 20px 30px;
+            padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header h1 {
@@ -90,9 +88,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .upload-section {
             background: white;
             border-radius: 12px;
-            padding: 30px;
+            padding: 32px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
 
         .section-title {
@@ -131,8 +129,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+            border-color: #5081BE;
+            box-shadow: 0 0 0 2px rgba(80, 129, 190, 0.1);
         }
 
         .form-group textarea {
@@ -150,18 +148,18 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .file-upload:hover {
-            border-color: #667eea;
+            border-color: #5081BE;
             background: #f8f9fa;
         }
 
         .file-upload.dragover {
-            border-color: #667eea;
+            border-color: #5081BE;
             background: #e3f2fd;
         }
 
         .file-upload-icon {
             font-size: 48px;
-            color: #667eea;
+            color: #5081BE;
             margin-bottom: 15px;
         }
 
@@ -171,7 +169,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .file-upload-button {
-            background: #667eea;
+            background: #5081BE;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -311,10 +309,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
     </style>
 </head>
+
 <body>
     <div class="main-wrapper">
         <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
-        
+
         <div class="content-area">
             <div class="container">
                 <div class="header">
@@ -378,8 +377,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <form action="../../controller/cReport.php?action=submit" method="POST" enctype="multipart/form-data" id="uploadForm">
                         <div class="form-group">
                             <label for="tenBaoCao">Tên báo cáo <span class="required">*</span></label>
-                            <input type="text" id="tenBaoCao" name="tenBaoCao" required 
-                                   placeholder="Nhập tên báo cáo">
+                            <input type="text" id="tenBaoCao" name="tenBaoCao" required
+                                placeholder="Nhập tên báo cáo">
                         </div>
 
                         <div class="form-group">
@@ -423,8 +422,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                         <div class="form-group">
                             <label for="moTa">Mô tả báo cáo</label>
-                            <textarea id="moTa" name="moTa" 
-                                      placeholder="Mô tả chi tiết nội dung báo cáo, mục đích và những điểm quan trọng cần lưu ý..."></textarea>
+                            <textarea id="moTa" name="moTa"
+                                placeholder="Mô tả chi tiết nội dung báo cáo, mục đích và những điểm quan trọng cần lưu ý..."></textarea>
                         </div>
 
                         <div class="form-group">
@@ -440,9 +439,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                     <i class="fas fa-folder-open"></i>
                                     Chọn file
                                 </button>
-                                <input type="file" id="fileBaoCao" name="fileBaoCao" 
-                                       accept=".pdf,.doc,.docx,.xls,.xlsx" 
-                                       style="display: none;" required>
+                                <input type="file" id="fileBaoCao" name="fileBaoCao"
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                    style="display: none;" required>
                             </div>
                             <div class="file-info" id="fileInfo">
                                 <div class="file-name" id="fileName"></div>
@@ -493,7 +492,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         fileUpload.addEventListener('drop', function(e) {
             e.preventDefault();
             fileUpload.classList.remove('dragover');
-            
+
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 fileInput.files = files;
@@ -557,9 +556,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const hocKy = document.getElementById('hocKy').value;
             const namHoc = document.getElementById('namHoc').value;
             const loai = this.value;
-            
+
             let tenBaoCao = '';
-            switch(loai) {
+            switch (loai) {
                 case 'hoc-tap':
                     tenBaoCao = `Báo cáo kết quả học tập HK${hocKy} ${namHoc}`;
                     break;
@@ -582,13 +581,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     tenBaoCao = `Thống kê số liệu học sinh HK${hocKy} ${namHoc}`;
                     break;
             }
-            
+
             if (tenBaoCao && !document.getElementById('tenBaoCao').value.trim()) {
                 document.getElementById('tenBaoCao').value = tenBaoCao;
             }
         });
     </script>
 </body>
+
 </html>
 </body>
+
 </html>

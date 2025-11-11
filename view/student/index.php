@@ -11,44 +11,55 @@ $model = new mStudent();
 $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
 
 if (!$info) {
-  echo "<p style='color: red;'>Không tìm thấy thông tin học sinh. Vui lòng liên hệ quản trị viên.</p>";
+  echo "<p class='error-message'>Không tìm thấy thông tin học sinh. Vui lòng liên hệ quản trị viên.</p>";
   exit;
 }
-
-$pageTitle = "Trang chủ học sinh";
 ?>
 
-<?php include_once('../layouts/header.php'); ?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ học sinh</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateStudent.php'); ?>
 
-<header>
-  <h3>Xin chào học sinh, <strong><?= htmlspecialchars($info['hoTen']) ?></strong></h3>
-  <a href="../../public/logout.php" class="logout-btn">
-    <i class="fas fa-sign-out-alt"></i>
-    Đăng xuất
-  </a>
-</header>
+        <!-- Main Content -->
+        <div class="content-area">
+            <?php
+                $page = $_GET['page'] ?? 'timeTable';
+                if($page == 'grades'){
+                    include_once('grades.php');
+                }elseif($page == 'classification'){
+                    include_once('classification.php');
+                }else{
+                    include_once('timeTable.php');
+                }
+            ?>
+        </div>
+    </div>
 
-<div class="container">
-  <!-- Sidebar -->
-  <div class="sidebar-container">
-    <?php include('../layouts/navigate/navigateStudent.php'); ?>
-  </div>
+    <script>
+        // Menu toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggle = document.getElementById('navbarToggle');
+            const studentNavbar = document.querySelector('.student-navbar');
+            const contentArea = document.querySelector('.content-area');
 
-  <!-- Main content -->
-  <div class="main" id="content-right">
-   <?php
-      $page = $_GET['page'] ?? 'timeTable';
-      if($page == 'grades'){
-        include_once('grades.php');
-      }elseif($page == 'yearGrades'){
-        include_once('yearGrades.php');
-      }elseif($page == 'classification'){
-        include_once('classification.php');
-      }else{
-        include_once('timeTable.php');
-      }
-    ?>
-  </div>
-</div>
-
-<?php include_once('../layouts/footer.php'); ?>
+            if (navbarToggle && studentNavbar) {
+                navbarToggle.addEventListener('click', function() {
+                    studentNavbar.style.transform = studentNavbar.style.transform === 'translateX(-250px)' 
+                        ? 'translateX(0)' 
+                        : 'translateX(-250px)';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

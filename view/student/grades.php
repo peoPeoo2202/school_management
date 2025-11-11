@@ -14,7 +14,7 @@ $model = new mStudent();
 $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
 
 if (!$info) {
-    echo "<p style='color: red;'>Không tìm thấy thông tin học sinh.</p>";
+    echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
     exit;
 }
 
@@ -38,203 +38,98 @@ if ($hocKy === 'canam') {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kết quả học tập</title>
-    <style>
-        .grades-container {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+<div class="grades-container">
+    <div class="grades-header">
+        <h2>Kết quả học tập</h2>
         
-        .grades-header {
-            margin-bottom: 25px;
-        }
-        
-        .grades-header h2 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        
-        .filter-form {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .filter-form label {
-            font-weight: 500;
-            color: #555;
-        }
-        
-        .filter-form select {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            min-width: 150px;
-        }
-        
-        .filter-form button {
-            padding: 8px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .filter-form button:hover {
-            background: #0056b3;
-        }
-        
-        .grades-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        
-        .grades-table th,
-        .grades-table td {
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #ddd;
-        }
-        
-        .grades-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .grades-table td:first-child {
-            text-align: left;
-            font-weight: 500;
-        }
-        
-        .grades-table tr:hover {
-            background: #f5f5f5;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 16px;
-        }
-        
-        .no-data i {
-            font-size: 48px;
-            color: #ddd;
-            margin-bottom: 15px;
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div class="grades-container">
-        <div class="grades-header">
-            <h2>Kết quả học tập</h2>
+        <form method="GET" action="" class="filter-form">
+            <input type="hidden" name="page" value="grades">
             
-            <form method="GET" action="" class="filter-form">
-                <input type="hidden" name="page" value="grades">
-                
-                <label>Năm học:</label>
-                <select name="namHoc" id="namHoc">
-                    <?php foreach ($availableYears as $year): ?>
-                        <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
-                            <?= $year ?>
+            <label>Năm học:</label>
+            <select name="namHoc" id="namHoc">
+                <?php foreach ($availableYears as $year): ?>
+                    <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
+                        <?= $year ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            
+            <label>Học kỳ:</label>
+            <select name="hocKy" id="hocKy">
+                <?php foreach ($semesters as $semester): ?>
+                    <?php if ($semester === 'canam'): ?>
+                        <option value="canam" <?= $hocKy === 'canam' ? 'selected' : '' ?>>
+                            Cả năm
                         </option>
-                    <?php endforeach; ?>
-                </select>
-                
-                <label>Học kỳ:</label>
-                <select name="hocKy" id="hocKy">
-                    <?php foreach ($semesters as $semester): ?>
-                        <?php if ($semester === 'canam'): ?>
-                            <option value="canam" <?= $hocKy === 'canam' ? 'selected' : '' ?>>
-                                Cả năm
-                            </option>
-                        <?php else: ?>
-                            <option value="<?= $semester ?>" <?= $hocKy == $semester ? 'selected' : '' ?>>
-                                Học kỳ <?= $semester ?>
-                            </option>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </select>
-                
-                <button type="submit">Xem điểm</button>
-            </form>
-        </div>
-
-        <?php if (empty($grades)): ?>
-            <div class="no-data">
-                <i class="fas fa-inbox"></i>
-                <p>Không có dữ liệu điểm cho <?= $hocKy === 'canam' ? 'cả năm' : 'học kỳ ' . $hocKy ?> năm học <?= $namHoc ?></p>
-            </div>
-        <?php else: ?>
-            <?php if ($hocKy === 'canam'): ?>
-                <!-- Bảng điểm cả năm - 3 cột: Môn học | Học kỳ 1 | Học kỳ 2 -->
-                <table class="grades-table">
-                    <thead>
-                        <tr>
-                            <th>Môn học</th>
-                            <th>Học kỳ 1</th>
-                            <th>Học kỳ 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($grades as $grade): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
-                                <td><?= $grade['hocKy1'] !== null ? number_format($grade['hocKy1'], 2) : '-' ?></td>
-                                <td><?= $grade['hocKy2'] !== null ? number_format($grade['hocKy2'], 2) : '-' ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <!-- Bảng điểm theo học kỳ - Hiển thị đầy đủ các loại điểm -->
-                <table class="grades-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Môn học</th>
-                            <th>Điểm miệng</th>
-                            <th>Điểm 15 phút</th>
-                            <th>Điểm 1 tiết</th>
-                            <th>Điểm giữa kỳ</th>
-                            <th>Điểm cuối kỳ</th>
-                            <th>Điểm trung bình</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $stt = 1; ?>
-                        <?php foreach ($grades as $grade): ?>
-                            <tr>
-                                <td><?= $stt++ ?></td>
-                                <td style="text-align: left;"><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
-                                <td><?= $grade['diemMieng'] ?? '-' ?></td>
-                                <td><?= $grade['diem15Phut'] ?? '-' ?></td>
-                                <td><?= $grade['diem1Tiet'] ?? '-' ?></td>
-                                <td><?= $grade['diemGiuaKy'] ?? '-' ?></td>
-                                <td><?= $grade['diemCuoiKy'] ?? '-' ?></td>
-                                <td><strong><?= number_format($grade['diemTB'], 2) ?></strong></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        <?php endif; ?>
+                    <?php else: ?>
+                        <option value="<?= $semester ?>" <?= $hocKy == $semester ? 'selected' : '' ?>>
+                            Học kỳ <?= $semester ?>
+                        </option>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </select>
+            
+            <button type="submit">Xem điểm</button>
+        </form>
     </div>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</body>
-</html>
+    <?php if (empty($grades)): ?>
+        <div class="no-data">
+            <i class="fas fa-inbox"></i>
+            <p>Không có dữ liệu điểm cho <?= $hocKy === 'canam' ? 'cả năm' : 'học kỳ ' . $hocKy ?> năm học <?= $namHoc ?></p>
+        </div>
+    <?php else: ?>
+        <?php if ($hocKy === 'canam'): ?>
+            <!-- Bảng điểm cả năm - 3 cột: Môn học | Học kỳ 1 | Học kỳ 2 -->
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Môn học</th>
+                        <th>Học kỳ 1</th>
+                        <th>Học kỳ 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($grades as $grade): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
+                            <td><?= $grade['hocKy1'] !== null ? number_format($grade['hocKy1'], 2) : '-' ?></td>
+                            <td><?= $grade['hocKy2'] !== null ? number_format($grade['hocKy2'], 2) : '-' ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <!-- Bảng điểm theo học kỳ - Hiển thị đầy đủ các loại điểm -->
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Môn học</th>
+                        <th>Điểm miệng</th>
+                        <th>Điểm 15 phút</th>
+                        <th>Điểm 1 tiết</th>
+                        <th>Điểm giữa kỳ</th>
+                        <th>Điểm cuối kỳ</th>
+                        <th>Điểm trung bình</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $stt = 1; ?>
+                    <?php foreach ($grades as $grade): ?>
+                        <tr>
+                            <td><?= $stt++ ?></td>
+                            <td class="subject-name"><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
+                            <td><?= $grade['diemMieng'] ?? '-' ?></td>
+                            <td><?= $grade['diem15Phut'] ?? '-' ?></td>
+                            <td><?= $grade['diem1Tiet'] ?? '-' ?></td>
+                            <td><?= $grade['diemGiuaKy'] ?? '-' ?></td>
+                            <td><?= $grade['diemCuoiKy'] ?? '-' ?></td>
+                            <td><strong><?= number_format($grade['diemTB'], 2) ?></strong></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>

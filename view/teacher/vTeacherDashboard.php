@@ -22,40 +22,31 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Giáo viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
         * {
             margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
         .main-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .content-area {
             flex: 1;
-            margin-left: 250px;
-            padding: 20px;
+            padding: 16px 8px;
             overflow-y: auto;
         }
 
         .header {
             background: white;
-            color: #333;
-            padding: 20px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 24px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+            font-size: 14px;
         }
 
         .header-content {
@@ -132,21 +123,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             border: none;
             border-radius: 8px;
             text-decoration: none;
-            color: #667eea;
+            color: #5081BE;
             font-weight: 500;
             transition: all 0.3s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .nav-tab:hover {
-            background: #667eea;
+            background: #5081BE;
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(102,126,234,0.3);
         }
 
         .nav-tab.active {
-            background: #667eea;
+            background: #5081BE;
             color: white;
         }
 
@@ -184,7 +175,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             color: white;
         }
 
-        .stat-icon.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-icon.blue { background: linear-gradient(135deg, #5081BE 0%, #2d5a8c 100%); }
         .stat-icon.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
         .stat-icon.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
         .stat-icon.purple { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
@@ -234,7 +225,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .view-all-link {
-            color: #667eea;
+            color: #5081BE;
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
@@ -247,7 +238,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .schedule-item, .exam-item, .grading-item {
             padding: 15px;
             margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #5081BE;
             background: #f8f9ff;
             border-radius: 5px;
         }
@@ -269,7 +260,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .item-time {
-            color: #667eea;
+            color: #5081BE;
             font-weight: 500;
             font-size: 14px;
         }
@@ -317,7 +308,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, #5081BE 0%, #2d5a8c 100%);
             transition: width 0.3s ease;
         }
 

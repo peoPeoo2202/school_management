@@ -132,24 +132,23 @@ $maGV = $_SESSION['maGV'] ?? '';
 <style>
     .teacher-navbar {
         width: 250px;
-        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        background: linear-gradient(180deg, #2d5a8c 0%, #5081BE 100%);
         color: white;
         padding: 0;
-        position: fixed;
-        left: 0;
-        top: 0;
+        position: relative;
         height: 100vh;
         overflow-y: auto;
         z-index: 1000;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
+        flex-shrink: 0;
     }
 
     .navbar-header {
         padding: 20px;
-        background: #1a252f;
-        border-bottom: 2px solid #667eea;
+        background: #1a2f42;
+        border-bottom: 2px solid #5081BE;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -158,7 +157,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     .navbar-header h2 {
         margin: 0;
         font-size: 18px;
-        color: #667eea;
+        color: #5081BE;
     }
 
     .navbar-toggle {
@@ -172,7 +171,8 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .navbar-user {
         padding: 8px;
-        border-bottom: 1px solid #2c3e50;
+        border-bottom: 1px solid #1a2f42;
+        background: rgba(80, 129, 190, 0.1);
         display: flex;
         align-items: center;
         gap: 12px;
@@ -180,7 +180,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .user-avatar {
         font-size: 40px;
-        color: #667eea;
+        color: #1a2f42;
     }
 
     .user-details {
@@ -189,8 +189,9 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .user-name {
         margin: 0;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 14px;
+        color: white;
     }
 
     .user-role {
@@ -207,36 +208,37 @@ $maGV = $_SESSION['maGV'] ?? '';
         overflow-y: auto;
     }
 
-    .navbar-menu > li {
+    .navbar-menu>li {
         margin: 0;
     }
 
     .menu-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px 20px;
+        gap: 8px;
+        padding: 8px 16px;
         text-decoration: none;
-        color: #ecf0f1;
+        color: #d4dce6;
         transition: all 0.3s;
         position: relative;
         font-size: 16px;
     }
 
     .menu-item i:first-child {
-        width: 20px;
+        min-width: 20px;
         text-align: center;
     }
 
     .menu-item:hover {
-        background: rgba(102, 126, 234, 0.2);
-        padding-left: 25px;
+        background: rgba(80, 129, 190, 0.2);
+        padding-left: 24px;
+        color: white;
     }
 
     .menu-item.active {
-        background: #667eea;
+        background: #5081BE;
         color: white;
-        border-left: 4px solid #764ba2;
+        border-left: 4px solid #7EBADA;
         padding-left: 16px;
     }
 
@@ -270,10 +272,10 @@ $maGV = $_SESSION['maGV'] ?? '';
     .submenu-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 16px 16px 8px 40px;
+        gap: 8px;
+        padding: 16px 16px 8px 30px;
         text-decoration: none;
-        color: #bdc3c7;
+        color: #a8b4c6;
         transition: all 0.3s;
         font-size: 14px;
     }
@@ -284,31 +286,33 @@ $maGV = $_SESSION['maGV'] ?? '';
     }
 
     .submenu-item:hover {
-        color: #667eea;
-        padding-left: 55px;
+        color: white;
+        padding-left: 42px;
     }
 
     .navbar-footer {
         padding: 15px 20px;
         margin-top: auto;
-        border-top: 1px solid #2c3e50;
-        background: #1a252f;
+        border-top: 2px solid #7EBADA;
+        background: #1a2f42;
     }
 
     .logout-link {
         display: flex;
         align-items: center;
         gap: 10px;
-        color: #e74c3c;
+        color: #CADEFA;
         text-decoration: none;
         transition: all 0.3s;
         padding: 10px;
         border-radius: 6px;
+        border-left: 3px solid transparent;
     }
 
     .logout-link:hover {
-        background: rgba(231, 76, 60, 0.1);
-        color: #c0392b;
+        background: rgba(126, 186, 218, 0.2);
+        color: #E0F2FC;
+        border-left: 3px solid #7EBADA;
     }
 
     /* Scrollbar */
@@ -348,7 +352,7 @@ $maGV = $_SESSION['maGV'] ?? '';
                 e.preventDefault();
                 const submenuId = this.dataset.submenu + '-submenu';
                 const submenu = document.getElementById(submenuId);
-                
+
                 this.classList.toggle('open');
                 submenu.classList.toggle('open');
             });
