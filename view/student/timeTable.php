@@ -134,9 +134,6 @@ while ($row = $schedule->fetch_assoc()) {
           <?php
           for ($tiet = 1; $tiet <= 5; $tiet++) {
             echo "<tr>";
-            // echo "<td class='tiet-cell'>";
-            // echo $buoi === 'sang' ? 'Sáng' : 'Chiều';
-            // echo "</td>";
             if ($tiet === 1) {
               echo "<td class='buoi-cell' rowspan='5'>" . $buoiNames[$buoi] . "</td>";
             }
