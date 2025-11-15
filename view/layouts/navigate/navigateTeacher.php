@@ -1,12 +1,15 @@
 <?php
+// Load config
+require_once(__DIR__ . '/../../../config.php');
+
 // Kiểm tra session
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
+    header("Location: " . url('public/index.php'));
     exit();
 }
 
 if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
+    header("Location: " . url('public/index.php?error=access_denied'));
     exit();
 }
 
@@ -35,7 +38,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     <ul class="navbar-menu">
         <!-- Dashboard -->
         <li>
-            <a href="../../view/teacher/dashboard.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/dashboard.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
@@ -43,7 +46,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Lịch dạy -->
         <li>
-            <a href="../../controller/cTeachingSchedule.php?action=dashboard" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'cTeachingSchedule.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('controller/cTeachingSchedule.php?action=dashboard'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'cTeachingSchedule.php') ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-alt"></i>
                 <span>Lịch dạy</span>
             </a>
@@ -51,7 +54,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Danh sách lớp -->
         <li>
-            <a href="../../view/teacher/vClassList.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vClassList.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
                 <i class="fas fa-list"></i>
                 <span>Danh sách lớp</span>
             </a>
@@ -59,7 +62,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Phân công coi thi -->
         <li>
-            <a href="../../view/teacher/vExamSupervision.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>">
                 <i class="fas fa-eye"></i>
                 <span>Phân công coi thi</span>
             </a>
@@ -67,7 +70,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Phân công chấm điểm -->
         <li>
-            <a href="../../view/teacher/vGradingAssignment.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vGradingAssignment.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>">
                 <i class="fas fa-pen-square"></i>
                 <span>Phân công chấm điểm</span>
             </a>
@@ -82,37 +85,37 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
             <ul class="submenu" id="reports-submenu">
                 <li>
-                    <a href="../../controller/cReport.php?action=academic" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'academic') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=academic'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'academic') ? 'active' : ''; ?>">
                         <i class="fas fa-book"></i>
                         <span>Báo cáo kết quả học tập</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=attendance" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'attendance') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=attendance'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'attendance') ? 'active' : ''; ?>">
                         <i class="fas fa-clipboard-check"></i>
                         <span>Báo cáo chuyên cần</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=teaching" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'teaching') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=teaching'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'teaching') ? 'active' : ''; ?>">
                         <i class="fas fa-chalkboard"></i>
                         <span>Báo cáo giảng dạy</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=grade_stats" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'grade_stats') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=grade_stats'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'grade_stats') ? 'active' : ''; ?>">
                         <i class="fas fa-chart-line"></i>
                         <span>Thống kê điểm môn học</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=student_stats" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'student_stats') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=student_stats'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'student_stats') ? 'active' : ''; ?>">
                         <i class="fas fa-users"></i>
                         <span>Thống kê học sinh</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=submit" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'submit') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=submit'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'submit') ? 'active' : ''; ?>">
                         <i class="fas fa-upload"></i>
                         <span>Nộp báo cáo</span>
                     </a>
@@ -122,7 +125,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     </ul>
 
     <div class="navbar-footer">
-        <a href="../../public/logout.php" class="logout-link">
+        <a href="<?php echo url('public/logout.php'); ?>" class="logout-link">
             <i class="fas fa-sign-out-alt"></i>
             <span>Đăng xuất</span>
         </a>

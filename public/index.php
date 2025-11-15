@@ -72,8 +72,8 @@ if (isset($_POST["btnSub"])) {
                 header("Location: ../view/teacher/index.php");
                 exit();
             case 'bangiamhieu':
-                // Sửa lại đúng đường dẫn
-                header("Location: ../view/student/index.php"); 
+                // Điều hướng đến trang BGH
+                header("Location: ../view/bgh/index.php"); 
                 exit();
             default:
                 // Điều hướng về trang login nếu có lỗi

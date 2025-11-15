@@ -1,15 +1,18 @@
 <?php
 session_start();
 
+// Load config
+require_once(__DIR__ . '/../../config.php');
+
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
+    header("Location: " . url('public/index.php'));
     exit();
 }
 
 // Kiểm tra quyền giáo viên
 if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
+    header("Location: " . url('public/index.php?error=access_denied'));
     exit();
 }
 
@@ -363,19 +366,19 @@ $maGV = $_SESSION['maGV'] ?? null;
                         </a>
                     </div>
                     <div class="quick-links">
-                        <a href="../../controller/cTeachingSchedule.php?action=dashboard" class="quick-link">
+                        <a href="<?php echo url('controller/cTeachingSchedule.php?action=dashboard'); ?>" class="quick-link">
                             <i class="fas fa-calendar-alt"></i>
                             <span>Tra cứu Lịch dạy</span>
                         </a>
-                        <a href="../../view/teacher/vClassList.php" class="quick-link">
+                        <a href="<?php echo url('view/teacher/vClassList.php'); ?>" class="quick-link">
                             <i class="fas fa-list"></i>
                             <span>Danh sách lớp</span>
                         </a>
-                        <a href="../../controller/cReport.php" class="quick-link">
+                        <a href="<?php echo url('controller/cReport.php'); ?>" class="quick-link">
                             <i class="fas fa-chart-bar"></i>
                             <span>Báo cáo & Thống kê</span>
                         </a>
-                        <a href="../../view/teacher/vExamSupervision.php" class="quick-link">
+                        <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="quick-link">
                             <i class="fas fa-eye"></i>
                             <span>Phân công coi thi</span>
                         </a>
@@ -388,24 +391,24 @@ $maGV = $_SESSION['maGV'] ?? null;
                         <h2 class="card-title">
                             <i class="fas fa-chart-bar"></i> Báo cáo & Thống kê
                         </h2>
-                        <a href="../../controller/cReport.php" class="view-link">
+                        <a href="<?php echo url('controller/cReport.php'); ?>" class="view-link">
                             Xem tất cả <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                     <div class="quick-links">
-                        <a href="../../controller/cReport.php?action=academic" class="quick-link">
+                        <a href="<?php echo url('controller/cReport.php?action=academic'); ?>" class="quick-link">
                             <i class="fas fa-book"></i>
                             <span>Báo cáo kết quả học tập</span>
                         </a>
-                        <a href="../../controller/cReport.php?action=attendance" class="quick-link">
+                        <a href="<?php echo url('controller/cReport.php?action=attendance'); ?>" class="quick-link">
                             <i class="fas fa-clipboard-check"></i>
                             <span>Báo cáo chuyên cần</span>
                         </a>
-                        <a href="../../controller/cReport.php?action=teaching" class="quick-link">
+                        <a href="<?php echo url('controller/cReport.php?action=teaching'); ?>" class="quick-link">
                             <i class="fas fa-chalkboard"></i>
                             <span>Báo cáo giảng dạy</span>
                         </a>
-                        <a href="../../controller/cReport.php?action=grade_stats" class="quick-link">
+                        <a href="<?php echo url('controller/cReport.php?action=grade_stats'); ?>" class="quick-link">
                             <i class="fas fa-chart-line"></i>
                             <span>Thống kê điểm môn học</span>
                         </a>

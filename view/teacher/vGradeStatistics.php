@@ -640,6 +640,117 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 });
                             });
                         </script>
+                    </div>
+                    
+                    <div class="grade-bar">
+                        <div class="grade-label">Khá (6.5 - 7.9)</div>
+                        <div class="bar-container">
+                            <div class="bar good" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSKha'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                <?php echo $row['soHSKha']; ?>
+                            </div>
+                        </div>
+                        <div class="grade-count">
+                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSKha'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                        </div>
+                    </div>
+                    
+                    <div class="grade-bar">
+                        <div class="grade-label">TB (5.0 - 6.4)</div>
+                        <div class="bar-container">
+                            <div class="bar average" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSTB'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                <?php echo $row['soHSTB']; ?>
+                            </div>
+                        </div>
+                        <div class="grade-count">
+                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSTB'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                        </div>
+                    </div>
+                    
+                    <div class="grade-bar">
+                        <div class="grade-label">Yếu (< 5.0)</div>
+                        <div class="bar-container">
+                            <div class="bar weak" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSYeu'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                <?php echo $row['soHSYeu']; ?>
+                            </div>
+                        </div>
+                        <div class="grade-count">
+                            <?php echo $row['soHocSinh'] > 0 ? round($row['soHSYeu'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Danh sách học sinh -->
+            <?php if (!empty($danhSachHocSinh)): ?>
+            <div class="report-section" style="margin-top: 30px;">
+                <div class="report-header">
+                    <h3>
+                        <i class="fas fa-users"></i>
+                        Danh sách học sinh
+                    </h3>
+                </div>
+                <div class="table-container">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã HS</th>
+                                <th>Họ và tên</th>
+                                <th>Lớp</th>
+                                <th>Điểm TB môn</th>
+                                <th>Xếp loại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $stt = 1;
+                            foreach ($danhSachHocSinh as $hs): 
+                                // Xác định màu sắc theo xếp loại
+                                $mauXepLoai = '';
+                                switch($hs['xepLoai']) {
+                                    case 'Giỏi':
+                                        $mauXepLoai = 'color: #28a745; font-weight: 600;';
+                                        break;
+                                    case 'Khá':
+                                        $mauXepLoai = 'color: #17a2b8; font-weight: 600;';
+                                        break;
+                                    case 'Trung bình':
+                                        $mauXepLoai = 'color: #ffc107; font-weight: 600;';
+                                        break;
+                                    case 'Yếu':
+                                        $mauXepLoai = 'color: #dc3545; font-weight: 600;';
+                                        break;
+                                }
+                            ?>
+                            <tr>
+                                <td><?php echo $stt++; ?></td>
+                                <td><?php echo $hs['maHS']; ?></td>
+                                <td style="text-align: left; padding-left: 15px;"><?php echo htmlspecialchars($hs['tenHocSinh']); ?></td>
+                                <td><?php echo htmlspecialchars($hs['tenLop']); ?></td>
+                                <td><strong><?php echo number_format($hs['diemTBMon'], 2); ?></strong></td>
+                                <td><span style="<?php echo $mauXepLoai; ?>"><?php echo $hs['xepLoai']; ?></span></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <?php endforeach; ?>
+        <?php elseif ($showResults && empty($duLieuBaoCao)): ?>
+            <div class="no-data">
+                <i class="fas fa-chart-line"></i><br><br>
+                Không có dữ liệu thống kê cho môn học đã chọn.<br>
+                Vui lòng kiểm tra lại môn học, lớp, học kỳ và năm học.
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <script>
+        // Optional: You can add any additional JavaScript functionality here
+        // No auto-submit - user must click "Xem thống kê" button
+    </script>
 </body>
 
 </html>
