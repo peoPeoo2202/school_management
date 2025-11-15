@@ -532,7 +532,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         // Form validation
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            const requiredFields = ['tenBaoCao', 'loaiBaoCao', 'hocKy', 'namHoc', 'fileBaoCao'];
+            const requiredFields = ['tenBaoCao', 'loaiBaoCao', 'fileBaoCao'];
             let isValid = true;
 
             requiredFields.forEach(function(fieldName) {
@@ -551,34 +551,37 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             }
         });
 
-        // Auto generate report name based on type and semester
+        // Auto generate report name based on type
         document.getElementById('loaiBaoCao').addEventListener('change', function() {
-            const hocKy = document.getElementById('hocKy').value;
-            const namHoc = document.getElementById('namHoc').value;
             const loai = this.value;
-
+            const currentDate = new Date();
+            const dateStr = currentDate.toLocaleDateString('vi-VN');
+            
             let tenBaoCao = '';
             switch (loai) {
                 case 'hoc-tap':
-                    tenBaoCao = `Báo cáo kết quả học tập HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Báo cáo kết quả học tập - ${dateStr}`;
                     break;
                 case 'chuyen-can':
-                    tenBaoCao = `Báo cáo chuyên cần HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Báo cáo chuyên cần - ${dateStr}`;
                     break;
                 case 'giang-day':
-                    tenBaoCao = `Báo cáo giảng dạy HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Báo cáo giảng dạy - ${dateStr}`;
                     break;
                 case 'tong-hop':
-                    tenBaoCao = `Báo cáo tổng hợp HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Báo cáo tổng hợp - ${dateStr}`;
                     break;
                 case 'danh-gia':
-                    tenBaoCao = `Báo cáo đánh giá HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Báo cáo đánh giá - ${dateStr}`;
                     break;
                 case 'thong-ke-diem':
-                    tenBaoCao = `Thống kê điểm môn học HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Thống kê điểm môn học - ${dateStr}`;
                     break;
                 case 'thong-ke-hoc-sinh':
-                    tenBaoCao = `Thống kê số liệu học sinh HK${hocKy} ${namHoc}`;
+                    tenBaoCao = `Thống kê số liệu học sinh - ${dateStr}`;
+                    break;
+                case 'khac':
+                    tenBaoCao = `Báo cáo khác - ${dateStr}`;
                     break;
             }
 

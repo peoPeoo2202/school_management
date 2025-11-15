@@ -244,6 +244,41 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #f8f9fa;
         }
 
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .file-link:hover {
+            color: #5a6fd8;
+            text-decoration: underline;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #218838;
+            color: white;
+        }
+
         .alert {
             padding: 15px;
             border-radius: 6px;
@@ -463,6 +498,192 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
             <?php endif; ?>
         </div>
+
+        <a href="../view/teacher" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại trang chủ
+        </a>
+
+        <?php if (isset($_GET['success'])): ?>
+            <div class="alert alert-success">
+                <?php
+                switch ($_GET['success']) {
+                    case 'upload_success':
+                        echo '<i class="fas fa-check-circle"></i> Nộp báo cáo thành công!';
+                        break;
+                    default:
+                        echo '<i class="fas fa-check-circle"></i> Thao tác thành công!';
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['error'])): ?>
+            <div class="alert alert-error">
+                <?php
+                switch ($_GET['error']) {
+                    case 'upload_failed':
+                        echo '<i class="fas fa-exclamation-circle"></i> Lỗi upload file!';
+                        break;
+                    case 'save_failed':
+                        echo '<i class="fas fa-exclamation-circle"></i> Lỗi lưu báo cáo!';
+                        break;
+                    case 'no_file':
+                        echo '<i class="fas fa-exclamation-circle"></i> Vui lòng chọn file báo cáo!';
+                        break;
+                    case 'invalid_file':
+                        echo '<i class="fas fa-exclamation-circle"></i> File không hợp lệ!';
+                        break;
+                    case 'file_not_found':
+                        echo '<i class="fas fa-exclamation-circle"></i> Không tìm thấy báo cáo!';
+                        break;
+                    case 'file_not_exists':
+                        echo '<i class="fas fa-exclamation-circle"></i> File không tồn tại trên hệ thống!';
+                        break;
+                    default:
+                        echo '<i class="fas fa-exclamation-circle"></i> Có lỗi xảy ra!';
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="reports-grid">
+            <div class="report-card" onclick="location.href='cReport.php?action=hoc-tap'">
+                <div class="report-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="report-title">Báo cáo kết quả học tập</div>
+                <div class="report-description">
+                    Xem kết quả học tập của học sinh theo môn học, lớp và học kỳ
+                </div>
+                <a href="cReport.php?action=hoc-tap" class="report-button">Xem báo cáo</a>
+            </div>
+
+            <div class="report-card" onclick="location.href='cReport.php?action=chuyen-can'">
+                <div class="report-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="report-title">Báo cáo chuyên cần</div>
+                <div class="report-description">
+                    Thống kê tình hình chuyên cần và hạnh kiểm của học sinh
+                </div>
+                <a href="cReport.php?action=chuyen-can" class="report-button">Xem báo cáo</a>
+            </div>
+
+            <div class="report-card" onclick="location.href='cReport.php?action=giang-day'">
+                <div class="report-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="report-title">Báo cáo giảng dạy</div>
+                <div class="report-description">
+                    Tổng hợp lịch giảng dạy và tình hình bài tập của giáo viên
+                </div>
+                <a href="cReport.php?action=giang-day" class="report-button">Xem báo cáo</a>
+            </div>
+
+            <div class="report-card" onclick="location.href='cReport.php?action=thong-ke-diem'">
+                <div class="report-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="report-title">Thống kê điểm môn học</div>
+                <div class="report-description">
+                    Phân tích thống kê điểm số theo từng môn học
+                </div>
+                <a href="cReport.php?action=thong-ke-diem" class="report-button">Xem thống kê</a>
+            </div>
+
+            <div class="report-card" onclick="location.href='cReport.php?action=thong-ke-hoc-sinh'">
+                <div class="report-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="report-title">Thống kê số liệu học sinh</div>
+                <div class="report-description">
+                    Thống kê tổng quát về học sinh theo lớp và xếp loại
+                </div>
+                <a href="cReport.php?action=thong-ke-hoc-sinh" class="report-button">Xem thống kê</a>
+            </div>
+
+            <div class="report-card" onclick="location.href='cReport.php?action=nop-bao-cao'">
+                <div class="report-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="report-title">Nộp báo cáo</div>
+                <div class="report-description">
+                    Tải lên và nộp báo cáo cho ban giám hiệu
+                </div>
+                <a href="cReport.php?action=nop-bao-cao" class="report-button">Nộp báo cáo</a>
+            </div>
+        </div>
+
+        <?php if (!empty($danhSachBaoCaoDaLuu)): ?>
+        <div class="saved-reports">
+            <h3>
+                <i class="fas fa-archive"></i>
+                Báo cáo đã lưu
+            </h3>
+            <table class="reports-table">
+                <thead>
+                    <tr>
+                        <th>Tên báo cáo</th>
+                        <th>Loại</th>
+                        <th>File</th>
+                        <th>Ngày nộp</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($danhSachBaoCaoDaLuu as $baoCao): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($baoCao['tenBaoCao']); ?></td>
+                        <td>
+                            <?php
+                            switch ($baoCao['loaiBaoCao']) {
+                                case 'hoc-tap':
+                                    echo 'Kết quả học tập';
+                                    break;
+                                case 'chuyen-can':
+                                    echo 'Chuyên cần';
+                                    break;
+                                case 'giang-day':
+                                    echo 'Giảng dạy';
+                                    break;
+                                case 'thong-ke-diem':
+                                    echo 'Thống kê điểm';
+                                    break;
+                                case 'thong-ke-hoc-sinh':
+                                    echo 'Thống kê học sinh';
+                                    break;
+                                case 'tong-hop':
+                                    echo 'Tổng hợp';
+                                    break;
+                                case 'danh-gia':
+                                    echo 'Đánh giá';
+                                    break;
+                                default:
+                                    echo htmlspecialchars($baoCao['loaiBaoCao']);
+                            }
+                            ?>
+                        </td>
+                        <td>
+                            <a href="../controller/download.php?id=<?php echo $baoCao['maBaoCao']; ?>" 
+                               class="file-link" title="Tải xuống file">
+                                <i class="fas fa-file-download"></i>
+                                <?php echo htmlspecialchars($baoCao['tenFile']); ?>
+                            </a>
+                        </td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($baoCao['ngayNop'])); ?></td>
+                        <td>
+                            <a href="../controller/download.php?id=<?php echo $baoCao['maBaoCao']; ?>" 
+                               class="action-btn view-btn" title="Tải xuống file">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
     </div>
 
     <script>

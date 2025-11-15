@@ -17,7 +17,17 @@ class mReport {
         }
         
         if (!empty($params)) {
-            $types = str_repeat('s', count($params)); // Assume all strings for simplicity
+            // Tự động phát hiện type của từng parameter
+            $types = '';
+            foreach ($params as $param) {
+                if (is_int($param)) {
+                    $types .= 'i';
+                } elseif (is_float($param)) {
+                    $types .= 'd';
+                } else {
+                    $types .= 's';
+                }
+            }
             mysqli_stmt_bind_param($stmt, $types, ...$params);
         }
         
@@ -45,7 +55,17 @@ class mReport {
         }
         
         if (!empty($params)) {
-            $types = str_repeat('s', count($params)); // Assume all strings for simplicity
+            // Tự động phát hiện type của từng parameter
+            $types = '';
+            foreach ($params as $param) {
+                if (is_int($param)) {
+                    $types .= 'i';
+                } elseif (is_float($param)) {
+                    $types .= 'd';
+                } else {
+                    $types .= 's';
+                }
+            }
             mysqli_stmt_bind_param($stmt, $types, ...$params);
         }
         
@@ -54,7 +74,7 @@ class mReport {
         return $result;
     }
     
-    // Lấy báo cáo kết quả học tập theo môn học
+    // Lấy báo cáo kết quả học tập theo môn học (theo phân công giảng dạy)
     public function getBaoCaoKetQuaHocTap($maGV, $maLop = null, $maMonHoc = null, $hocKy = null, $namHoc = null) {
         $sql = "SELECT 
                     hs.maHS,
@@ -68,16 +88,22 @@ class mReport {
                     AVG(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem END) as diem1tiet,
                     AVG(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem END) as diemGiuaKy,
                     AVG(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem END) as diemCuoiKy,
-                    ((AVG(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem END) * 1) +
-                     (AVG(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem END) * 1) +
-                     (AVG(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem END) * 2) +
-                     (AVG(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem END) * 2) +
-                     (AVG(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem END) * 3)) / 9 as diemTrungBinh
+                    dtb.diemTBMon as diemTrungBinh
                 FROM bangdiem bd
                 JOIN hocsinh hs ON bd.maHS = hs.maHS
                 JOIN lophoc lh ON hs.maLop = lh.maLop
                 JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
-                WHERE bd.maGV = ?";
+                JOIN phancong_giangday pc ON pc.maGV = ? 
+                    AND pc.maLop = lh.maLop 
+                    AND pc.maMonHoc = bd.maMonHoc 
+                    AND pc.hocKy = bd.hocKy 
+                    AND pc.namHoc = bd.namHoc
+                    AND pc.trangThai = 'active'
+                LEFT JOIN diemtrungbinh dtb ON dtb.maHS = hs.maHS 
+                    AND dtb.maMonHoc = bd.maMonHoc 
+                    AND dtb.hocKy = bd.hocKy 
+                    AND dtb.namHoc = bd.namHoc
+                WHERE 1=1";
         
         $params = [$maGV];
         
@@ -106,29 +132,53 @@ class mReport {
     
     // Lấy báo cáo chuyên cần
     public function getBaoCaoChuyenCan($maGV, $maLop = null, $hocKy = null, $namHoc = null) {
+        // Đặt giá trị mặc định cho năm học nếu không có
+        if (!$namHoc) {
+            $namHoc = '2024-2025';
+        }
+        
         $sql = "SELECT 
                     hs.maHS,
                     hs.hoTen as tenHocSinh,
                     lh.tenLop,
-                    COUNT(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 END) as soNghiCoPhep,
-                    COUNT(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 END) as soNghiKhongPhep,
+                    hs.gioiTinh,
+                    hs.ngaySinh,
+                    SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END) as soNghiCoPhep,
+                    SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END) as soNghiKhongPhep,
                     COUNT(nh.maNghiHoc) as tongSoNghi,
-                    hk.tenHanhKiem,
-                    hk.loaiHK
-                FROM hocsinh hs
+                    CASE 
+                        WHEN SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END) = 0 
+                             AND SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END) <= 3 THEN 'Tốt'
+                        WHEN SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END) <= 1 
+                             AND SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END) <= 5 THEN 'Khá'
+                        WHEN SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END) <= 3 
+                             AND SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END) <= 10 THEN 'Trung bình'
+                        ELSE 'Yếu'
+                    END as xepLoaiChuyenCan
+                FROM nghihoc nh
+                JOIN hocsinh hs ON nh.maHS = hs.maHS
                 JOIN lophoc lh ON hs.maLop = lh.maLop
-                LEFT JOIN nghihoc nh ON hs.maHS = nh.maHS
-                LEFT JOIN hanhkiem hk ON hs.maHanhKiem = hk.maHanhKiem
-                WHERE lh.maGV = ?";
+                JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
+                    AND pc.maGV = ? 
+                    AND pc.trangThai = 'active'
+                    AND pc.namHoc = ?
+                WHERE nh.nguoiDuyet IS NOT NULL 
+                    AND nh.namHoc = ?";
         
-        $params = [$maGV];
+        $params = [$maGV, $namHoc, $namHoc];
         
+        // Thêm điều kiện lọc
         if ($maLop) {
             $sql .= " AND hs.maLop = ?";
             $params[] = $maLop;
         }
         
-        $sql .= " GROUP BY hs.maHS
+        if ($hocKy) {
+            $sql .= " AND nh.hocKy = ?";
+            $params[] = $hocKy;
+        }
+        
+        $sql .= " GROUP BY hs.maHS, hs.hoTen, lh.tenLop, hs.gioiTinh, hs.ngaySinh
                   ORDER BY lh.tenLop, hs.hoTen";
         
         return $this->executeQuery($sql, $params);
@@ -173,70 +223,151 @@ class mReport {
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy thống kê điểm môn học
-    public function getThongKeDiemMonHoc($maGV, $maMonHoc, $hocKy = null, $namHoc = null) {
+    // Lấy thống kê điểm môn học (theo phân công giảng dạy)
+    public function getThongKeDiemMonHoc($maGV, $maMonHoc, $hocKy = null, $namHoc = null, $maLop = null) {
         $sql = "SELECT 
                     mh.tenMonHoc,
-                    bd.hocKy,
-                    bd.namHoc,
-                    COUNT(DISTINCT bd.maHS) as soHocSinh,
-                    AVG(bd.diem) as diemTrungBinh,
-                    MAX(bd.diem) as diemCaoNhat,
-                    MIN(bd.diem) as diemThapNhat,
-                    COUNT(CASE WHEN bd.diem >= 8.0 THEN 1 END) as soHSGioi,
-                    COUNT(CASE WHEN bd.diem >= 6.5 AND bd.diem < 8.0 THEN 1 END) as soHSKha,
-                    COUNT(CASE WHEN bd.diem >= 5.0 AND bd.diem < 6.5 THEN 1 END) as soHSTB,
-                    COUNT(CASE WHEN bd.diem < 5.0 THEN 1 END) as soHSYeu
-                FROM bangdiem bd
-                JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
-                WHERE bd.maGV = ? AND bd.maMonHoc = ?";
+                    dtb.hocKy,
+                    dtb.namHoc,
+                    COUNT(DISTINCT dtb.maHS) as soHocSinh,
+                    ROUND(AVG(dtb.diemTBMon), 2) as diemTrungBinh,
+                    MAX(dtb.diemTBMon) as diemCaoNhat,
+                    MIN(dtb.diemTBMon) as diemThapNhat,
+                    COUNT(CASE WHEN dtb.diemTBMon >= 8.0 THEN 1 END) as soHSGioi,
+                    COUNT(CASE WHEN dtb.diemTBMon >= 6.5 AND dtb.diemTBMon < 8.0 THEN 1 END) as soHSKha,
+                    COUNT(CASE WHEN dtb.diemTBMon >= 5.0 AND dtb.diemTBMon < 6.5 THEN 1 END) as soHSTB,
+                    COUNT(CASE WHEN dtb.diemTBMon < 5.0 THEN 1 END) as soHSYeu
+                FROM diemtrungbinh dtb
+                JOIN monhoc mh ON dtb.maMonHoc = mh.maMonHoc
+                JOIN hocsinh hs ON dtb.maHS = hs.maHS
+                JOIN lophoc lh ON hs.maLop = lh.maLop
+                JOIN phancong_giangday pc ON pc.maGV = ? 
+                    AND pc.maLop = lh.maLop 
+                    AND pc.maMonHoc = dtb.maMonHoc 
+                    AND pc.hocKy = dtb.hocKy 
+                    AND pc.namHoc = dtb.namHoc
+                    AND pc.trangThai = 'active'
+                WHERE dtb.maMonHoc = ? AND dtb.diemTBMon IS NOT NULL";
         
         $params = [$maGV, $maMonHoc];
         
+        if ($maLop) {
+            $sql .= " AND lh.maLop = ?";
+            $params[] = $maLop;
+        }
         if ($hocKy) {
-            $sql .= " AND bd.hocKy = ?";
+            $sql .= " AND dtb.hocKy = ?";
             $params[] = $hocKy;
         }
         if ($namHoc) {
-            $sql .= " AND bd.namHoc = ?";
+            $sql .= " AND dtb.namHoc = ?";
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY bd.maMonHoc, bd.hocKy, bd.namHoc";
+        $sql .= " GROUP BY dtb.maMonHoc, dtb.hocKy, dtb.namHoc";
         
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy thống kê số liệu học sinh
-    public function getThongKeSoLieuHocSinh($maGV, $maLop = null) {
+    // Lấy danh sách học sinh theo môn học (cho thống kê)
+    public function getDanhSachHocSinhTheoMon($maGV, $maMonHoc, $hocKy = null, $namHoc = null, $maLop = null) {
+        $sql = "SELECT 
+                    hs.maHS,
+                    hs.hoTen as tenHocSinh,
+                    lh.tenLop,
+                    dtb.diemTBMon,
+                    CASE 
+                        WHEN dtb.diemTBMon >= 8.0 THEN 'Giỏi'
+                        WHEN dtb.diemTBMon >= 6.5 THEN 'Khá'
+                        WHEN dtb.diemTBMon >= 5.0 THEN 'Trung bình'
+                        ELSE 'Yếu'
+                    END as xepLoai
+                FROM diemtrungbinh dtb
+                JOIN hocsinh hs ON dtb.maHS = hs.maHS
+                JOIN lophoc lh ON hs.maLop = lh.maLop
+                JOIN phancong_giangday pc ON pc.maGV = ? 
+                    AND pc.maLop = lh.maLop 
+                    AND pc.maMonHoc = dtb.maMonHoc 
+                    AND pc.hocKy = dtb.hocKy 
+                    AND pc.namHoc = dtb.namHoc
+                    AND pc.trangThai = 'active'
+                WHERE dtb.maMonHoc = ? AND dtb.diemTBMon IS NOT NULL";
+        
+        $params = [$maGV, $maMonHoc];
+        
+        if ($maLop) {
+            $sql .= " AND lh.maLop = ?";
+            $params[] = $maLop;
+        }
+        if ($hocKy) {
+            $sql .= " AND dtb.hocKy = ?";
+            $params[] = $hocKy;
+        }
+        if ($namHoc) {
+            $sql .= " AND dtb.namHoc = ?";
+            $params[] = $namHoc;
+        }
+        
+        $sql .= " ORDER BY lh.tenLop, hs.hoTen";
+        
+        return $this->executeQuery($sql, $params);
+    }
+    
+    // Lấy thống kê số liệu học sinh theo điểm môn học
+    public function getThongKeSoLieuHocSinh($maGV, $maLop = null, $maMonHoc = null, $hocKy = null, $namHoc = null) {
+        // Đặt giá trị mặc định cho năm học nếu không có
+        if (!$namHoc) {
+            $namHoc = '2024-2025';
+        }
+        if (!$hocKy) {
+            $hocKy = 1;
+        }
+        
         $sql = "SELECT 
                     lh.maLop,
                     lh.tenLop,
+                    mh.maMonHoc,
+                    mh.tenMonHoc,
                     lh.siSo,
+                    COUNT(DISTINCT hs.maHS) as soHSThucTe,
                     COUNT(CASE WHEN hs.gioiTinh = 'Nam' THEN 1 END) as soHSNam,
                     COUNT(CASE WHEN hs.gioiTinh = 'Nu' THEN 1 END) as soHSNu,
-                    COUNT(CASE WHEN hl.loaiHocLuc = 'Gioi' THEN 1 END) as soHSGioi,
-                    COUNT(CASE WHEN hl.loaiHocLuc = 'Kha' THEN 1 END) as soHSKha,
-                    COUNT(CASE WHEN hl.loaiHocLuc = 'TB' THEN 1 END) as soHSTB,
-                    COUNT(CASE WHEN hl.loaiHocLuc = 'Yeu' THEN 1 END) as soHSYeu,
-                    COUNT(CASE WHEN hk.loaiHK = 'Tot' THEN 1 END) as soHSHKTot,
-                    COUNT(CASE WHEN hk.loaiHK = 'Kha' THEN 1 END) as soHSHKKha,
-                    COUNT(CASE WHEN hk.loaiHK = 'TB' THEN 1 END) as soHSHKTB
+                    COUNT(CASE WHEN dtb.diemTBMon >= 8.0 THEN 1 END) as soHSDiemGioi,
+                    COUNT(CASE WHEN dtb.diemTBMon >= 6.5 AND dtb.diemTBMon < 8.0 THEN 1 END) as soHSDiemKha,
+                    COUNT(CASE WHEN dtb.diemTBMon >= 5.0 AND dtb.diemTBMon < 6.5 THEN 1 END) as soHSDiemTB,
+                    COUNT(CASE WHEN dtb.diemTBMon < 5.0 AND dtb.diemTBMon IS NOT NULL THEN 1 END) as soHSDiemYeu,
+                    COUNT(CASE WHEN dtb.diemTBMon IS NULL THEN 1 END) as soHSChuaCoDiem,
+                    ROUND(AVG(dtb.diemTBMon), 2) as diemTBLop,
+                    MAX(dtb.diemTBMon) as diemCaoNhat,
+                    MIN(dtb.diemTBMon) as diemThapNhat
                 FROM lophoc lh
-                LEFT JOIN hocsinh hs ON lh.maLop = hs.maLop
-                LEFT JOIN hocluc hl ON hs.maHocLuc = hl.maHocLuc
-                LEFT JOIN hanhkiem hk ON hs.maHanhKiem = hk.maHanhKiem
-                WHERE lh.maGV = ?";
+                JOIN hocsinh hs ON lh.maLop = hs.maLop
+                JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
+                    AND pc.maGV = ? 
+                    AND pc.trangThai = 'active'
+                    AND pc.hocKy = ?
+                    AND pc.namHoc = ?
+                JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
+                LEFT JOIN diemtrungbinh dtb ON dtb.maHS = hs.maHS 
+                    AND dtb.maMonHoc = pc.maMonHoc 
+                    AND dtb.hocKy = pc.hocKy 
+                    AND dtb.namHoc = pc.namHoc
+                WHERE 1=1";
         
-        $params = [$maGV];
+        $params = [$maGV, $hocKy, $namHoc];
         
         if ($maLop) {
             $sql .= " AND lh.maLop = ?";
             $params[] = $maLop;
         }
         
-        $sql .= " GROUP BY lh.maLop
-                  ORDER BY lh.tenLop";
+        if ($maMonHoc) {
+            $sql .= " AND mh.maMonHoc = ?";
+            $params[] = $maMonHoc;
+        }
+        
+        $sql .= " GROUP BY lh.maLop, mh.maMonHoc
+                  ORDER BY lh.tenLop, mh.tenMonHoc";
         
         return $this->executeQuery($sql, $params);
     }
@@ -245,7 +376,9 @@ class mReport {
     public function getDanhSachLopCuaGiaoVien($maGV) {
         $sql = "SELECT DISTINCT lh.maLop, lh.tenLop 
                 FROM lophoc lh 
-                WHERE lh.maGV = ? 
+                JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
+                    AND pc.maGV = ? 
+                    AND pc.trangThai = 'active'
                 ORDER BY lh.tenLop";
         return $this->executeQuery($sql, [$maGV]);
     }
@@ -261,33 +394,36 @@ class mReport {
     }
     
     // Lưu báo cáo vào hệ thống
-    public function luuBaoCao($tenBaoCao, $loaiBaoCao, $noiDung, $hocKy, $namHoc, $maLop = null, $maKhoi = null) {
-        $sql = "INSERT INTO baocao (tenBaoCao, loaiBaoCao, noiDung, hocKy, namHoc, maLop, maKhoi) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        return $this->executeNonQuery($sql, [$tenBaoCao, $loaiBaoCao, $noiDung, $hocKy, $namHoc, $maLop, $maKhoi]);
+    public function luuBaoCao($tenBaoCao, $loaiBaoCao, $tenFile, $duongDan, $moTa, $maGV) {
+        $sql = "INSERT INTO baocao_danop (tenBaoCao, loaiBaoCao, tenFile, duongDan, moTa, maGV) 
+                VALUES (?, ?, ?, ?, ?, ?)";
+        return $this->executeNonQuery($sql, [$tenBaoCao, $loaiBaoCao, $tenFile, $duongDan, $moTa, $maGV]);
     }
     
     // Lấy danh sách báo cáo đã lưu
-    public function getDanhSachBaoCao($loaiBaoCao = null, $hocKy = null, $namHoc = null) {
-        $sql = "SELECT * FROM baocao WHERE 1=1";
-        $params = [];
+    public function getDanhSachBaoCao($maGV, $loaiBaoCao = null) {
+        $sql = "SELECT maBaoCao, tenBaoCao, loaiBaoCao, tenFile, duongDan, ngayNop, moTa, ngayTao 
+                FROM baocao_danop 
+                WHERE maGV = ?";
+        $params = [$maGV];
         
         if ($loaiBaoCao) {
             $sql .= " AND loaiBaoCao = ?";
             $params[] = $loaiBaoCao;
         }
-        if ($hocKy) {
-            $sql .= " AND hocKy = ?";
-            $params[] = $hocKy;
-        }
-        if ($namHoc) {
-            $sql .= " AND namHoc = ?";
-            $params[] = $namHoc;
-        }
         
-        $sql .= " ORDER BY maBaoCao DESC";
+        $sql .= " ORDER BY ngayNop DESC";
         
         return $this->executeQuery($sql, $params);
+    }
+    
+    // Lấy thông tin báo cáo theo ID
+    public function getBaoCaoById($maBaoCao, $maGV) {
+        $sql = "SELECT maBaoCao, tenBaoCao, loaiBaoCao, tenFile, duongDan, ngayNop, moTa 
+                FROM baocao_danop 
+                WHERE maBaoCao = ? AND maGV = ?";
+        $result = $this->executeQuery($sql, [$maBaoCao, $maGV]);
+        return !empty($result) ? $result[0] : null;
     }
 }
 ?>

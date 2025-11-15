@@ -317,20 +317,134 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .perf-excellent {
-            background: #28a745;
+            background: linear-gradient(135deg, #52c234, #61d345);
+            box-shadow: 0 4px 15px rgba(82, 194, 52, 0.4);
         }
 
         .perf-good {
-            background: #17a2b8;
+            background: linear-gradient(135deg, #20c9f3, #17a2b8);
+            box-shadow: 0 4px 15px rgba(32, 201, 243, 0.4);
         }
 
         .perf-average {
-            background: #ffc107;
-            color: #333;
+            background: linear-gradient(135deg, #ffd54f, #ffb300);
+            color: #2c2c2c;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        }
+
+        .perf-average .perf-number,
+        .perf-average .perf-label {
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
         }
 
         .perf-weak {
-            background: #dc3545;
+            background: linear-gradient(135deg, #f48fb1, #e91e63);
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        .perf-none {
+            background: linear-gradient(135deg, #90a4ae, #607d8b);
+            box-shadow: 0 4px 15px rgba(96, 125, 139, 0.3);
+        }
+
+        /* Grade Info Styles */
+        .grade-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .grade-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grade-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .grade-stat {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .grade-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .grade-value {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .grade-value.high {
+            color: #4ade80;
+        }
+
+        .grade-value.low {
+            color: #f87171;
+        }
+
+        /* Performance Grid Styles */
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .perf-item {
+            text-align: center;
+            padding: 18px 12px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .perf-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .perf-number {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            line-height: 1;
+        }
+
+        .perf-label {
+            font-size: 12px;
+            line-height: 1.3;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .perf-label small {
+            font-size: 10px;
+            opacity: 0.9;
+            display: block;
+            margin-top: 2px;
         }
 
         .summary-section {
@@ -395,6 +509,28 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             .class-cards {
                 grid-template-columns: 1fr;
+            }
+
+            .grade-stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .performance-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+
+            .perf-item {
+                padding: 12px 8px;
+            }
+
+            .perf-number {
+                font-size: 20px;
+            }
+
+            .perf-label {
+                font-size: 10px;
             }
 
             .stats-grid {

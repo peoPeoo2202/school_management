@@ -299,6 +299,26 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </h1>
                 </div>
 
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i>
+                Bộ lọc báo cáo
+            </div>
+            <form method="GET" action="cReport.php" class="filter-form" id="filter-form">
+                <input type="hidden" name="action" value="hoc-tap">
+                
+                <div class="form-group">
+                    <label for="maLop">Lớp:</label>
+                    <select name="maLop" id="maLop">
+                        <option value="">Tất cả lớp</option>
+                        <?php foreach ($danhSachLop as $lop): ?>
+                            <option value="<?php echo $lop['maLop']; ?>" 
+                                    <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($lop['tenLop']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div class="filter-section">
                     <div class="filter-title">
                         <i class="fas fa-filter"></i>
@@ -351,6 +371,25 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         </div>
                     </form>
 
+            <div class="filter-buttons">
+                <button type="submit" form="filter-form" class="btn btn-primary" name="submit" value="1">
+                    <i class="fas fa-search"></i>
+                    Lọc kết quả
+                </button>
+                <?php if (isset($_GET['submit']) || (isset($_GET['maLop']) || isset($_GET['maMonHoc']) || isset($_GET['hocKy']))): ?>
+                <?php 
+                $params = $_GET;
+                $params['action'] = 'xuat-excel';
+                $params['type'] = 'hoc-tap';
+                unset($params['submit']); // Remove submit parameter if exists
+                ?>
+                <a href="cReport.php?<?php echo http_build_query($params); ?>" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
                     <div class="filter-buttons">
                         <button type="submit" form="filter-form" class="btn btn-primary">
                             <i class="fas fa-search"></i>
@@ -363,6 +402,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
 
+
+        <?php if (isset($_GET['submit']) || (isset($_GET['maLop']) || isset($_GET['maMonHoc']) || isset($_GET['hocKy']))): ?>
+        <div class="report-section">
+            <div class="report-header">
+                <h3>
+                    <i class="fas fa-table"></i>
+                    Kết quả học tập
+                </h3>
+            </div>
                 <div class="report-section">
                     <div class="report-header">
                         <h3>
@@ -438,6 +486,75 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </table>
                         </div>
 
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <div class="stat-label">Tổng số học sinh</div>
+                        <div class="stat-value"><?php echo $soHocSinh; ?></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Điểm trung bình</div>
+                        <div class="stat-value"><?php echo $soHocSinh > 0 ? number_format($tongDiem / $soHocSinh, 2) : '0'; ?></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Số HS giỏi</div>
+                        <div class="stat-value grade-excellent">
+                            <?php 
+                            $soGioi = 0;
+                            foreach ($duLieuBaoCao as $row) {
+                                if (floatval($row['diemTrungBinh']) >= 8.0) $soGioi++;
+                            }
+                            echo $soGioi;
+                            ?>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Số HS khá</div>
+                        <div class="stat-value grade-good">
+                            <?php 
+                            $soKha = 0;
+                            foreach ($duLieuBaoCao as $row) {
+                                $diem = floatval($row['diemTrungBinh']);
+                                if ($diem >= 6.5 && $diem < 8.0) $soKha++;
+                            }
+                            echo $soKha;
+                            ?>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Số HS trung bình</div>
+                        <div class="stat-value grade-average">
+                            <?php 
+                            $soTB = 0;
+                            foreach ($duLieuBaoCao as $row) {
+                                $diem = floatval($row['diemTrungBinh']);
+                                if ($diem >= 5.0 && $diem < 6.5) $soTB++;
+                            }
+                            echo $soTB;
+                            ?>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Số HS yếu</div>
+                        <div class="stat-value grade-weak">
+                            <?php 
+                            $soYeu = 0;
+                            foreach ($duLieuBaoCao as $row) {
+                                if (floatval($row['diemTrungBinh']) < 5.0) $soYeu++;
+                            }
+                            echo $soYeu;
+                            ?>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="no-data">
+                    <i class="fas fa-info-circle"></i>
+                    Không có dữ liệu để hiển thị. Vui lòng chọn bộ lọc phù hợp.
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+    </div>
                         <div class="stats-summary">
                             <div class="stat-item">
                                 <div class="stat-label">Tổng số học sinh</div>
