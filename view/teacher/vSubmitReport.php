@@ -1,14 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -329,7 +320,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
 
-                <a href="../../controller/cReport.php?action=list" class="back-btn">
+                <a href="cReport.php?action=index" class="back-btn">
                     <i class="fas fa-arrow-left"></i>
                     Quay lại danh sách báo cáo
                 </a>
@@ -346,6 +337,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 break;
                             case 'no_file':
                                 echo '<i class="fas fa-exclamation-circle"></i> Vui lòng chọn file báo cáo để upload!';
+                                break;
+                            case 'invalid_file_type':
+                                echo '<i class="fas fa-exclamation-circle"></i> Loại file không được hỗ trợ! Chỉ chấp nhận PDF, DOC, DOCX, XLS, XLSX.';
+                                break;
+                            case 'file_too_large':
+                                echo '<i class="fas fa-exclamation-circle"></i> File quá lớn! Kích thước tối đa là 10MB.';
                                 break;
                             default:
                                 echo '<i class="fas fa-exclamation-circle"></i> Có lỗi xảy ra! Vui lòng thử lại.';
@@ -374,7 +371,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         Thông tin báo cáo
                     </div>
 
-                    <form action="../../controller/cReport.php?action=submit" method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <form action="cReport.php?action=xu-ly-upload" method="POST" enctype="multipart/form-data" id="uploadForm">
                         <div class="form-group">
                             <label for="tenBaoCao">Tên báo cáo <span class="required">*</span></label>
                             <input type="text" id="tenBaoCao" name="tenBaoCao" required

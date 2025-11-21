@@ -1,18 +1,5 @@
 <?php
 session_start();
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-// Kiểm tra quyền giáo viên
-if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
@@ -28,8 +15,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <style>
         html,
         body {
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0 ;
         }
 
         .main-wrapper {

@@ -1,10 +1,5 @@
 <?php
-// Kiểm tra đăng nhập và quyền truy cập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
 ?>
 <!DOCTYPE html>
@@ -221,20 +216,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
             <div class="quick-links">
                 <a href="../../controller/cBGHReport.php?action=index" class="quick-link-card">
                     <i class="fas fa-chart-line"></i>
-                    <h3>Báo cáo & Thống kê</h3>
-                    <p>Xem các báo cáo và thống kê chi tiết về học tập, giảng dạy</p>
+                    <h3>Xem báo cáo</h3>
+                    <p>Xem các báo cáo và thống kê chi tiết về học tập, giảng dạy của nhà trường</p>
                 </a>
 
-                <a href="../../controller/cBGHReport.php?action=hoc-tap" class="quick-link-card">
-                    <i class="fas fa-graduation-cap"></i>
-                    <h3>Kết quả học tập</h3>
-                    <p>Báo cáo chi tiết về kết quả học tập của học sinh</p>
-                </a>
-
-                <a href="../../controller/cBGHReport.php?action=tong-hop" class="quick-link-card">
-                    <i class="fas fa-file-contract"></i>
-                    <h3>Báo cáo tổng hợp</h3>
-                    <p>Tổng hợp kết quả toàn trường theo lớp, khối</p>
+                <a href="../../controller/cYeuCau.php?action=danhsach" class="quick-link-card">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h3>Xử lý yêu cầu</h3>
+                    <p>Xử lý các yêu cầu nghỉ phép và sửa điểm từ giáo viên</p>
                 </a>
             </div>
         </div>

@@ -39,6 +39,9 @@ class cBGHReport {
             case 'chuyen-can':
                 $this->xemBaoCaoChuyenCan();
                 break;
+            case 'chi-tiet-nghi-hoc':
+                $this->xemChiTietNghiHoc();
+                break;
             case 'giang-day':
                 $this->xemBaoCaoGiangDay();
                 break;
@@ -56,6 +59,9 @@ class cBGHReport {
                 break;
             case 'bao-cao-da-nop':
                 $this->xemBaoCaoDaNop();
+                break;
+            case 'ket-qua-danh-gia':
+                $this->xemBaoCaoDanhHieuHocSinh();
                 break;
             case 'xuat-excel':
                 $this->xuatExcel();
@@ -100,6 +106,39 @@ class cBGHReport {
         include '../view/bgh/vBGHAttendanceReport.php';
     }
     
+    // Xem chi tiết nghỉ học của học sinh (AJAX)
+    private function xemChiTietNghiHoc() {
+        $maHS = $_GET['maHS'] ?? null;
+        $hocKy = $_GET['hocKy'] ?? null;
+        $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        
+        if ($maHS) {
+            $chiTietNghi = $this->model->getChiTietNghiHocCuaHocSinh($maHS, $hocKy, $namHoc);
+            
+            if (empty($chiTietNghi)) {
+                echo '<p style="text-align: center; color: #6b7280; padding: 20px;">Học sinh không có ngày nghỉ nào.</p>';
+            } else {
+                echo '<table class="detail-table">';
+                echo '<thead><tr><th>Ngày nghỉ</th><th>Loại nghỉ</th><th>Lý do</th><th>Người duyệt</th></tr></thead>';
+                echo '<tbody>';
+                foreach ($chiTietNghi as $row) {
+                    $loaiClass = $row['loaiNghi'] == 'cophep' ? 'type-cophep' : 'type-khongphep';
+                    $loaiText = $row['loaiNghi'] == 'cophep' ? 'Có phép' : 'Không phép';
+                    echo '<tr>';
+                    echo '<td>' . htmlspecialchars($row['ngayNghiFormat']) . '</td>';
+                    echo '<td><span class="type-badge ' . $loaiClass . '">' . $loaiText . '</span></td>';
+                    echo '<td style="text-align: left;">' . htmlspecialchars($row['lyDo'] ?? 'Không có lý do') . '</td>';
+                    echo '<td>' . htmlspecialchars($row['nguoiDuyet'] ?? '-') . '</td>';
+                    echo '</tr>';
+                }
+                echo '</tbody></table>';
+            }
+        } else {
+            echo '<p style="text-align: center; color: red;">Thiếu thông tin học sinh!</p>';
+        }
+        exit;
+    }
+    
     // Xem báo cáo giảng dạy
     private function xemBaoCaoGiangDay() {
         $maGV = $_GET['maGV'] ?? null;
@@ -118,6 +157,9 @@ class cBGHReport {
         $namHoc = $_GET['namHoc'] ?? '2024-2025';
         
         $duLieuBaoCao = $this->model->getBaoCaoTongHop($hocKy, $namHoc);
+        $tongGiaoVien = $this->model->getTongSoGiaoVien();
+        $tongMonHoc = $this->model->getTongSoMonHoc();
+        $thongKeGioiTinh = $this->model->getThongKeHocSinhTheoGioiTinh($namHoc);
         
         include '../view/bgh/vBGHSummaryReport.php';
     }
@@ -141,7 +183,7 @@ class cBGHReport {
         $namHoc = $_GET['namHoc'] ?? '2024-2025';
         
         $danhSachMonHoc = $this->model->getDanhSachTatCaMonHoc();
-        $duLieuBaoCao = $this->model->getThongKeDiemMonHoc($maMonHoc, $hocKy, $namHoc);
+        $duLieuThongKe = $this->model->getThongKeDiemMonHoc($maMonHoc, $hocKy, $namHoc);
         
         include '../view/bgh/vBGHGradeStatistics.php';
     }
@@ -153,7 +195,7 @@ class cBGHReport {
         $namHoc = $_GET['namHoc'] ?? '2024-2025';
         
         $danhSachLop = $this->model->getDanhSachTatCaLop();
-        $duLieuBaoCao = $this->model->getThongKeSoLieuHocSinh($maLop, $hocKy, $namHoc);
+        $duLieuThongKe = $this->model->getThongKeSoLieuHocSinh($maLop, $hocKy, $namHoc);
         
         include '../view/bgh/vBGHStudentStatistics.php';
     }
@@ -259,6 +301,36 @@ class cBGHReport {
         
         echo "</table></body></html>";
         exit();
+    }
+    
+    // ========== BÁO CÁO KẾT QUẢ ĐÁNH GIÁ HỌC SINH ==========
+    
+    /**
+     * Xem báo cáo kết quả đánh giá danh hiệu học sinh
+     */
+    private function xemBaoCaoDanhHieuHocSinh() {
+        $namHoc = $_POST['namHoc'] ?? '2024-2025';
+        $maKhoi = !empty($_POST['maKhoi']) ? intval($_POST['maKhoi']) : null;
+        $maLop = !empty($_POST['maLop']) ? intval($_POST['maLop']) : null;
+        
+        $danhSachKhoi = $this->model->layDanhSachKhoi();
+        $danhSachLop = $this->model->layDanhSachLop($maKhoi);
+        $ketQua = $this->model->layKetQuaHocSinh($namHoc, $maLop, $maKhoi);
+        $thongKe = $this->model->thongKeDanhHieu($namHoc, $maLop, $maKhoi);
+        $danhSachDanhHieu = $this->model->layDanhSachDanhHieu();
+        
+        $_SESSION['dataKetQuaDanhGia'] = [
+            'ketQua' => $ketQua,
+            'danhSachKhoi' => $danhSachKhoi,
+            'danhSachLop' => $danhSachLop,
+            'thongKe' => $thongKe,
+            'namHoc' => $namHoc,
+            'maKhoi' => $maKhoi,
+            'maLop' => $maLop,
+            'danhSachDanhHieu' => $danhSachDanhHieu
+        ];
+        
+        require_once '../view/bgh/vBGHHonorTitleReport.php';
     }
     
     // Xuất báo cáo ra PDF

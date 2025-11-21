@@ -1,10 +1,5 @@
 <?php
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -16,6 +11,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         .main-wrapper {
             display: flex;
             height: 100vh;
@@ -350,8 +350,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <i class="fas fa-filter"></i>
                         Bộ lọc báo cáo
                     </div>
-                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
-                        <input type="hidden" name="action" value="teaching">
+                    <form method="GET" action="" id="filter-form" class="filter-form">
+                        <input type="hidden" name="action" value="giang-day">
                         
                         <div class="form-group">
                             <label for="hocKy">Học kỳ:</label>
@@ -372,14 +372,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </form>
 
                     <div class="filter-buttons">
-                        <button type="submit" form="filter-form" class="btn btn-primary">
+                        <button type="submit" form="filter-form" name="submit" value="1" class="btn btn-primary">
                             <i class="fas fa-search"></i>
                             Lọc kết quả
                         </button>
+                        <?php if (isset($_GET['submit'])): ?>
                         <a href="../../controller/cReport.php?action=export&type=teaching&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
                             <i class="fas fa-file-excel"></i>
                             Xuất Excel
                         </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
