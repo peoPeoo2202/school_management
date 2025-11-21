@@ -17,7 +17,7 @@ if ($_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
     exit();
 }
 
-// Điều hướng đến trang danh sách báo cáo
-header("Location: ../../controller/cBGHReport.php?action=index");
+// Điều hướng đến trang dashboard
+header("Location: vBGHDashboard.php");
 exit();
 ?>

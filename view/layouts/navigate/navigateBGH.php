@@ -121,6 +121,13 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loai
             </a>
         </li>
         
+        <li>
+            <a href="../../controller/cBGHReport.php?action=ket-qua-danh-gia">
+                <i class="fas fa-medal"></i>
+                <span>Báo cáo danh hiệu học sinh</span>
+            </a>
+        </li>
+        
         <div class="nav-divider"></div>
         
         <li>
@@ -134,6 +141,15 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loai
             <a href="../../controller/cBGHReport.php?action=thong-ke-hoc-sinh">
                 <i class="fas fa-users"></i>
                 <span>Thống kê số liệu học sinh</span>
+            </a>
+        </li>
+        
+        <div class="nav-divider"></div>
+        
+        <li>
+            <a href="../../controller/cYeuCau.php?action=danhsach">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Xử lý yêu cầu</span>
             </a>
         </li>
         

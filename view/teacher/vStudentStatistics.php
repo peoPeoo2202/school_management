@@ -1,16 +1,5 @@
 <?php
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -568,8 +557,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <i class="fas fa-filter"></i>
                         Bộ lọc thống kê
                     </div>
-                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
-                        <input type="hidden" name="action" value="student_stats">
+                    <form method="GET" action="" id="filter-form" class="filter-form">
+                        <input type="hidden" name="action" value="thong-ke-hoc-sinh">
 
                         <div class="form-group">
                             <label for="maLop">Lớp:</label>
@@ -586,14 +575,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </form>
 
                     <div class="filter-buttons">
-                        <button type="submit" form="filter-form" class="btn btn-primary">
+                        <button type="submit" form="filter-form" name="submit" value="1" class="btn btn-primary">
                             <i class="fas fa-search"></i>
                             Lọc kết quả
                         </button>
+                        <?php if (isset($_GET['submit'])): ?>
                         <a href="cReport.php?action=xuat-excel&type=thong-ke-hoc-sinh&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
                             <i class="fas fa-file-excel"></i>
                             Xuất Excel
                         </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -606,7 +597,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <i class="fas fa-graduation-cap"></i>
                                     </div>
                                     <div class="class-info">
-                                        <h3><?php echo htmlspecialchars($lop['tenLop']); ?></h3>
+                                        <h3><?php echo htmlspecialchars($lop['tenLop']); ?> - <?php echo htmlspecialchars($lop['tenMonHoc']); ?></h3>
                                         <div class="siso">Sĩ số: <?php echo $lop['siSo']; ?> học sinh</div>
                                     </div>
                                 </div>
@@ -634,45 +625,49 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <div class="performance-section">
                                     <div class="performance-title">
                                         <i class="fas fa-chart-pie"></i>
-                                        Phân loại học sinh
+                                        Xếp loại điểm môn <?php echo htmlspecialchars($lop['tenMonHoc']); ?>
                                     </div>
                                     <div class="performance-bars">
                                         <div class="performance-category">
-                                            <div class="category-title">Học lực</div>
+                                            <div class="category-title">Phân loại điểm</div>
                                             <div class="performance-items">
                                                 <div class="performance-item">
-                                                    <span class="performance-label">Giỏi:</span>
+                                                    <span class="performance-label">Giỏi (≥8.0):</span>
                                                     <span class="performance-value perf-excellent"><?php echo $lop['soHSGioi']; ?></span>
                                                 </div>
                                                 <div class="performance-item">
-                                                    <span class="performance-label">Khá:</span>
+                                                    <span class="performance-label">Khá (6.5-7.9):</span>
                                                     <span class="performance-value perf-good"><?php echo $lop['soHSKha']; ?></span>
                                                 </div>
                                                 <div class="performance-item">
-                                                    <span class="performance-label">TB:</span>
+                                                    <span class="performance-label">TB (5.0-6.4):</span>
                                                     <span class="performance-value perf-average"><?php echo $lop['soHSTB']; ?></span>
                                                 </div>
                                                 <div class="performance-item">
-                                                    <span class="performance-label">Yếu:</span>
+                                                    <span class="performance-label">Yếu (<5.0):</span>
                                                     <span class="performance-value perf-weak"><?php echo $lop['soHSYeu']; ?></span>
+                                                </div>
+                                                <div class="performance-item">
+                                                    <span class="performance-label">Chưa có điểm:</span>
+                                                    <span class="performance-value" style="color: #999;"><?php echo $lop['soHSChuaCoDiem']; ?></span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="performance-category">
-                                            <div class="category-title">Hạnh kiểm</div>
+                                            <div class="category-title">Điểm trung bình</div>
                                             <div class="performance-items">
                                                 <div class="performance-item">
-                                                    <span class="performance-label">Tốt:</span>
-                                                    <span class="performance-value perf-excellent"><?php echo $lop['soHSHKTot']; ?></span>
+                                                    <span class="performance-label">ĐTB lớp:</span>
+                                                    <span class="performance-value perf-good"><?php echo $lop['diemTBLop'] ?? 'N/A'; ?></span>
                                                 </div>
                                                 <div class="performance-item">
-                                                    <span class="performance-label">Khá:</span>
-                                                    <span class="performance-value perf-good"><?php echo $lop['soHSHKKha']; ?></span>
+                                                    <span class="performance-label">Cao nhất:</span>
+                                                    <span class="performance-value perf-excellent"><?php echo $lop['diemCaoNhat'] ?? 'N/A'; ?></span>
                                                 </div>
                                                 <div class="performance-item">
-                                                    <span class="performance-label">TB:</span>
-                                                    <span class="performance-value perf-average"><?php echo $lop['soHSHKTB']; ?></span>
+                                                    <span class="performance-label">Thấp nhất:</span>
+                                                    <span class="performance-value perf-weak"><?php echo $lop['diemThapNhat'] ?? 'N/A'; ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -738,16 +733,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 </div>
                                 <div class="summary-label">Tổng HS Khá</div>
                             </div>
-
-                            <div class="summary-item">
-                                <div class="summary-number">
-                                    <?php
-                                    $tongHKTot = array_sum(array_column($duLieuBaoCao, 'soHSHKTot'));
-                                    echo $tongHKTot;
-                                    ?>
-                                </div>
-                                <div class="summary-label">Tổng HK Tốt</div>
-                            </div>
                         </div>
                     </div>
                 <?php else: ?>
@@ -757,13 +742,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 <?php endif; ?>
             </div>
+        </div>
+    </div>
 
-            <script>
-                // Auto submit form when filter changes
-                document.getElementById('maLop').addEventListener('change', function() {
-                    document.querySelector('form').submit();
-                });
-            </script>
+    <script>
+        // Auto submit form when filter changes
+        document.getElementById('maLop').addEventListener('change', function() {
+            document.querySelector('form').submit();
+        });
+    </script>
 </body>
 
 </html>

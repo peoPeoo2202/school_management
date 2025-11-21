@@ -181,14 +181,14 @@ class cReport {
                 // Kiểm tra loại file
                 $allowedTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
                 if (!in_array(strtolower($fileExtension), $allowedTypes)) {
-                    header("Location: cReport.php?action=nop-bao-cao&error=invalid_file_type");
+                    header("Location: cReport.php?action=submit&error=invalid_file_type");
                     exit();
                 }
                 
                 // Kiểm tra kích thước file (10MB)
                 $maxFileSize = 10 * 1024 * 1024; // 10MB
                 if ($_FILES['fileBaoCao']['size'] > $maxFileSize) {
-                    header("Location: cReport.php?action=nop-bao-cao&error=file_too_large");
+                    header("Location: cReport.php?action=submit&error=file_too_large");
                     exit();
                 }
                 
@@ -203,13 +203,13 @@ class cReport {
                         if (file_exists($uploadPath)) {
                             unlink($uploadPath);
                         }
-                        header("Location: cReport.php?action=nop-bao-cao&error=save_failed");
+                        header("Location: cReport.php?action=submit&error=save_failed");
                     }
                 } else {
-                    header("Location: cReport.php?action=nop-bao-cao&error=upload_failed");
+                    header("Location: cReport.php?action=submit&error=upload_failed");
                 }
             } else {
-                header("Location: cReport.php?action=nop-bao-cao&error=no_file");
+                header("Location: cReport.php?action=submit&error=no_file");
             }
         }
     }
@@ -369,6 +369,7 @@ class cReport {
         echo '<th>Lớp</th>';
         echo '<th>Giới tính</th>';
         echo '<th>Nghỉ có phép</th>';
+        echo '<th>Lý do</th>';
         echo '<th>Nghỉ không phép</th>';
         echo '<th>Tổng số nghỉ</th>';
         echo '<th>Xếp loại chuyên cần</th>';
@@ -380,6 +381,7 @@ class cReport {
             echo '<td>' . htmlspecialchars($row['tenLop']) . '</td>';
             echo '<td>' . htmlspecialchars($row['gioiTinh']) . '</td>';
             echo '<td>' . $row['soNghiCoPhep'] . '</td>';
+            echo '<td>' . (!empty($row['lyDoNghiCoPhep']) ? htmlspecialchars($row['lyDoNghiCoPhep']) : '-') . '</td>';
             echo '<td>' . $row['soNghiKhongPhep'] . '</td>';
             echo '<td>' . $row['tongSoNghi'] . '</td>';
             echo '<td>' . htmlspecialchars($row['xepLoaiChuyenCan']) . '</td>';

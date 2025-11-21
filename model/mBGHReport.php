@@ -83,6 +83,7 @@ class mBGHReport {
     
     /**
      * Báo cáo kết quả học tập - BGH xem toàn bộ
+     * Hiển thị điểm và giáo viên được phân công dạy cho từng lớp và môn
      * Có thể lọc theo lớp, môn học, học kỳ, năm học
      */
     public function getBaoCaoKetQuaHocTap($maLop = null, $maMonHoc = null, $hocKy = null, $namHoc = null) {
@@ -94,26 +95,34 @@ class mBGHReport {
                     mh.tenMonHoc,
                     bd.hocKy,
                     bd.namHoc,
-                    AVG(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem END) as diemMieng,
-                    AVG(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem END) as diem15phut,
-                    AVG(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem END) as diem1tiet,
-                    AVG(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem END) as diemGiuaKy,
-                    AVG(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem END) as diemCuoiKy,
-                    dtb.diemTBMon as diemTrungBinh,
-                    gv.hoTen as tenGiaoVien
-                FROM bangdiem bd
-                JOIN hocsinh hs ON bd.maHS = hs.maHS
-                JOIN lophoc lh ON hs.maLop = lh.maLop
+                    bd.diemMieng,
+                    bd.diem15Phut1,
+                    bd.diem15Phut2,
+                    bd.diem1Tiet,
+                    bd.diemGiuaKy,
+                    bd.diemCuoiKy,
+                    bd.tbDiem as diemTrungBinh,
+                    CASE 
+                        WHEN bd.tbDiem >= 9.0 THEN 'Xuất sắc'
+                        WHEN bd.tbDiem >= 8.0 THEN 'Giỏi'
+                        WHEN bd.tbDiem >= 6.5 THEN 'Khá'
+                        WHEN bd.tbDiem >= 5.0 THEN 'Trung bình'
+                        WHEN bd.tbDiem >= 3.5 THEN 'Yếu'
+                        WHEN bd.tbDiem IS NOT NULL THEN 'Kém'
+                        ELSE 'Chưa có điểm'
+                    END as xepLoai,
+                    gv.hoTen as tenGiaoVien,
+                    gv.toBoMon
+                FROM lophoc lh
+                JOIN hocsinh hs ON hs.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
-                LEFT JOIN diemtrungbinh dtb ON dtb.maHS = hs.maHS 
-                    AND dtb.maMonHoc = bd.maMonHoc 
-                    AND dtb.hocKy = bd.hocKy 
-                    AND dtb.namHoc = bd.namHoc
+                LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS
+                LEFT JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
                 LEFT JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
                     AND pc.maMonHoc = bd.maMonHoc 
                     AND pc.hocKy = bd.hocKy 
                     AND pc.namHoc = bd.namHoc
+                    AND pc.trangThai = 'active'
                 LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
                 WHERE 1=1";
         
@@ -139,14 +148,14 @@ class mBGHReport {
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY hs.maHS, lh.tenLop, k.khoiLop, mh.tenMonHoc, bd.hocKy, bd.namHoc, dtb.diemTBMon, gv.hoTen
-                  ORDER BY lh.tenLop, hs.hoTen";
+        $sql .= " ORDER BY lh.tenLop, hs.hoTen, mh.tenMonHoc, bd.hocKy";
         
         return $this->executeQuery($sql, $params);
     }
     
     /**
      * Báo cáo chuyên cần - BGH xem toàn bộ
+     * Dựa vào bảng nghihoc để thống kê số ngày nghỉ của học sinh với lý do chi tiết
      */
     public function getBaoCaoChuyenCan($maLop = null, $hocKy = null, $namHoc = null) {
         $sql = "SELECT 
@@ -154,26 +163,66 @@ class mBGHReport {
                     hs.hoTen as tenHocSinh,
                     lh.tenLop,
                     k.khoiLop,
-                    nh.hocKy,
-                    nh.namHoc,
-                    COUNT(nh.maNghiHoc) as soNgayNghi,
-                    SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END) as soNgayCoPhep,
-                    SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END) as soNgayKhongPhep,
-                    GROUP_CONCAT(DISTINCT nh.lyDo SEPARATOR '; ') as ghiChu,
+                    COALESCE(SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END), 0) as soNghiCoPhep,
+                    COALESCE(SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END), 0) as soNghiKhongPhep,
+                    COALESCE(COUNT(nh.maNghiHoc), 0) as tongSoNghi,
+                    CASE 
+                        WHEN COALESCE(SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END), 0) = 0 
+                             AND COALESCE(SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END), 0) <= 3 THEN 'Tốt'
+                        WHEN COALESCE(SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END), 0) <= 1 
+                             AND COALESCE(SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END), 0) <= 5 THEN 'Khá'
+                        WHEN COALESCE(SUM(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 ELSE 0 END), 0) <= 3 
+                             AND COALESCE(SUM(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 ELSE 0 END), 0) <= 10 THEN 'Trung bình'
+                        ELSE 'Yếu'
+                    END as xepLoaiChuyenCan,
                     gv.hoTen as giaoVienChuNhiem
-                FROM hocsinh hs
-                JOIN lophoc lh ON hs.maLop = lh.maLop
+                FROM lophoc lh
+                JOIN hocsinh hs ON hs.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                LEFT JOIN nghihoc nh ON nh.maHS = hs.maHS
-                LEFT JOIN giaovien gv ON lh.maGV = gv.maGV
-                WHERE 1=1";
+                LEFT JOIN nghihoc nh ON nh.maHS = hs.maHS";
         
         $params = [];
+        
+        // Thêm điều kiện lọc trong JOIN
+        if ($hocKy !== null && $hocKy !== '') {
+            $sql .= " AND nh.hocKy = ?";
+            $params[] = $hocKy;
+        }
+        
+        if ($namHoc !== null && $namHoc !== '') {
+            $sql .= " AND nh.namHoc = ?";
+            $params[] = $namHoc;
+        }
+        
+        $sql .= " LEFT JOIN giaovien gv ON lh.maGV = gv.maGV
+                  WHERE 1=1";
         
         if ($maLop !== null && $maLop !== '') {
             $sql .= " AND lh.maLop = ?";
             $params[] = $maLop;
         }
+        
+        $sql .= " GROUP BY hs.maHS, hs.hoTen, lh.tenLop, k.khoiLop, gv.hoTen
+                  ORDER BY lh.tenLop, hs.hoTen";
+        
+        return $this->executeQuery($sql, $params);
+    }
+    
+    /**
+     * Lấy chi tiết ngày nghỉ của một học sinh
+     */
+    public function getChiTietNghiHocCuaHocSinh($maHS, $hocKy = null, $namHoc = null) {
+        $sql = "SELECT 
+                    nh.ngayNghi,
+                    nh.loaiNghi,
+                    nh.lyDo,
+                    gv.hoTen as nguoiDuyet,
+                    DATE_FORMAT(nh.ngayNghi, '%d/%m/%Y') as ngayNghiFormat
+                FROM nghihoc nh
+                LEFT JOIN giaovien gv ON nh.nguoiDuyet = gv.maGV
+                WHERE nh.maHS = ?";
+        
+        $params = [$maHS];
         
         if ($hocKy !== null && $hocKy !== '') {
             $sql .= " AND nh.hocKy = ?";
@@ -185,8 +234,7 @@ class mBGHReport {
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY hs.maHS, hs.hoTen, lh.tenLop, k.khoiLop, nh.hocKy, nh.namHoc, gv.hoTen
-                  ORDER BY lh.tenLop, hs.hoTen";
+        $sql .= " ORDER BY nh.ngayNghi DESC";
         
         return $this->executeQuery($sql, $params);
     }
@@ -249,45 +297,53 @@ class mBGHReport {
      * Báo cáo tổng hợp - Tổng hợp kết quả học tập toàn trường
      */
     public function getBaoCaoTongHop($hocKy = null, $namHoc = null) {
+        // Query to get overall class statistics based on hocluc table
         $sql = "SELECT 
                     lh.tenLop,
                     k.khoiLop,
                     lh.siSo,
-                    COUNT(DISTINCT hs.maHS) as soHocSinh,
-                    COALESCE(dtb.hocKy, ?) as hocKy,
-                    COALESCE(dtb.namHoc, ?) as namHoc,
-                    AVG(dtb.diemTBMon) as diemTrungBinhLop,
-                    SUM(CASE WHEN dtb.diemTBMon >= 8.0 THEN 1 ELSE 0 END) as soHSGioi,
-                    SUM(CASE WHEN dtb.diemTBMon >= 6.5 AND dtb.diemTBMon < 8.0 THEN 1 ELSE 0 END) as soHSKha,
-                    SUM(CASE WHEN dtb.diemTBMon >= 5.0 AND dtb.diemTBMon < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
-                    SUM(CASE WHEN dtb.diemTBMon < 5.0 THEN 1 ELSE 0 END) as soHSYeu,
-                    gv.hoTen as giaoVienChuNhiem
+                    COUNT(DISTINCT hs.maHS) as soHocSinh,";
+        
+        // Determine which average column to use based on hocKy
+        if ($hocKy == '1') {
+            $sql .= " AVG(hl.diemTBHK1) as diemTrungBinhLop,
+                    SUM(CASE WHEN hl.diemTBHK1 >= 9.0 THEN 1 ELSE 0 END) as soHSXuatSac,
+                    SUM(CASE WHEN hl.diemTBHK1 >= 8.0 AND hl.diemTBHK1 < 9.0 THEN 1 ELSE 0 END) as soHSGioi,
+                    SUM(CASE WHEN hl.diemTBHK1 >= 6.5 AND hl.diemTBHK1 < 8.0 THEN 1 ELSE 0 END) as soHSKha,
+                    SUM(CASE WHEN hl.diemTBHK1 >= 5.0 AND hl.diemTBHK1 < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
+                    SUM(CASE WHEN hl.diemTBHK1 < 5.0 AND hl.diemTBHK1 IS NOT NULL THEN 1 ELSE 0 END) as soHSYeu,";
+        } elseif ($hocKy == '2') {
+            $sql .= " AVG(hl.diemTBHK2) as diemTrungBinhLop,
+                    SUM(CASE WHEN hl.diemTBHK2 >= 9.0 THEN 1 ELSE 0 END) as soHSXuatSac,
+                    SUM(CASE WHEN hl.diemTBHK2 >= 8.0 AND hl.diemTBHK2 < 9.0 THEN 1 ELSE 0 END) as soHSGioi,
+                    SUM(CASE WHEN hl.diemTBHK2 >= 6.5 AND hl.diemTBHK2 < 8.0 THEN 1 ELSE 0 END) as soHSKha,
+                    SUM(CASE WHEN hl.diemTBHK2 >= 5.0 AND hl.diemTBHK2 < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
+                    SUM(CASE WHEN hl.diemTBHK2 < 5.0 AND hl.diemTBHK2 IS NOT NULL THEN 1 ELSE 0 END) as soHSYeu,";
+        } else {
+            // Default to year average
+            $sql .= " AVG(hl.diemTBCaNam) as diemTrungBinhLop,
+                    SUM(CASE WHEN hl.diemTBCaNam >= 9.0 THEN 1 ELSE 0 END) as soHSXuatSac,
+                    SUM(CASE WHEN hl.diemTBCaNam >= 8.0 AND hl.diemTBCaNam < 9.0 THEN 1 ELSE 0 END) as soHSGioi,
+                    SUM(CASE WHEN hl.diemTBCaNam >= 6.5 AND hl.diemTBCaNam < 8.0 THEN 1 ELSE 0 END) as soHSKha,
+                    SUM(CASE WHEN hl.diemTBCaNam >= 5.0 AND hl.diemTBCaNam < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
+                    SUM(CASE WHEN hl.diemTBCaNam < 5.0 AND hl.diemTBCaNam IS NOT NULL THEN 1 ELSE 0 END) as soHSYeu,";
+        }
+        
+        $sql .= " gv.hoTen as giaoVienChuNhiem
                 FROM lophoc lh
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
                 LEFT JOIN hocsinh hs ON hs.maLop = lh.maLop
-                LEFT JOIN diemtrungbinh dtb ON dtb.maHS = hs.maHS";
+                LEFT JOIN giaovien gv ON lh.maGV = gv.maGV
+                LEFT JOIN hocluc hl ON hl.maHS = hs.maHS";
         
         $params = [];
-        $whereAdded = false;
-        
-        if ($hocKy !== null && $hocKy !== '') {
-            $sql .= " AND dtb.hocKy = ?";
-            $params[] = $hocKy;
-            $params[] = $hocKy; // for COALESCE
-        } else {
-            $params[] = 1; // default value for COALESCE
-        }
         
         if ($namHoc !== null && $namHoc !== '') {
-            $sql .= " AND dtb.namHoc = ?";
+            $sql .= " AND hl.namHoc = ?";
             $params[] = $namHoc;
-            $params[] = $namHoc; // for COALESCE
-        } else {
-            $params[] = '2024-2025'; // default value for COALESCE
         }
         
-        $sql .= " LEFT JOIN giaovien gv ON lh.maGV = gv.maGV
-                  GROUP BY lh.maLop, lh.tenLop, k.khoiLop, lh.siSo, dtb.hocKy, dtb.namHoc, gv.hoTen
+        $sql .= " GROUP BY lh.maLop, lh.tenLop, k.khoiLop, lh.siSo, gv.hoTen
                   ORDER BY k.khoiLop, lh.tenLop";
         
         return $this->executeQuery($sql, $params);
@@ -295,23 +351,26 @@ class mBGHReport {
     
     /**
      * Thống kê điểm môn học - BGH xem phân bố điểm theo môn
+     * Dựa vào bảng bangdiem để thống kê
      */
     public function getThongKeDiemMonHoc($maMonHoc = null, $hocKy = null, $namHoc = null) {
         $sql = "SELECT 
                     mh.tenMonHoc,
-                    dtb.hocKy,
-                    dtb.namHoc,
-                    COUNT(DISTINCT dtb.maHS) as tongSoHocSinh,
-                    AVG(dtb.diemTBMon) as diemTrungBinh,
-                    MAX(dtb.diemTBMon) as diemCaoNhat,
-                    MIN(dtb.diemTBMon) as diemThapNhat,
-                    SUM(CASE WHEN dtb.diemTBMon >= 8.0 THEN 1 ELSE 0 END) as soHSGioi,
-                    SUM(CASE WHEN dtb.diemTBMon >= 6.5 AND dtb.diemTBMon < 8.0 THEN 1 ELSE 0 END) as soHSKha,
-                    SUM(CASE WHEN dtb.diemTBMon >= 5.0 AND dtb.diemTBMon < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
-                    SUM(CASE WHEN dtb.diemTBMon < 5.0 THEN 1 ELSE 0 END) as soHSYeu
-                FROM diemtrungbinh dtb
-                JOIN monhoc mh ON dtb.maMonHoc = mh.maMonHoc
-                WHERE 1=1";
+                    bd.hocKy,
+                    bd.namHoc,
+                    COUNT(DISTINCT bd.maHS) as tongSoHocSinh,
+                    ROUND(AVG(bd.tbDiem), 2) as diemTrungBinh,
+                    MAX(bd.tbDiem) as diemCaoNhat,
+                    MIN(bd.tbDiem) as diemThapNhat,
+                    SUM(CASE WHEN bd.tbDiem >= 9.0 THEN 1 ELSE 0 END) as soHSXuatSac,
+                    SUM(CASE WHEN bd.tbDiem >= 8.0 AND bd.tbDiem < 9.0 THEN 1 ELSE 0 END) as soHSGioi,
+                    SUM(CASE WHEN bd.tbDiem >= 6.5 AND bd.tbDiem < 8.0 THEN 1 ELSE 0 END) as soHSKha,
+                    SUM(CASE WHEN bd.tbDiem >= 5.0 AND bd.tbDiem < 6.5 THEN 1 ELSE 0 END) as soHSTrungBinh,
+                    SUM(CASE WHEN bd.tbDiem >= 3.5 AND bd.tbDiem < 5.0 THEN 1 ELSE 0 END) as soHSYeu,
+                    SUM(CASE WHEN bd.tbDiem < 3.5 AND bd.tbDiem IS NOT NULL THEN 1 ELSE 0 END) as soHSKem
+                FROM bangdiem bd
+                JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
+                WHERE bd.tbDiem IS NOT NULL";
         
         $params = [];
         
@@ -321,16 +380,16 @@ class mBGHReport {
         }
         
         if ($hocKy !== null && $hocKy !== '') {
-            $sql .= " AND dtb.hocKy = ?";
+            $sql .= " AND bd.hocKy = ?";
             $params[] = $hocKy;
         }
         
         if ($namHoc !== null && $namHoc !== '') {
-            $sql .= " AND dtb.namHoc = ?";
+            $sql .= " AND bd.namHoc = ?";
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY mh.tenMonHoc, dtb.hocKy, dtb.namHoc
+        $sql .= " GROUP BY mh.tenMonHoc, bd.hocKy, bd.namHoc
                   ORDER BY mh.tenMonHoc";
         
         return $this->executeQuery($sql, $params);
@@ -393,22 +452,22 @@ class mBGHReport {
                     hs.hoTen as tenHocSinh,
                     lh.tenLop,
                     k.khoiLop,
-                    AVG(dtb.diemTBMon) as diemTBChung,
+                    AVG(bd.tbDiem) as diemTBChung,
                     nghiCount.soNgayNghi,
                     nghiCount.soNgayCoPhep,
                     nghiCount.soNgayKhongPhep,
                     CASE 
-                        WHEN AVG(dtb.diemTBMon) >= 8.0 AND COALESCE(nghiCount.soNgayNghi, 0) <= 5 THEN 'Giỏi'
-                        WHEN AVG(dtb.diemTBMon) >= 6.5 AND COALESCE(nghiCount.soNgayNghi, 0) <= 10 THEN 'Khá'
-                        WHEN AVG(dtb.diemTBMon) >= 5.0 AND COALESCE(nghiCount.soNgayNghi, 0) <= 15 THEN 'Trung bình'
+                        WHEN AVG(bd.tbDiem) >= 8.0 AND COALESCE(nghiCount.soNgayNghi, 0) <= 5 THEN 'Giỏi'
+                        WHEN AVG(bd.tbDiem) >= 6.5 AND COALESCE(nghiCount.soNgayNghi, 0) <= 10 THEN 'Khá'
+                        WHEN AVG(bd.tbDiem) >= 5.0 AND COALESCE(nghiCount.soNgayNghi, 0) <= 15 THEN 'Trung bình'
                         ELSE 'Yếu'
                     END as xepLoai,
-                    dtb.hocKy,
-                    dtb.namHoc
+                    bd.hocKy,
+                    bd.namHoc
                 FROM hocsinh hs
                 JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                LEFT JOIN diemtrungbinh dtb ON dtb.maHS = hs.maHS
+                LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS
                 LEFT JOIN (
                     SELECT 
                         maHS, 
@@ -420,8 +479,8 @@ class mBGHReport {
                     FROM nghihoc
                     GROUP BY maHS, hocKy, namHoc
                 ) nghiCount ON nghiCount.maHS = hs.maHS 
-                    AND nghiCount.hocKy = dtb.hocKy 
-                    AND nghiCount.namHoc = dtb.namHoc
+                    AND nghiCount.hocKy = bd.hocKy 
+                    AND nghiCount.namHoc = bd.namHoc
                 WHERE 1=1";
         
         $params = [];
@@ -432,16 +491,16 @@ class mBGHReport {
         }
         
         if ($hocKy !== null && $hocKy !== '') {
-            $sql .= " AND dtb.hocKy = ?";
+            $sql .= " AND bd.hocKy = ?";
             $params[] = $hocKy;
         }
         
         if ($namHoc !== null && $namHoc !== '') {
-            $sql .= " AND dtb.namHoc = ?";
+            $sql .= " AND bd.namHoc = ?";
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY hs.maHS, hs.hoTen, lh.tenLop, k.khoiLop, nghiCount.soNgayNghi, nghiCount.soNgayCoPhep, nghiCount.soNgayKhongPhep, dtb.hocKy, dtb.namHoc
+        $sql .= " GROUP BY hs.maHS, hs.hoTen, lh.tenLop, k.khoiLop, nghiCount.soNgayNghi, nghiCount.soNgayCoPhep, nghiCount.soNgayKhongPhep, bd.hocKy, bd.namHoc
                   ORDER BY lh.tenLop, hs.hoTen";
         
         return $this->executeQuery($sql, $params);
@@ -497,6 +556,320 @@ class mBGHReport {
         $sql .= " ORDER BY bc.ngayNop DESC";
         
         return $this->executeQuery($sql, $params);
+    }
+    
+    // ========== BÁO CÁO KẾT QUẢ ĐÁNH GIÁ HỌC SINH ==========
+    
+    /**
+     * Lấy danh sách tất cả danh hiệu với tiêu chí
+     */
+    public function layDanhSachDanhHieu() {
+        $sql = "SELECT * FROM danhhieu ORDER BY maDanhHieu";
+        return $this->executeQuery($sql);
+    }
+    
+    /**
+     * Lấy kết quả học tập và rèn luyện của học sinh theo năm học
+     */
+    public function layKetQuaHocSinh($namHoc, $maLop = null, $maKhoi = null) {
+        $sql = "SELECT 
+            hs.maHS,
+            hs.hoTen,
+            hs.ngaySinh,
+            hs.gioiTinh,
+            hs.maDanhHieu,
+            l.maLop,
+            l.tenLop,
+            l.maKhoi,
+            k.khoiLop as tenKhoi,
+            
+            hl.diemTBHK1,
+            hl.diemTBHK2,
+            hl.diemTBCaNam,
+            hl.loaiHocLuc,
+            hl.soMonDuoi5,
+            
+            hk1.loaiHK as hanhKiemHK1,
+            hk1.soBuoiNghiCoPhep as nghiCoPhepHK1,
+            hk1.soBuoiNghiKhongPhep as nghiKhongPhepHK1,
+            
+            hk2.loaiHK as hanhKiemHK2,
+            hk2.soBuoiNghiCoPhep as nghiCoPhepHK2,
+            hk2.soBuoiNghiKhongPhep as nghiKhongPhepHK2,
+            
+            (IFNULL(hk1.soBuoiNghiCoPhep, 0) + IFNULL(hk2.soBuoiNghiCoPhep, 0)) as tongNghiCoPhep,
+            (IFNULL(hk1.soBuoiNghiKhongPhep, 0) + IFNULL(hk2.soBuoiNghiKhongPhep, 0)) as tongNghiKhongPhep,
+            
+            dh.tenDanhHieu as danhHieuHienTai
+            
+        FROM hocsinh hs
+        LEFT JOIN lophoc l ON hs.maLop = l.maLop
+        LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+        LEFT JOIN hocluc hl ON hs.maHS = hl.maHS AND hl.namHoc = ?
+        LEFT JOIN hanhkiem hk1 ON hs.maHS = hk1.maHS AND hk1.hocKy = 1 AND hk1.namHoc = ?
+        LEFT JOIN hanhkiem hk2 ON hs.maHS = hk2.maHS AND hk2.hocKy = 2 AND hk2.namHoc = ?
+        LEFT JOIN danhhieu dh ON hs.maDanhHieu = dh.maDanhHieu
+        WHERE hs.trangThaiHocTap = 'danghoc'";
+        
+        $params = [$namHoc, $namHoc, $namHoc];
+        
+        if ($maLop) {
+            $sql .= " AND hs.maLop = ?";
+            $params[] = $maLop;
+        }
+        
+        if ($maKhoi) {
+            $sql .= " AND l.maKhoi = ?";
+            $params[] = $maKhoi;
+        }
+        
+        $sql .= " ORDER BY l.tenLop, hs.hoTen";
+        
+        $ketQua = $this->executeQuery($sql, $params);
+        
+        // Thêm thông tin vi phạm, khen thưởng và đề xuất danh hiệu
+        foreach ($ketQua as &$hs) {
+            // Đếm vi phạm
+            $sqlVP = "SELECT COUNT(*) as soViPham FROM vipham WHERE maHS = ? AND namHoc = ?";
+            $vp = $this->executeQuery($sqlVP, [$hs['maHS'], $namHoc]);
+            $hs['soViPham'] = $vp[0]['soViPham'] ?? 0;
+            
+            // Đếm khen thưởng
+            $sqlKT = "SELECT COUNT(*) as soKhenThuong,
+                      MAX(CASE 
+                          WHEN capKhenThuong = 'quocgia' THEN 4
+                          WHEN capKhenThuong = 'tinh' THEN 3
+                          WHEN capKhenThuong = 'huyen' THEN 2
+                          WHEN capKhenThuong = 'truong' THEN 1
+                          ELSE 0
+                      END) as capKhenThuongCaoNhat
+                      FROM khenthuong WHERE maHS = ? AND namHoc = ?";
+            $kt = $this->executeQuery($sqlKT, [$hs['maHS'], $namHoc]);
+            $hs['soKhenThuong'] = $kt[0]['soKhenThuong'] ?? 0;
+            $hs['capKhenThuongCaoNhat'] = $kt[0]['capKhenThuongCaoNhat'] ?? 0;
+            
+            // Xác định hạnh kiểm cả năm
+            $hs['hanhKiemCaNam'] = $hs['hanhKiemHK2'] ? $hs['hanhKiemHK2'] : $hs['hanhKiemHK1'];
+            
+            // Đề xuất danh hiệu
+            $hs['danhHieuDeXuat'] = $this->xetDanhHieu($hs);
+        }
+        
+        return $ketQua;
+    }
+    
+    /**
+     * Xét danh hiệu phù hợp cho học sinh dựa trên tiêu chí
+     */
+    private function xetDanhHieu($hocSinh) {
+        $sql = "SELECT * FROM danhhieu ORDER BY 
+                CASE 
+                    WHEN hocLucToiThieu = 'Xuat sac' THEN 5
+                    WHEN hocLucToiThieu = 'Gioi' THEN 4
+                    WHEN hocLucToiThieu = 'Kha' THEN 3
+                    WHEN hocLucToiThieu = 'TB' THEN 2
+                    ELSE 1
+                END DESC,
+                diemTBToiThieu DESC";
+        
+        $danhSachDanhHieu = $this->executeQuery($sql);
+        
+        foreach ($danhSachDanhHieu as $dh) {
+            if ($this->kiemTraDieuKienDanhHieu($hocSinh, $dh)) {
+                return $dh;
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Kiểm tra học sinh có đủ điều kiện danh hiệu không
+     */
+    private function kiemTraDieuKienDanhHieu($hs, $dh) {
+        // 1. Kiểm tra học lực
+        if (!$this->kiemTraHocLuc($hs['loaiHocLuc'], $dh['hocLucToiThieu'])) {
+            return false;
+        }
+        
+        // 2. Kiểm tra điểm TB
+        if ($dh['diemTBToiThieu'] && $hs['diemTBCaNam'] < $dh['diemTBToiThieu']) {
+            return false;
+        }
+        
+        // 3. Kiểm tra hạnh kiểm
+        if (!$this->kiemTraHanhKiem($hs['hanhKiemCaNam'], $dh['hanhKiemToiThieu'])) {
+            return false;
+        }
+        
+        // 4. Kiểm tra số vi phạm
+        if ($hs['soViPham'] > $dh['soViPhamToiDa']) {
+            return false;
+        }
+        
+        // 5. Kiểm tra yêu cầu khen thưởng
+        if ($dh['yeuCauKhenThuong'] == 1 && $hs['soKhenThuong'] == 0) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * So sánh học lực
+     */
+    private function kiemTraHocLuc($hocLucHS, $hocLucYeuCau) {
+        $thuTu = [
+            'Xuat sac' => 5,
+            'Gioi' => 4,
+            'Kha' => 3,
+            'TB' => 2,
+            'Yeu' => 1,
+            'Kem' => 0
+        ];
+        
+        $capHS = $thuTu[$hocLucHS] ?? 0;
+        $capYC = $thuTu[$hocLucYeuCau] ?? 0;
+        
+        return $capHS >= $capYC;
+    }
+    
+    /**
+     * So sánh hạnh kiểm
+     */
+    private function kiemTraHanhKiem($hanhKiemHS, $hanhKiemYeuCau) {
+        $thuTu = [
+            'Tot' => 3,
+            'Kha' => 2,
+            'TB' => 1,
+            'Yeu' => 0
+        ];
+        
+        $capHS = $thuTu[$hanhKiemHS] ?? 0;
+        $capYC = $thuTu[$hanhKiemYeuCau] ?? 0;
+        
+        return $capHS >= $capYC;
+    }
+    
+    /**
+     * Lấy danh sách lớp học
+     */
+    public function layDanhSachLop($maKhoi = null) {
+        $sql = "SELECT l.maLop, l.tenLop, l.maKhoi, k.khoiLop as tenKhoi 
+                FROM lophoc l 
+                JOIN khoi k ON l.maKhoi = k.maKhoi";
+        
+        $params = [];
+        
+        if ($maKhoi) {
+            $sql .= " WHERE l.maKhoi = ?";
+            $params[] = $maKhoi;
+        }
+        
+        $sql .= " ORDER BY k.khoiLop, l.tenLop";
+        
+        return $this->executeQuery($sql, $params);
+    }
+    
+    /**
+     * Lấy danh sách khối
+     */
+    public function layDanhSachKhoi() {
+        $sql = "SELECT maKhoi, khoiLop as tenKhoi FROM khoi ORDER BY maKhoi";
+        return $this->executeQuery($sql);
+    }
+    
+    /**
+     * Thống kê danh hiệu theo lớp/khối
+     */
+    public function thongKeDanhHieu($namHoc, $maLop = null, $maKhoi = null) {
+        $hocSinhs = $this->layKetQuaHocSinh($namHoc, $maLop, $maKhoi);
+        
+        $thongKe = [
+            'tongSo' => count($hocSinhs),
+            'danhHieu' => [],
+            'hocLuc' => [],
+            'hanhKiem' => [],
+            'coKhenThuong' => 0,
+            'coViPham' => 0
+        ];
+        
+        foreach ($hocSinhs as $hs) {
+            // Thống kê danh hiệu
+            if ($hs['danhHieuDeXuat']) {
+                $tenDH = $hs['danhHieuDeXuat']['tenDanhHieu'];
+                $thongKe['danhHieu'][$tenDH] = ($thongKe['danhHieu'][$tenDH] ?? 0) + 1;
+            }
+            
+            // Thống kê học lực
+            if ($hs['loaiHocLuc']) {
+                $thongKe['hocLuc'][$hs['loaiHocLuc']] = ($thongKe['hocLuc'][$hs['loaiHocLuc']] ?? 0) + 1;
+            }
+            
+            // Thống kê hạnh kiểm
+            if ($hs['hanhKiemCaNam']) {
+                $thongKe['hanhKiem'][$hs['hanhKiemCaNam']] = ($thongKe['hanhKiem'][$hs['hanhKiemCaNam']] ?? 0) + 1;
+            }
+            
+            // Đếm học sinh có khen thưởng
+            if ($hs['soKhenThuong'] > 0) {
+                $thongKe['coKhenThuong']++;
+            }
+            
+            // Đếm học sinh có vi phạm
+            if ($hs['soViPham'] > 0) {
+                $thongKe['coViPham']++;
+            }
+        }
+        
+        return $thongKe;
+    }
+    
+    /**
+     * Lấy tổng số giáo viên trong trường
+     */
+    public function getTongSoGiaoVien() {
+        $sql = "SELECT COUNT(*) as total FROM giaovien";
+        $result = $this->executeQuery($sql);
+        return $result[0]['total'] ?? 0;
+    }
+    
+    /**
+     * Lấy tổng số môn học
+     */
+    public function getTongSoMonHoc() {
+        $sql = "SELECT COUNT(*) as total FROM monhoc";
+        $result = $this->executeQuery($sql);
+        return $result[0]['total'] ?? 0;
+    }
+    
+    /**
+     * Lấy thống kê học sinh theo giới tính
+     */
+    public function getThongKeHocSinhTheoGioiTinh($namHoc = null) {
+        $sql = "SELECT 
+                    gioiTinh,
+                    COUNT(*) as soLuong
+                FROM hocsinh hs
+                JOIN lophoc lh ON hs.maLop = lh.maLop
+                WHERE 1=1";
+        
+        $params = [];
+        if ($namHoc !== null && $namHoc !== '') {
+            $sql .= " AND lh.namHoc = ?";
+            $params[] = $namHoc;
+        }
+        
+        $sql .= " GROUP BY gioiTinh";
+        
+        $result = $this->executeQuery($sql, $params);
+        
+        $data = ['Nam' => 0, 'Nu' => 0];
+        foreach ($result as $row) {
+            $data[$row['gioiTinh']] = $row['soLuong'];
+        }
+        
+        return $data;
     }
 }
 ?>
