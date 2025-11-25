@@ -46,7 +46,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Lịch dạy -->
         <li>
-            <a href="<?php echo url('controller/cTeachingSchedule.php?action=dashboard'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'cTeachingSchedule.php') ? 'active' : ''; ?>">
+            <a href="../../view/teacher/vTeachingSchedule.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vTeachingSchedule.php') ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-alt"></i>
                 <span>Lịch dạy</span>
             </a>
@@ -134,22 +134,20 @@ $maGV = $_SESSION['maGV'] ?? '';
 
 <style>
     .teacher-navbar {
-        width: 250px;
+        min-width: 250px;
         background: linear-gradient(180deg, #2d5a8c 0%, #5081BE 100%);
         color: white;
         padding: 0;
         position: relative;
         height: 100vh;
         overflow-y: auto;
-        z-index: 1000;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
     }
 
     .navbar-header {
-        padding: 20px;
+        padding: 16px;
         background: #1a2f42;
         border-bottom: 2px solid #5081BE;
         display: flex;
@@ -165,11 +163,6 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .navbar-toggle {
         display: none;
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        font-size: 20px;
     }
 
     .navbar-user {
@@ -178,7 +171,7 @@ $maGV = $_SESSION['maGV'] ?? '';
         background: rgba(80, 129, 190, 0.1);
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
     }
 
     .user-avatar {
@@ -205,7 +198,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .navbar-menu {
         list-style: none;
-        padding: 10px 0;
+        padding: 8px 0;
         margin: 0;
         flex: 1;
         overflow-y: auto;
@@ -228,7 +221,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     }
 
     .menu-item i:first-child {
-        min-width: 20px;
+        min-width: 16px;
         text-align: center;
     }
 
@@ -241,7 +234,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     .menu-item.active {
         background: #5081BE;
         color: white;
-        border-left: 4px solid #7EBADA;
+        border-left: 2px solid #7EBADA;
         padding-left: 16px;
     }
 
@@ -276,7 +269,7 @@ $maGV = $_SESSION['maGV'] ?? '';
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 16px 16px 8px 30px;
+        padding: 16px 16px 8px 32px;
         text-decoration: none;
         color: #a8b4c6;
         transition: all 0.3s;
@@ -294,22 +287,23 @@ $maGV = $_SESSION['maGV'] ?? '';
     }
 
     .navbar-footer {
-        padding: 15px 20px;
+        padding: 8px;
         margin-top: auto;
         border-top: 2px solid #7EBADA;
         background: #1a2f42;
+        font-size: 16px;
     }
 
     .logout-link {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         color: #CADEFA;
         text-decoration: none;
         transition: all 0.3s;
-        padding: 10px;
-        border-radius: 6px;
-        border-left: 3px solid transparent;
+        padding: 8px;
+        border-radius: 8px;
+        border-left: 2px solid transparent;
     }
 
     .logout-link:hover {

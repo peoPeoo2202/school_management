@@ -499,187 +499,35 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <div class="stats-summary">
                             <div class="stat-item">
                                 <div class="stat-label">Tổng số học sinh</div>
-                                <div class="stat-value"><?php echo $soHocSinh; ?></div>
+                                <div class="stat-value"><?php echo $soHocSinh ?? 0; ?></div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-label">Tổng nghỉ có phép</div>
-                                <div class="stat-value"><?php echo $tongNghiCoPhep; ?></div>
+                                <div class="stat-value"><?php echo $tongNghiCoPhep ?? 0; ?></div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-label">Tổng nghỉ không phép</div>
-                                <div class="stat-value"><?php echo $tongNghiKhongPhep; ?></div>
+                                <div class="stat-value"><?php echo $tongNghiKhongPhep ?? 0; ?></div>
                             </div>
                         </div>
-            </div>
-        <?php else: ?>
-        <div class="report-section">
-            <div class="no-data">
-                <i class="fas fa-info-circle"></i><br>
-                Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
-            </div>
-        </div>
-        <?php endif; ?>
-
-        <script>
-            // Auto submit form when filter changes
-            document.querySelectorAll('select').forEach(function(select) {
-                select.addEventListener('change', function() {
-                    document.querySelector('form').submit();
-                });
-        <a href="cReport.php" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại danh sách báo cáo
-        </a>
-
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Bộ lọc báo cáo
-            </div>
-            <form method="GET" action="" class="filter-form" id="filter-form">
-                <input type="hidden" name="action" value="chuyen-can">
-                
-                <div class="form-group">
-                    <label for="tenMonHoc">Môn học:</label>
-                    <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;">
-                        <strong><?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?></strong>
+                <?php else: ?>
+                    <div class="no-data">
+                        <i class="fas fa-info-circle"></i><br>
+                        Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="maLop">Lớp: <span style="color: #dc3545;">*</span></label>
-                    <select name="maLop" id="maLop" required>
-                        <option value="">Chọn lớp</option>
-                        <?php foreach ($danhSachLop as $lop): ?>
-                            <option value="<?php echo $lop['maLop']; ?>" 
-                                    <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($lop['tenLop']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="hocKy">Học kỳ: <span style="color: #dc3545;">*</span></label>
-                    <select name="hocKy" id="hocKy" required>
-                        <option value="">Chọn học kỳ</option>
-                        <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                        <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="namHoc">Năm học: <span style="color: #dc3545;">*</span></label>
-                    <select name="namHoc" id="namHoc" required>
-                        <option value="">Chọn năm học</option>
-                        <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                        <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                    </select>
-                </div>
-            </form>
-
-            <div class="filter-buttons">
-                <button type="submit" form="filter-form" class="btn btn-primary" name="submit" value="1">
-                    <i class="fas fa-search"></i>
-                    Xem kết quả
-                </button>
-                <?php if (isset($_GET['submit']) && !empty($duLieuBaoCao)): ?>
-                <?php 
-                $params = $_GET;
-                $params['action'] = 'xuat-excel';
-                $params['type'] = 'chuyen-can';
-                unset($params['submit']);
-                ?>
-                <a href="cReport.php?<?php echo http_build_query($params); ?>" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
                 <?php endif; ?>
             </div>
         </div>
-
-        <?php if (isset($_GET['submit'])): ?>
-        <div class="report-section">
-            <div class="report-header">
-                <h3>
-                    <i class="fas fa-table"></i>
-                    Tình hình chuyên cần
-                </h3>
-            </div>
-
-            <?php if (!empty($duLieuBaoCao)): ?>
-                <div class="table-container">
-                    <table class="report-table">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Họ tên</th>
-                                <th>Lớp</th>
-                                <th>Giới tính</th>
-                                <th>Nghỉ có phép</th>
-                                <th>Nghỉ không phép</th>
-                                <th>Tổng số nghỉ</th>
-                                <th>Xếp loại chuyên cần</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            $stt = 1;
-                            $tongNghiCoPhep = 0;
-                            $tongNghiKhongPhep = 0;
-                            $soHocSinh = count($duLieuBaoCao);
-                            ?>
-                            <?php foreach ($duLieuBaoCao as $row): ?>
-                                <?php 
-                                $tongNghiCoPhep += $row['soNghiCoPhep'];
-                                $tongNghiKhongPhep += $row['soNghiKhongPhep'];
-                                
-                                $classChuyenCan = '';
-                                switch($row['xepLoaiChuyenCan']) {
-                                    case 'Tốt':
-                                        $classChuyenCan = 'conduct-excellent';
-                                        break;
-                                    case 'Khá':
-                                        $classChuyenCan = 'conduct-good';
-                                        break;
-                                    case 'Trung bình':
-                                        $classChuyenCan = 'conduct-average';
-                                        break;
-                                    default:
-                                        $classChuyenCan = 'conduct-weak';
-                                }
-                                ?>
-                                <tr>
-                                    <td><?php echo $stt++; ?></td>
-                                    <td><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['gioiTinh']); ?></td>
-                                    <td><?php echo $row['soNghiCoPhep']; ?></td>
-                                    <td><?php echo $row['soNghiKhongPhep']; ?></td>
-                                    <td><strong><?php echo $row['tongSoNghi']; ?></strong></td>
-                                    <td><span class="<?php echo $classChuyenCan; ?>"><?php echo htmlspecialchars($row['xepLoaiChuyenCan']); ?></span></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                    <?php else: ?>
-                        <div class="no-data">
-                            <i class="fas fa-info-circle"></i>
-                            Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
-                        </div>
-                    <?php endif; ?>
-            </div>
-        </div>
-        <?php else: ?>
-        <div class="report-section">
-            <div class="no-data">
-                <i class="fas fa-info-circle"></i><br>
-                Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
-            </div>
-        </div>
-        <?php endif; ?>
     </div>
+
+    <script>
+        // Auto submit form when filter changes
+        document.querySelectorAll('select').forEach(function(select) {
+            select.addEventListener('change', function() {
+                document.querySelector('#filter-form').submit();
+            });
+        });
+    </script>
 </body>
 
 </html>

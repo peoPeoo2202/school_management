@@ -17,12 +17,12 @@ $maGV = $_SESSION['maGV'] ?? null;
 // Nếu $data không được định nghĩa, khởi tạo nó
 if (!isset($data)) {
     require_once(__DIR__ . '/../../model/mTeachingSchedule.php');
-    
+
     $model = new mTeachingSchedule();
-    
+
     // Lấy danh sách phân công coi thi của giáo viên
     $examResult = $model->getExamSupervision($maGV);
-    
+
     $data = [
         'examSupervision' => [
             'success' => $examResult['success'],
@@ -59,15 +59,13 @@ if (!isset($data)) {
             background: white;
             padding: 24px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 32px;
             font-size: 14px;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 26px;
-            font-weight: 600;
+            font-size: 24px;
             color: #5081BE;
         }
 
@@ -105,7 +103,7 @@ if (!isset($data)) {
         .card {
             background: white;
             border-radius: 12px;
-            padding: 25px;
+            padding: 24px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
@@ -113,23 +111,28 @@ if (!isset($data)) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 0px;
+            margin-bottom: 24px;
+        }
+        .card-title i {
+            color: #5081BE;
         }
 
         .filter-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 16px;
             margin-bottom: 25px;
-            padding: 20px;
+            padding: 24px;
             background: #f8f9ff;
             border-radius: 8px;
         }
@@ -140,29 +143,32 @@ if (!isset($data)) {
         }
 
         .filter-group label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: left;
+            padding-left: 2px;
         }
 
         .filter-group select {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             background: white;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -192,8 +198,8 @@ if (!isset($data)) {
         .exam-card {
             background: white;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             transition: all 0.3s;
         }
 
@@ -207,40 +213,41 @@ if (!isset($data)) {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
 
         .exam-subject {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #5081BE;
         }
 
         .exam-type {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 8px 16px;
             background: #2d5a8c;
             color: white;
-            border-radius: 15px;
+            border-radius: 16px;
             font-size: 12px;
             font-weight: 500;
         }
 
-        .exam-details {
-            margin-bottom: 12px;
-        }
+        /* .exam-details {
+            margin-bottom: 16px;
+        } */
 
         .exam-detail-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 400;
             color: #666;
         }
 
         .exam-detail-item i {
-            width: 20px;
+            width: 24px;
             color: #5081BE;
         }
 
@@ -248,15 +255,15 @@ if (!isset($data)) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 15px;
+            padding-top: 16px;
             border-top: 1px solid #f0f0f0;
-            margin-top: 15px;
+            margin-top: 16px;
         }
 
         .badge {
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
+            padding: 8px 16px;
+            border-radius: 16px;
             font-size: 12px;
             font-weight: 500;
         }
@@ -293,25 +300,26 @@ if (!isset($data)) {
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 60px 24px;
             color: #999;
         }
 
         .empty-state i {
             font-size: 64px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             opacity: 0.5;
         }
 
         .stats-row {
             display: flex;
             justify-content: space-around;
-            padding: 20px;
             background: #f8f9ff;
             border-radius: 8px;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
+            background-color: white;
+            border-radius: 16px;
+            padding: 32px;
         }
-
         .stat-item {
             text-align: center;
         }
@@ -323,7 +331,7 @@ if (!isset($data)) {
         }
 
         .stat-label {
-            font-size: 13px;
+            font-size: 12px;
             color: #666;
             margin-top: 5px;
         }
@@ -345,7 +353,7 @@ if (!isset($data)) {
 
             .stats-row {
                 flex-direction: column;
-                gap: 15px;
+                gap: 16px;
             }
         }
     </style>
@@ -365,10 +373,10 @@ if (!isset($data)) {
             <!-- Statistics -->
             <?php if ($data['examSupervision']['success']): ?>
                 <div class="stats-row">
-                    <div class="stat-item">
-                        <div class="stat-value"><?php echo $data['examSupervision']['total']; ?></div>
-                        <div class="stat-label">Tổng số ca thi</div>
-                    </div>
+                        <div class="stat-item">
+                            <div class="stat-value"><?php echo $data['examSupervision']['total']; ?></div>
+                            <div class="stat-label">Tổng số ca thi</div>
+                        </div>
                     <div class="stat-item">
                         <div class="stat-value">
                             <?php
