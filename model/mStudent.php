@@ -261,21 +261,141 @@ public function getStudentInfoByAccount($tenDangNhap)
     /**
      * Lấy danh sách tất cả học sinh
      */
-    public function getAllStudents()
+    /**
+     * Lấy danh sách tất cả học sinh với filter và phân trang
+     */
+    public function getAllStudents($filters = [], $page = 1, $limit = 20)
     {
-        $sql = "SELECT hs.*, lh.tenLop, kh.khoiLop, tk.tenDangNhap
+        if (!$this->conn) {
+            return [];
+        }
+
+        $offset = ($page - 1) * $limit;
+        
+        $sql = "SELECT hs.*, lh.tenLop, kh.khoiLop, tk.tenDangNhap,
+                       hl.tenHocLuc, hk.tenHanhKiem,
+                       ph.hoTen as tenPhuHuynh, ph.soDienThoai as sdtPhuHuynh
                 FROM hocsinh hs
                 LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi kh ON lh.maKhoi = kh.maKhoi
                 LEFT JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
-                ORDER BY hs.maHS DESC";
+                LEFT JOIN hocluc hl ON hs.maHocLuc = hl.maHocLuc
+                LEFT JOIN hanhkiem hk ON hs.maHanhKiem = hk.maHanhKiem
+                LEFT JOIN phuhuynh ph ON hs.maPH = ph.maPH
+                WHERE 1=1";
+
+        $params = [];
+        $types = '';
+
+        // Filter by name
+        if (!empty($filters['hoTen'])) {
+            $sql .= " AND hs.hoTen LIKE ?";
+            $params[] = '%' . $filters['hoTen'] . '%';
+            $types .= 's';
+        }
+
+        // Filter by class
+        if (!empty($filters['maLop'])) {
+            $sql .= " AND hs.maLop = ?";
+            $params[] = intval($filters['maLop']);
+            $types .= 'i';
+        }
+
+        // Filter by status
+        if (!empty($filters['trangThaiHocTap'])) {
+            $sql .= " AND hs.trangThaiHocTap = ?";
+            $params[] = $filters['trangThaiHocTap'];
+            $types .= 's';
+        }
+
+        // Filter by gender
+        if (!empty($filters['gioiTinh'])) {
+            $sql .= " AND hs.gioiTinh = ?";
+            $params[] = $filters['gioiTinh'];
+            $types .= 's';
+        }
+
+        $sql .= " ORDER BY hs.maHS DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= 'ii';
+
+        $stmt = $this->conn->prepare($sql);
         
-        $result = $this->conn->query($sql);
+        if (!$stmt) {
+            return [];
+        }
+        
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
         $students = [];
         while ($row = $result->fetch_assoc()) {
             $students[] = $row;
         }
+        
+        $stmt->close();
         return $students;
+    }
+
+    /**
+     * Đếm tổng số học sinh
+     */
+    public function countStudents($filters = [])
+    {
+        if (!$this->conn) {
+            return 0;
+        }
+
+        $sql = "SELECT COUNT(*) as total FROM hocsinh WHERE 1=1";
+        
+        $params = [];
+        $types = '';
+
+        if (!empty($filters['hoTen'])) {
+            $sql .= " AND hoTen LIKE ?";
+            $params[] = '%' . $filters['hoTen'] . '%';
+            $types .= 's';
+        }
+
+        if (!empty($filters['maLop'])) {
+            $sql .= " AND maLop = ?";
+            $params[] = intval($filters['maLop']);
+            $types .= 'i';
+        }
+
+        if (!empty($filters['trangThaiHocTap'])) {
+            $sql .= " AND trangThaiHocTap = ?";
+            $params[] = $filters['trangThaiHocTap'];
+            $types .= 's';
+        }
+
+        if (!empty($filters['gioiTinh'])) {
+            $sql .= " AND gioiTinh = ?";
+            $params[] = $filters['gioiTinh'];
+            $types .= 's';
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            return 0;
+        }
+        
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $row['total'];
     }
 
     /**
@@ -488,6 +608,126 @@ public function getStudentInfoByAccount($tenDangNhap)
     /**
      * Ngắt kết nối
      */
+    
+    /**
+     * Lấy danh sách tất cả các lớp học
+     */
+    public function getAllClasses()
+    {
+        if (!$this->conn) {
+            return [];
+        }
+
+        $sql = "SELECT lh.maLop, lh.tenLop, k.khoiLop 
+                FROM lophoc lh 
+                LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi 
+                ORDER BY k.khoiLop, lh.tenLop";
+        
+        $result = $this->conn->query($sql);
+        
+        if (!$result) {
+            return [];
+        }
+        
+        $classes = [];
+        while ($row = $result->fetch_assoc()) {
+            $classes[] = $row;
+        }
+        
+        return $classes;
+    }
+
+    /**
+     * Lấy danh sách tất cả phụ huynh
+     */
+    public function getAllParents()
+    {
+        if (!$this->conn) {
+            return [];
+        }
+
+        $sql = "SELECT maPH, hoTen, soDienThoai, email 
+                FROM phuhuynh 
+                ORDER BY hoTen";
+        
+        $result = $this->conn->query($sql);
+        
+        if (!$result) {
+            return [];
+        }
+        
+        $parents = [];
+        while ($row = $result->fetch_assoc()) {
+            $parents[] = $row;
+        }
+        
+        return $parents;
+    }
+
+    /**
+     * Tạo học sinh mới (cho admin - không cần tạo account)
+     */
+    public function createStudentSimple($data)
+    {
+        if (!$this->conn) {
+            return false;
+        }
+
+        $columns = ['hoTen', 'ngaySinh', 'gioiTinh', 'trangThaiHocTap'];
+        $values = [
+            $data['hoTen'],
+            $data['ngaySinh'],
+            $data['gioiTinh'],
+            $data['trangThaiHocTap'] ?? 'danghoc'
+        ];
+        $types = 'ssss';
+
+        if (!empty($data['diaChi'])) {
+            $columns[] = 'diaChi';
+            $values[] = $data['diaChi'];
+            $types .= 's';
+        }
+
+        if (!empty($data['maLop'])) {
+            $columns[] = 'maLop';
+            $values[] = intval($data['maLop']);
+            $types .= 'i';
+        }
+
+        if (!empty($data['maPH'])) {
+            $columns[] = 'maPH';
+            $values[] = intval($data['maPH']);
+            $types .= 'i';
+        }
+
+        if (!empty($data['maTaiKhoan'])) {
+            $columns[] = 'maTaiKhoan';
+            $values[] = intval($data['maTaiKhoan']);
+            $types .= 'i';
+        }
+
+        $columnsList = implode(', ', $columns);
+        $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+        
+        $sql = "INSERT INTO hocsinh ($columnsList) VALUES ($placeholders)";
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            return false;
+        }
+        
+        $stmt->bind_param($types, ...$values);
+
+        if ($stmt->execute()) {
+            $maHS = $stmt->insert_id;
+            $stmt->close();
+            return $maHS;
+        }
+
+        $stmt->close();
+        return false;
+    }
+
     public function __destruct()
     {
         if ($this->conn) {

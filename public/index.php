@@ -53,32 +53,37 @@ if (isset($_POST["btnSub"])) {
 
     if ($p->clogin($username, $password)) {
         
-        // !!! BẮT BUỘC XÓA DÒNG ECHO NÀY ĐI !!!
-        // echo "<script>alert('Đăng nhập thành công!');</script>";
-
         // điều hướng đến trang tương ứng
         switch ($_SESSION["loaiTaiKhoan"]) {
+            case 'quantrivien':
             case 'admin':
-                // Thêm ../ vào tất cả các đường dẫn
                 header("Location: ../view/admin/index.php");
-                exit(); // Thêm exit()
+                exit();
+                
             case 'hocsinh':
                 header("Location: ../view/student/index.php");
                 exit();
+                
             case 'phuhuynh':
                 header("Location: ../view/parent/index.php");
                 exit();
+                
             case 'giaovien':
                 header("Location: ../view/teacher/index.php");
                 exit();
+                
             case 'bangiamhieu':
-                // Điều hướng đến trang BGH
                 header("Location: ../view/bgh/index.php"); 
                 exit();
-            default:
-                // Điều hướng về trang login nếu có lỗi
-                echo "<script>alert('Đăng nhập không thành công!');</script>";
+                
+            case 'ttbm':
+                header("Location: ../view/ttbm/index.php");
                 exit();
+                
+            default:
+                // Nếu loại tài khoản không xác định
+                echo "<script>alert('Loại tài khoản không được hỗ trợ: " . $_SESSION["loaiTaiKhoan"] . "');</script>";
+                break;
         }
     } else {
         echo "<script>alert('Tên đăng nhập hoặc mật khẩu sai!');</script>";
