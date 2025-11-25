@@ -1,10 +1,5 @@
 <?php
-// Kiểm tra đăng nhập và quyền truy cập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
 ?>
 <!DOCTYPE html>
@@ -70,6 +65,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
         .btn-group {
             display: flex;
             gap: 10px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
         }
 
         .btn {
@@ -228,9 +233,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 <span class="user-name">
                     <i class="fas fa-user-tie"></i> <?php echo htmlspecialchars($hoTen); ?>
                 </span>
-                <a href="../public/index.php?logout=1" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
+                <div class="btn-group">
+                    <a href="../view/bgh/vBGHDashboard.php" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                    <a href="../public/index.php?logout=1" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -296,14 +306,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     </a>
                 </div>
 
-                <!-- Báo cáo kết quả đánh giá -->
+                <!-- Báo cáo danh hiệu học sinh -->
                 <div class="report-card">
                     <h3>
-                        <i class="fas fa-star"></i>
-                        Báo cáo kết quả đánh giá
+                        <i class="fas fa-medal"></i>
+                        Báo cáo danh hiệu học sinh
                     </h3>
-                    <p>Đánh giá tổng hợp kết quả học tập và rèn luyện, xếp loại học sinh theo nhiều tiêu chí.</p>
-                    <a href="cBGHReport.php?action=danh-gia" class="btn btn-primary">
+                    <p>Xét và cập nhật danh hiệu học sinh dựa trên học lực, hạnh kiểm, vi phạm và khen thưởng.</p>
+                    <a href="cBGHReport.php?action=ket-qua-danh-gia" class="btn btn-primary">
                         <i class="fas fa-arrow-right"></i> Xem báo cáo
                     </a>
                 </div>

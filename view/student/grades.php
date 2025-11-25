@@ -37,38 +37,46 @@ if ($hocKy === 'canam') {
     $grades = $model->getDetailedGrades($maHS, $namHoc, $hocKy);
 }
 ?>
-
+<div class="grades-header-icon">
+    <i class="fas fa-chart-line"></i>
+    <h2>Kết quả học tập</h2>
+</div>
 <div class="grades-container">
     <div class="grades-header">
-        <h2>Kết quả học tập</h2>
-        
         <form method="GET" action="" class="filter-form">
             <input type="hidden" name="page" value="grades">
-            
-            <label>Năm học:</label>
-            <select name="namHoc" id="namHoc">
-                <?php foreach ($availableYears as $year): ?>
-                    <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
-                        <?= $year ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            
-            <label>Học kỳ:</label>
-            <select name="hocKy" id="hocKy">
-                <?php foreach ($semesters as $semester): ?>
-                    <?php if ($semester === 'canam'): ?>
-                        <option value="canam" <?= $hocKy === 'canam' ? 'selected' : '' ?>>
-                            Cả năm
+            <div>
+
+            </div>
+            <div>
+                <label>Năm học:</label>
+                <select name="namHoc" id="namHoc">
+                    <?php foreach ($availableYears as $year): ?>
+                        <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
+                            <?= $year ?>
                         </option>
-                    <?php else: ?>
-                        <option value="<?= $semester ?>" <?= $hocKy == $semester ? 'selected' : '' ?>>
-                            Học kỳ <?= $semester ?>
-                        </option>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </select>
-            
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div>
+                <label>Học kỳ:</label>
+                <select name="hocKy" id="hocKy">
+                    <?php foreach ($semesters as $semester): ?>
+                        <?php if ($semester === 'canam'): ?>
+                            <option value="canam" <?= $hocKy === 'canam' ? 'selected' : '' ?>>
+                                Cả năm
+                            </option>
+                        <?php else: ?>
+                            <option value="<?= $semester ?>" <?= $hocKy == $semester ? 'selected' : '' ?>>
+                                Học kỳ <?= $semester ?>
+                            </option>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+
             <button type="submit">Xem điểm</button>
         </form>
     </div>
@@ -103,7 +111,7 @@ if ($hocKy === 'canam') {
             <!-- Bảng điểm theo học kỳ - Hiển thị đầy đủ các loại điểm -->
             <table class="grades-table">
                 <thead>
-                    <tr>
+                    <tr class="grades-table-header">
                         <th>STT</th>
                         <th>Môn học</th>
                         <th>Điểm miệng</th>
@@ -117,7 +125,7 @@ if ($hocKy === 'canam') {
                 <tbody>
                     <?php $stt = 1; ?>
                     <?php foreach ($grades as $grade): ?>
-                        <tr>
+                        <tr class="grades-table-body">
                             <td><?= $stt++ ?></td>
                             <td class="subject-name"><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
                             <td><?= $grade['diemMieng'] ?? '-' ?></td>

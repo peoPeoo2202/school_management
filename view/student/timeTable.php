@@ -40,19 +40,19 @@ if (!$schedule || $schedule->num_rows === 0) {
 $tietTimes = [
   // Buổi sáng
   'sang' => [
-    1 => ['start' => '07:30', 'end' => '08:15'],
-    2 => ['start' => '08:20', 'end' => '09:05'],
-    3 => ['start' => '09:30', 'end' => '10:15'],
-    4 => ['start' => '10:20', 'end' => '11:05'],
-    5 => ['start' => '11:10', 'end' => '11:55']
+    1 => ['start' => '07:00', 'end' => '07:45'],
+    2 => ['start' => '07:50', 'end' => '08:35'],
+    3 => ['start' => '08:40', 'end' => '09:25'],
+    4 => ['start' => '09:55', 'end' => '10:40'],
+    5 => ['start' => '10:45', 'end' => '11:30']
   ],
   // Buổi chiều
   'chieu' => [
-    1 => ['start' => '13:30', 'end' => '14:15'],
-    2 => ['start' => '14:20', 'end' => '15:05'],
-    3 => ['start' => '15:30', 'end' => '16:15'],
-    4 => ['start' => '16:20', 'end' => '17:05'],
-    5 => ['start' => '17:10', 'end' => '17:55']
+    1 => ['start' => '12:00', 'end' => '12:45'],
+    2 => ['start' => '12:50', 'end' => '13:35'],
+    3 => ['start' => '13:40', 'end' => '14:25'],
+    4 => ['start' => '14:55', 'end' => '15:40'],
+    5 => ['start' => '15:45', 'end' => '16:30']
   ]
 ];
 
@@ -101,12 +101,17 @@ while ($row = $schedule->fetch_assoc()) {
   }
 }
 ?>
-
-<div class="timetable-container">
-  <div class="timetable-header">
-    <h3>Thời khóa biểu lớp: <?= htmlspecialchars($info['tenLop']) ?></h3>
+<div class="timetable-header">
+  <div class="timetable-header-left">
+  <i class="fas fa-calendar-alt"></i>
+  <h4>Thời khóa biểu Lớp: <?= htmlspecialchars($info['tenLop']) ?></h4>
   </div>
 
+  <div class="timetable-header-right">
+    <p><?php echo htmlspecialchars($hoTen); ?></p>
+  </div>
+</div>
+<div class="timetable-container">
   <?php
   $buoiNames = ['sang' => 'SÁNG', 'chieu' => 'CHIỀU'];
 
@@ -117,9 +122,8 @@ while ($row = $schedule->fetch_assoc()) {
       <!-- <h4 class="timetable-section-title">
         <?= $buoiNames[$buoi] ?>
       </h4> -->
-
       <table class="timetable-table">
-        <thead >
+        <thead>
           <tr>
             <th class="buoi-column">Buổi</th>
             <th class="tiet-column">Tiết</th>

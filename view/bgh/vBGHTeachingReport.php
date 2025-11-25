@@ -1,10 +1,5 @@
 <?php
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
 ?>
 <!DOCTYPE html>
