@@ -20,10 +20,10 @@ $maGV = $_SESSION['maGV'] ?? null;
 // Nếu $data không được định nghĩa, khởi tạo nó
 if (!isset($data)) {
     $model = new mTeacher();
-    
+
     // Lấy danh sách lớp chi tiết của giáo viên
     $danhSachLop = $model->getDetailedClassListByTeacher($maGV);
-    
+
     $data = [
         'classes' => [
             'success' => !empty($danhSachLop),
@@ -64,80 +64,62 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .header {
             background: white;
             padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
             margin-bottom: 32px;
             font-size: 14px;
         }
 
-        .header h1 {
-            font-size: 26px;
+        .header-left-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5081BE;
             font-weight: 600;
+        }
+
+        .header h2 {
+            font-size: 24px;
             color: #5081BE;
             margin: 0;
         }
 
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .nav-tab {
-            padding: 12px 25px;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #5081BE;
-            font-weight: 500;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-tab:hover {
-            background: #5081BE;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(80, 129, 190, 0.3);
-        }
-
-        .nav-tab.active {
-            background: #5081BE;
-            color: white;
-        }
-
         .card {
             background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 24px;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 16px;
+        }
+        .card-header i{
+            color: #5081BE;
+            font-size: 16px;
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 0;
+            margin-bottom: 8px;
         }
 
         .filter-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 20px;
+            gap: 16px;
+            margin-bottom: 8px;
+            padding: 16px;
             background: #f8f9ff;
             border-radius: 8px;
+            padding-bottom: 24px;
         }
 
         .filter-group {
@@ -146,45 +128,47 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .filter-group label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: left;
+            padding-left: 2px;
         }
 
         .filter-group select {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             background: white;
         }
 
         .filter-actions {
             display: flex;
-            gap: 10px;
+            gap: 16px;
             align-items: flex-end;
         }
 
         .btn {
             padding: 8px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .btn-primary {
-            background: #667eea;
+            background: #5081BE;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #2d5a8c;
         }
 
         .btn-secondary {
@@ -205,23 +189,25 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             border-collapse: collapse;
         }
 
-        thead {
-            background: #f8f9ff;
-        }
+        /* thead {
+            background-color: #5081BE;
+        } */
 
         th {
-            padding: 15px;
+            padding: 8px;
             text-align: left;
             font-weight: 600;
-            color: #333;
+            color: white;
             font-size: 14px;
-            border-bottom: 2px solid #e0e0e0;
+            background-color: #5081BE;
+            text-align: center;
         }
 
         td {
-            padding: 15px;
+            padding: 8px;
             border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
+            font-size: 12px;
+            font-weight: 400;
         }
 
         tbody tr {
@@ -234,10 +220,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .badge {
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
+            padding: 4px 12px;
+            border-radius: 16px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .badge.primary {
@@ -272,31 +258,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             opacity: 0.5;
         }
 
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: #666;
-            margin-top: 5px;
-        }
+        
 
         @media (max-width: 768px) {
             .filter-section {
@@ -334,7 +296,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         <!-- Main Content -->
         <div class="content-area">
             <div class="header">
-                <h1><i class="fas fa-list"></i> Danh sách lớp</h1>
+                <div class="header-left-icon">
+                    <h2>
+                    <i class="fas fa-list"></i>
+                    </h2>
+                    <h2>Danh sách lớp</h2>
+                </div>
             </div>
 
             <!-- Main Card -->
