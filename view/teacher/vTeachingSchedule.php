@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -15,6 +17,70 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
 
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
+
+// Nếu gọi trực tiếp từ view (không có $data), gọi controller để lấy dữ liệu
+if (!isset($data)) {
+    $maGV = $_SESSION['maGV'];
+
+    // Import model để lấy dữ liệu
+    require_once(__DIR__ . '/../../model/mTeachingSchedule.php');
+    $model = new mTeachingSchedule();
+
+    // Lấy tham số lọc từ GET
+    $hocKy = isset($_GET['hocKy']) ? intval($_GET['hocKy']) : (isset($_SESSION['hocKy']) ? $_SESSION['hocKy'] : 1);
+    $namHoc = isset($_GET['namHoc']) ? trim($_GET['namHoc']) : (isset($_SESSION['namHoc']) ? $_SESSION['namHoc'] : '2024-2025');
+    $maLop = isset($_GET['maLop']) ? intval($_GET['maLop']) : null;
+    $thu = isset($_GET['thu']) ? intval($_GET['thu']) : null;
+
+    // Lấy lịch dạy
+    $schedule = $model->getTeachingSchedule($maGV, $hocKy, $namHoc, $maLop, $thu);
+
+    // Lấy danh sách lớp để hiển thị filter
+    $classes = $model->getTeacherClasses($maGV, $hocKy, $namHoc);
+
+    // Tổ chức dữ liệu thành grid (theo thứ và tiết)
+    $scheduleGrid = [];
+
+    // Khởi tạo grid trống (Thứ 2-8, Tiết 1-10)
+    for ($i = 2; $i <= 8; $i++) {
+        for ($j = 1; $j <= 10; $j++) {
+            $scheduleGrid[$i][$j] = null;
+        }
+    }
+
+    // Điền dữ liệu vào grid
+    if ($schedule['success'] && count($schedule['data']) > 0) {
+        foreach ($schedule['data'] as $item) {
+            $thu_item = $item['thu'];
+            $tietBatDau = $item['tietBatDau'];
+            $tietKetThuc = $item['tietKetThuc'];
+
+            // Đánh dấu các tiết từ tietBatDau đến tietKetThuc
+            for ($tiet = $tietBatDau; $tiet <= $tietKetThuc; $tiet++) {
+                if ($tiet == $tietBatDau) {
+                    // Tiết đầu tiên lưu toàn bộ thông tin
+                    $scheduleGrid[$thu_item][$tiet] = $item;
+                } else {
+                    // Các tiết sau đánh dấu là "merged"
+                    $scheduleGrid[$thu_item][$tiet] = 'merged';
+                }
+            }
+        }
+    }
+
+    // Truyền dữ liệu sang view
+    $data = [
+        'schedule' => $schedule,
+        'scheduleGrid' => $scheduleGrid,
+        'classes' => $classes,
+        'filters' => [
+            'hocKy' => $hocKy,
+            'namHoc' => $namHoc,
+            'maLop' => $maLop,
+            'thu' => $thu
+        ]
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -28,8 +94,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <style>
         html,
         body {
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0;
+            padding: 0;
         }
 
         .main-wrapper {
@@ -49,24 +115,38 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .header-section {
             background: white;
-            padding: 30px;
+            padding: 24px;
             border-radius: 12px;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+
         }
 
-        .header-left h1 {
+        .header-left {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+        }
+
+        .header-left-icon {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             color: #5081BE;
-            font-size: 28px;
-            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header-left h2 {
+            margin: 0;
+            font-size: 24px;
         }
 
         .header-left p {
             color: #999;
             font-size: 14px;
+            margin:0
         }
 
         .header-right {
@@ -77,6 +157,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             color: #666;
             font-size: 14px;
             margin-bottom: 10px;
+            font-weight: 500;
+            margin-top: 8px;
+
         }
 
         .header-right .user-name {
@@ -87,43 +170,40 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
+            border-radius: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            padding: 24px;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 16px;
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .card-title i {
             color: #5081BE;
-            font-size: 24px;
+            font-size: 16px;
         }
 
         .filter-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-            padding: 20px;
+            gap: 16px;
+            padding: 16px;
             background: #f8f9ff;
             border-radius: 8px;
+            padding-bottom: 24px;
+            margin-bottom: 8px;
         }
 
         .filter-group {
@@ -132,29 +212,32 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         .filter-group label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: left;
+            padding-left: 2px;
         }
 
         .filter-group select {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             background: white;
+            outline: none;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 500;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -166,40 +249,42 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #2d5a8c;
         }
 
+        .print-btn-container {
+            max-height: 60px;
+            align-items: center;
+            display: flex;
+        }
+
+        .btn-primary i {
+            font-size: 14px;
+        }
+
         .schedule-grid {
             overflow-x: auto;
-            margin-top: 30px;
         }
 
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 1000px;
         }
 
         .schedule-table th {
             background: #5081BE;
             color: white;
-            padding: 12px;
+            padding: 8px;
             text-align: center;
             font-weight: 600;
             font-size: 14px;
         }
 
         .schedule-table td {
-            border: 1px solid #e0e0e0;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             vertical-align: middle;
-            min-height: 80px;
-            font-size: 13px;
-        }
-
-        .schedule-table .time-cell {
-            background: #f8f9ff;
-            font-weight: 600;
-            color: #5081BE;
-            width: 100px;
+            min-height: 50px;
+            font-size: 12px;
+            min-width: 48px;
+            max-width: 80px;
         }
 
         .schedule-table .day-header {
@@ -208,21 +293,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .lesson-cell {
             background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .lesson-cell:hover {
-            background: linear-gradient(135deg, #5081BE30 0%, #4a6fa530 100%);
-            transform: scale(1.02);
+            padding: 8px;
+            border-radius: 8px;
         }
 
         .lesson-subject {
             font-weight: 700;
             color: #5081BE;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-size: 14px;
         }
 
@@ -244,11 +322,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .section-title {
             text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             color: #5081BE;
             font-size: 18px;
             font-weight: 600;
+            margin-top: 24px;
         }
 
         .legend {
@@ -274,6 +352,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             border-radius: 4px;
             background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
         }
+
+
 
         @media print {
 
@@ -307,7 +387,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <!-- Header -->
             <div class="header-section">
                 <div class="header-left">
-                    <h1><i class="fas fa-calendar-alt"></i> Lịch dạy</h1>
+                    <div class="header-left-icon">
+                        <h2><i class="fas fa-calendar-alt"></i></h2>
+                        <h2> Lịch dạy</h2>
+                    </div>
                     <p>Xem thời khóa biểu của bạn</p>
                 </div>
                 <div class="header-right">
@@ -322,9 +405,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <h2 class="card-title">
                         <i class="fas fa-calendar-week"></i> Thời khóa biểu
                     </h2>
-                    <button onclick="window.print()" class="btn btn-primary">
-                        <i class="fas fa-print"></i> In lịch
-                    </button>
+                    <div class="print-btn-container">
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <i class="fas fa-print"></i> In lịch
+                        </button>
+                    </div>
+
                 </div>
 
                 <!-- Filter Section -->
@@ -373,7 +459,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                 <!-- Schedule Grid -->
                 <div class="schedule-grid">
-                    <h3 class="section-title"><i class="fas fa-sun"></i> BUỔI SÁNG (7:00 - 11:30)</h3>
+                    <h3 class="section-title"><i class="fas fa-sun"></i> BUỔI SÁNG (7:00 - 10:50)</h3>
                     <table class="schedule-table">
                         <thead>
                             <tr>
@@ -390,11 +476,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <tbody>
                             <?php
                             $morningLessons = [
-                                1 => '07:00',
-                                2 => '07:50',
-                                3 => '08:50',
-                                4 => '09:40',
-                                5 => '10:35'
+                                1 => '07:00 - 07:45',
+                                2 => '07:50 - 08:35',
+                                3 => '08:40 - 09:25',
+                                4 => '09:55 - 10:40',
+                                5 => '10:45 - 11:30'
                             ];
 
                             foreach ($morningLessons as $tiet => $gio):

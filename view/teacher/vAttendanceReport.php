@@ -1,17 +1,5 @@
 <?php
-// Session đã được start từ controller, không cần start lại
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -267,6 +255,71 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             color: #333;
         }
 
+        .reason-text {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            text-align: left;
+        }
+
+        .summary-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .summary-header {
+            background: #f8f9fa;
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-header h3 {
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .summary-table td {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .summary-table .label-col {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            text-align: left;
+            padding-left: 25px;
+        }
+
+        .summary-table .value-col {
+            color: #5081BE;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -314,13 +367,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <i class="fas fa-filter"></i>
                         Bộ lọc báo cáo
                     </div>
-                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
-                        <input type="hidden" name="action" value="attendance">
+                    <form method="GET" action="" class="filter-form" id="filter-form">
+                        <input type="hidden" name="action" value="chuyen-can">
 
                         <div class="form-group">
-                            <label for="maLop">Lớp:</label>
-                            <select name="maLop" id="maLop">
-                                <option value="">Tất cả lớp</option>
+                            <label for="tenMonHoc">Môn học:</label>
+                            <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;">
+                                <strong><?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?></strong>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maLop">Lớp: <span style="color: #dc3545;">*</span></label>
+                            <select name="maLop" id="maLop" required>
+                                <option value="">Chọn lớp</option>
                                 <?php foreach ($danhSachLop as $lop): ?>
                                     <option value="<?php echo $lop['maLop']; ?>"
                                         <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
@@ -331,17 +391,18 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         </div>
 
                         <div class="form-group">
-                            <label for="hocKy">Học kỳ:</label>
-                            <select name="hocKy" id="hocKy">
-                                <option value="">Tất cả học kỳ</option>
+                            <label for="hocKy">Học kỳ: <span style="color: #dc3545;">*</span></label>
+                            <select name="hocKy" id="hocKy" required>
+                                <option value="">Chọn học kỳ</option>
                                 <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
                                 <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="namHoc">Năm học:</label>
-                            <select name="namHoc" id="namHoc">
+                            <label for="namHoc">Năm học: <span style="color: #dc3545;">*</span></label>
+                            <select name="namHoc" id="namHoc" required>
+                                <option value="">Chọn năm học</option>
                                 <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
                                 <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
                             </select>
@@ -349,17 +410,26 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </form>
 
                     <div class="filter-buttons">
-                        <button type="submit" form="filter-form" class="btn btn-primary">
+                        <button type="submit" form="filter-form" class="btn btn-primary" name="submit" value="1">
                             <i class="fas fa-search"></i>
-                            Lọc kết quả
+                            Xem kết quả
                         </button>
-                        <a href="cReport.php?action=xuat-excel&type=chuyen-can&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
+                        <?php if (isset($_GET['submit']) && !empty($duLieuBaoCao)): ?>
+                        <?php 
+                        $params = $_GET;
+                        $params['action'] = 'xuat-excel';
+                        $params['type'] = 'chuyen-can';
+                        unset($params['submit']);
+                        ?>
+                        <a href="?<?php echo http_build_query($params); ?>" class="btn btn-success">
                             <i class="fas fa-file-excel"></i>
                             Xuất Excel
                         </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
+                <?php if (isset($_GET['submit'])): ?>
                 <div class="report-section">
                     <div class="report-header">
                         <h3>
@@ -377,10 +447,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <th>Họ tên</th>
                                         <th>Lớp</th>
                                         <th>Nghỉ có phép</th>
+                                        <th>Lý do</th>
                                         <th>Nghỉ không phép</th>
                                         <th>Tổng số nghỉ</th>
-                                        <th>Hạnh kiểm</th>
-                                        <th>Loại hạnh kiểm</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -394,105 +463,71 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <?php
                                         $tongNghiCoPhep += $row['soNghiCoPhep'];
                                         $tongNghiKhongPhep += $row['soNghiKhongPhep'];
-
-                                        $classHanhKiem = '';
-                                        switch (strtolower($row['loaiHK'])) {
-                                            case 'tot':
-                                                $classHanhKiem = 'conduct-excellent';
-                                                break;
-                                            case 'kha':
-                                                $classHanhKiem = 'conduct-good';
-                                                break;
-                                            case 'tb':
-                                                $classHanhKiem = 'conduct-average';
-                                                break;
-                                            default:
-                                                $classHanhKiem = 'conduct-weak';
-                                        }
                                         ?>
                                         <tr>
                                             <td><?php echo $stt++; ?></td>
                                             <td><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
                                             <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
                                             <td><?php echo $row['soNghiCoPhep']; ?></td>
+                                            <td>
+                                                <div class="reason-text">
+                                                    <?php 
+                                                    if (!empty($row['lyDoNghiCoPhep'])) {
+                                                        echo htmlspecialchars($row['lyDoNghiCoPhep']);
+                                                    } else {
+                                                        echo '-';
+                                                    }
+                                                    ?>
+                                                </div>
+                                            </td>
                                             <td><?php echo $row['soNghiKhongPhep']; ?></td>
                                             <td><strong><?php echo $row['tongSoNghi']; ?></strong></td>
-                                            <td><?php echo htmlspecialchars($row['tenHanhKiem']); ?></td>
-                                            <td><span class="<?php echo $classHanhKiem; ?>"><?php echo htmlspecialchars($row['loaiHK']); ?></span></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="stats-summary">
-                            <div class="stat-item">
-                                <div class="stat-label">Tổng số học sinh</div>
-                                <div class="stat-value"><?php echo $soHocSinh; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">TB nghỉ có phép</div>
-                                <div class="stat-value"><?php echo $soHocSinh > 0 ? number_format($tongNghiCoPhep / $soHocSinh, 1) : '0'; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">TB nghỉ không phép</div>
-                                <div class="stat-value"><?php echo $soHocSinh > 0 ? number_format($tongNghiKhongPhep / $soHocSinh, 1) : '0'; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">HK Tốt</div>
-                                <div class="stat-value conduct-excellent">
-                                    <?php
-                                    $soTot = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        if (strtolower($row['loaiHK']) == 'tot') $soTot++;
-                                    }
-                                    echo $soTot;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">HK Khá</div>
-                                <div class="stat-value conduct-good">
-                                    <?php
-                                    $soKha = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        if (strtolower($row['loaiHK']) == 'kha') $soKha++;
-                                    }
-                                    echo $soKha;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">HK TB</div>
-                                <div class="stat-value conduct-average">
-                                    <?php
-                                    $soTB = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        if (strtolower($row['loaiHK']) == 'tb') $soTB++;
-                                    }
-                                    echo $soTB;
-                                    ?>
-                                </div>
-                            </div>
-                        </div>
                     <?php else: ?>
                         <div class="no-data">
                             <i class="fas fa-info-circle"></i>
-                            Không có dữ liệu để hiển thị. Vui lòng chọn bộ lọc phù hợp.
+                            Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
                         </div>
                     <?php endif; ?>
                 </div>
+
+                        <div class="stats-summary">
+                            <div class="stat-item">
+                                <div class="stat-label">Tổng số học sinh</div>
+                                <div class="stat-value"><?php echo $soHocSinh ?? 0; ?></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Tổng nghỉ có phép</div>
+                                <div class="stat-value"><?php echo $tongNghiCoPhep ?? 0; ?></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Tổng nghỉ không phép</div>
+                                <div class="stat-value"><?php echo $tongNghiKhongPhep ?? 0; ?></div>
+                            </div>
+                        </div>
+                <?php else: ?>
+                    <div class="no-data">
+                        <i class="fas fa-info-circle"></i><br>
+                        Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
+    </div>
 
-        <script>
-            // Auto submit form when filter changes
-            document.querySelectorAll('select').forEach(function(select) {
-                select.addEventListener('change', function() {
-                    document.querySelector('form').submit();
-                });
+    <script>
+        // Auto submit form when filter changes
+        document.querySelectorAll('select').forEach(function(select) {
+            select.addEventListener('change', function() {
+                document.querySelector('#filter-form').submit();
             });
-        </script>
+        });
+    </script>
 </body>
 
 </html>

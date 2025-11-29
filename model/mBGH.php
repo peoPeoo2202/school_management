@@ -3,7 +3,7 @@ include_once("mConnect.php");
 include_once("mAccount.php");
 
 /**
- * Model xử lý Ban Giám Hiệu (bgh)
+ * Model xử lý Ban giám hiệu (bgh)
  */
 class mBGH
 {
@@ -40,7 +40,7 @@ class mBGH
                 $accountData['matKhau'],
                 $data['hoTen'],
                 'bangiamhieu',
-                3002 // maNhom BGH
+                3005 // maNhom ban giám hiệu
             );
 
             if (!$maTaiKhoan) {
@@ -48,8 +48,8 @@ class mBGH
             }
 
             // 2. Tạo BGH với maTaiKhoan
-            $sql = "INSERT INTO bgh (hoTen, ngaySinh, gioiTinh, email, soDienThoai, maTaiKhoan, maYeuCau, maDeThi) 
-                    VALUES (?, ?, ?, ?, ?, ?, NULL, NULL)";
+            $sql = "INSERT INTO bgh (hoTen, ngaySinh, gioiTinh, email, soDienThoai, maTaiKhoan) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
@@ -80,7 +80,7 @@ class mBGH
                 'success' => true,
                 'maBGH' => $maBGH,
                 'maTaiKhoan' => $maTaiKhoan,
-                'message' => 'Tạo BGH thành công'
+                'message' => 'Tạo Ban giám hiệu thành công'
             ];
 
         } catch (Exception $e) {
@@ -98,11 +98,19 @@ class mBGH
      */
     public function updateBGH($maBGH, $data)
     {
-        $sql = "UPDATE bgh 
-                SET hoTen = ?, ngaySinh = ?, gioiTinh = ?, email = ?, soDienThoai = ?
+        $sql = "UPDATE bgh SET 
+                hoTen = ?,
+                ngaySinh = ?,
+                gioiTinh = ?,
+                email = ?,
+                soDienThoai = ?
                 WHERE maBGH = ?";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return ['success' => false, 'message' => 'Prepare failed: ' . $this->conn->error];
+        }
+
         $stmt->bind_param(
             "sssssi",
             $data['hoTen'],
@@ -113,71 +121,48 @@ class mBGH
             $maBGH
         );
 
-        $success = $stmt->execute();
-        $stmt->close();
-        return $success;
-    }
-
-    /**
-     * Lấy thông tin BGH theo maBGH
-     */
-    public function getBGHById($maBGH)
-    {
-        $sql = "SELECT bgh.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
-                FROM bgh
-                LEFT JOIN taikhoan tk ON bgh.maTaiKhoan = tk.maTaiKhoan
-                WHERE bgh.maBGH = ?";
-        
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $maBGH);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        return $result;
-    }
-
-    /**
-     * Lấy danh sách tất cả BGH
-     */
-    public function getAllBGH()
-    {
-        $sql = "SELECT bgh.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
-                FROM bgh
-                LEFT JOIN taikhoan tk ON bgh.maTaiKhoan = tk.maTaiKhoan
-                ORDER BY bgh.maBGH DESC";
-        
-        $result = $this->conn->query($sql);
-        $bghList = [];
-        while ($row = $result->fetch_assoc()) {
-            $bghList[] = $row;
+        if ($stmt->execute()) {
+            $stmt->close();
+            return ['success' => true, 'message' => 'Cập nhật BGH thành công'];
+        } else {
+            $error = $stmt->error;
+            $stmt->close();
+            return ['success' => false, 'message' => 'Lỗi: ' . $error];
         }
-        return $bghList;
     }
 
     /**
-     * Xóa BGH (cũng xóa tài khoản liên kết)
+     * Xóa BGH
      */
     public function deleteBGH($maBGH)
     {
+        // Lấy maTaiKhoan trước khi xóa
+        $sql = "SELECT maTaiKhoan FROM bgh WHERE maBGH = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maBGH);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $bgh = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$bgh) {
+            return ['success' => false, 'message' => 'BGH không tồn tại'];
+        }
+
         $this->conn->begin_transaction();
 
         try {
-            // Lấy maTaiKhoan trước
-            $bgh = $this->getBGHById($maBGH);
-            if (!$bgh) {
-                throw new Exception("Không tìm thấy BGH");
-            }
-
-            // Xóa BGH
+            // 1. Xóa BGH
             $sql = "DELETE FROM bgh WHERE maBGH = ?";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("i", $maBGH);
+            
             if (!$stmt->execute()) {
                 throw new Exception("Không thể xóa BGH");
             }
             $stmt->close();
 
-            // Xóa tài khoản nếu có
+            // 2. Xóa tài khoản
             if ($bgh['maTaiKhoan']) {
                 $this->mAccount->deleteAccount($bgh['maTaiKhoan']);
             }
@@ -190,4 +175,63 @@ class mBGH
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
+
+    /**
+     * Lấy thông tin BGH theo maBGH
+     */
+    public function getBGHById($maBGH)
+    {
+        $sql = "SELECT b.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
+                FROM bgh b
+                LEFT JOIN taikhoan tk ON b.maTaiKhoan = tk.maTaiKhoan
+                WHERE b.maBGH = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maBGH);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $bgh = $result->fetch_assoc();
+        $stmt->close();
+
+        return $bgh;
+    }
+
+    /**
+     * Lấy danh sách tất cả BGH
+     */
+    public function getAllBGH()
+    {
+        $sql = "SELECT b.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
+                FROM bgh b
+                LEFT JOIN taikhoan tk ON b.maTaiKhoan = tk.maTaiKhoan
+                ORDER BY b.hoTen";
+        
+        $result = $this->conn->query($sql);
+        $bghList = [];
+        
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $bghList[] = $row;
+            }
+        }
+        
+        return $bghList;
+    }
+
+    /**
+     * Kiểm tra BGH có tồn tại không
+     */
+    public function bghExists($maBGH)
+    {
+        $sql = "SELECT COUNT(*) as count FROM bgh WHERE maBGH = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maBGH);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $row['count'] > 0;
+    }
 }
+?>

@@ -62,7 +62,7 @@ foreach ([1, 2, 'canam'] as $hocKy) {
             $avgScore = 0;
         }
     }
-    
+
     // Xếp loại học lực
     if ($avgScore >= 8.0) {
         $hocLuc = 'Giỏi';
@@ -80,11 +80,11 @@ foreach ([1, 2, 'canam'] as $hocKy) {
         $hocLuc = 'Chưa có dữ liệu';
         $hocLucClass = 'no-data';
     }
-    
+
     // Hạnh kiểm (giả định - có thể lấy từ database)
     $hanhKiem = 'Tốt';
     $hanhKiemClass = 'good';
-    
+
     $classifications[$hocKy] = [
         'diemTB' => $avgScore > 0 ? number_format($avgScore, 2) : '-',
         'hocLuc' => $hocLuc,
@@ -94,14 +94,19 @@ foreach ([1, 2, 'canam'] as $hocKy) {
     ];
 }
 ?>
+<div class="classification-header-icon">
+    <i class="fas fa-star"></i>
+    <h4>Xếp loại học sinh</h4>
 
+</div>
 <div class="classification-container">
+
     <div class="classification-header">
-        <h2>Xếp loại học sinh</h2>
-        
+
+
         <form method="GET" action="" class="filter-form">
             <input type="hidden" name="page" value="classification">
-            
+
             <label>Năm học:</label>
             <select name="namHoc" id="namHoc">
                 <?php foreach ($availableYears as $year): ?>
@@ -110,7 +115,7 @@ foreach ([1, 2, 'canam'] as $hocKy) {
                     </option>
                 <?php endforeach; ?>
             </select>
-            
+
             <button type="submit">Xem xếp loại</button>
         </form>
     </div>
@@ -164,25 +169,26 @@ foreach ([1, 2, 'canam'] as $hocKy) {
             </div>
 
             <!-- Cả năm -->
-            <div class="classification-card card-full-year">
-                <h3>Cả năm</h3>
-                <div class="classification-item">
-                    <span class="classification-label">Điểm trung bình:</span>
-                    <span class="classification-value"><?= $classifications['canam']['diemTB'] ?></span>
-                </div>
-                <div class="classification-item">
-                    <span class="classification-label">Học lực:</span>
-                    <span class="classification-value <?= $classifications['canam']['hocLucClass'] ?>">
-                        <?= $classifications['canam']['hocLuc'] ?>
-                    </span>
-                </div>
-                <div class="classification-item">
-                    <span class="classification-label">Hạnh kiểm:</span>
-                    <span class="classification-value <?= $classifications['canam']['hanhKiemClass'] ?>">
-                        <?= $classifications['canam']['hanhKiem'] ?>
-                    </span>
-                </div>
+
+        </div>
+        <div class="classification-card card-full-year">
+            <h3>Cả năm</h3>
+            <div class="classification-item">
+                <span class="classification-label">Điểm trung bình:</span>
+                <span class="classification-value"><?= $classifications['canam']['diemTB'] ?></span>
+            </div>
+            <div class="classification-item">
+                <span class="classification-label">Học lực:</span>
+                <span class="classification-value <?= $classifications['canam']['hocLucClass'] ?>">
+                    <?= $classifications['canam']['hocLuc'] ?>
+                </span>
+            </div>
+            <div class="classification-item">
+                <span class="classification-label">Hạnh kiểm:</span>
+                <span class="classification-value <?= $classifications['canam']['hanhKiemClass'] ?>">
+                    <?= $classifications['canam']['hanhKiem'] ?>
+                </span>
             </div>
         </div>
-        <?php endif; ?>
-    </div>
+    <?php endif; ?>
+</div>

@@ -1,17 +1,5 @@
 <?php
-session_start();
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -22,7 +10,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo & Thống kê - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../view/teacher/style.css">
     <style>
         * {
             margin: 0
@@ -244,6 +232,41 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #f8f9fa;
         }
 
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .file-link:hover {
+            color: #5a6fd8;
+            text-decoration: underline;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #218838;
+            color: white;
+        }
+
         .alert {
             padding: 15px;
             border-radius: 6px;
@@ -334,7 +357,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <?php endif; ?>
 
             <div class="reports-grid">
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=academic'">
+                <div class="report-card" onclick="location.href='cReport.php?action=academic'">
                     <div class="report-icon">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
@@ -342,10 +365,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Xem kết quả học tập của học sinh theo môn học, lớp và học kỳ
                     </div>
-                    <a href="../../controller/cReport.php?action=academic" class="report-button">Xem báo cáo</a>
+                    <a href="cReport.php?action=academic" class="report-button">Xem báo cáo</a>
                 </div>
 
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=attendance'">
+                <div class="report-card" onclick="location.href='cReport.php?action=attendance'">
                     <div class="report-icon">
                         <i class="fas fa-calendar-check"></i>
                     </div>
@@ -353,10 +376,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Thống kê tình hình chuyên cần và hạnh kiểm của học sinh
                     </div>
-                    <a href="../../controller/cReport.php?action=attendance" class="report-button">Xem báo cáo</a>
+                    <a href="cReport.php?action=attendance" class="report-button">Xem báo cáo</a>
                 </div>
 
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=teaching'">
+                <div class="report-card" onclick="location.href='cReport.php?action=teaching'">
                     <div class="report-icon">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
@@ -364,10 +387,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Tổng hợp lịch giảng dạy và tình hình bài tập của giáo viên
                     </div>
-                    <a href="../../controller/cReport.php?action=teaching" class="report-button">Xem báo cáo</a>
+                    <a href="cReport.php?action=teaching" class="report-button">Xem báo cáo</a>
                 </div>
 
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=grade_stats'">
+                <div class="report-card" onclick="location.href='cReport.php?action=grade_stats'">
                     <div class="report-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -375,10 +398,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Phân tích thống kê điểm số theo từng môn học
                     </div>
-                    <a href="../../controller/cReport.php?action=grade_stats" class="report-button">Xem thống kê</a>
+                    <a href="cReport.php?action=grade_stats" class="report-button">Xem thống kê</a>
                 </div>
 
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=student_stats'">
+                <div class="report-card" onclick="location.href='cReport.php?action=student_stats'">
                     <div class="report-icon">
                         <i class="fas fa-users"></i>
                     </div>
@@ -386,10 +409,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Thống kê tổng quát về học sinh theo lớp và xếp loại
                     </div>
-                    <a href="../../controller/cReport.php?action=student_stats" class="report-button">Xem thống kê</a>
+                    <a href="cReport.php?action=student_stats" class="report-button">Xem thống kê</a>
                 </div>
 
-                <div class="report-card" onclick="location.href='../../controller/cReport.php?action=submit'">
+                <div class="report-card" onclick="location.href='cReport.php?action=submit'">
                     <div class="report-icon">
                         <i class="fas fa-upload"></i>
                     </div>
@@ -397,7 +420,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <div class="report-description">
                         Tải lên và nộp báo cáo cho ban giám hiệu
                     </div>
-                    <a href="../../controller/cReport.php?action=submit" class="report-button">Nộp báo cáo</a>
+                    <a href="cReport.php?action=submit" class="report-button">Nộp báo cáo</a>
                 </div>
             </div>
 
@@ -412,9 +435,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <tr>
                                 <th>Tên báo cáo</th>
                                 <th>Loại</th>
-                                <th>Học kỳ</th>
-                                <th>Năm học</th>
-                                <th>Thời gian</th>
+                                <th>Mô tả</th>
+                                <th>File</th>
+                                <th>Ngày nộp</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -439,22 +463,36 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             case 'thong-ke-hoc-sinh':
                                                 echo 'Thống kê học sinh';
                                                 break;
+                                            case 'tong-hop':
+                                                echo 'Tổng hợp';
+                                                break;
+                                            case 'danh-gia':
+                                                echo 'Đánh giá';
+                                                break;
                                             default:
                                                 echo htmlspecialchars($baoCao['loaiBaoCao']);
                                         }
                                         ?>
                                     </td>
-                                    <td><?php echo $baoCao['hocKy']; ?></td>
-                                    <td><?php echo htmlspecialchars($baoCao['namHoc']); ?></td>
                                     <td>
-                                        <?php
-                                        $noiDung = json_decode($baoCao['noiDung'], true);
-                                        if ($noiDung && isset($noiDung['upload_time'])) {
-                                            echo date('d/m/Y H:i', strtotime($noiDung['upload_time']));
-                                        } else {
-                                            echo 'N/A';
-                                        }
+                                        <?php 
+                                        $moTa = $baoCao['moTa'] ?? '';
+                                        echo $moTa ? htmlspecialchars($moTa) : '<span style="color: #999; font-style: italic;">Không có mô tả</span>';
                                         ?>
+                                    </td>
+                                    <td>
+                                        <a href="download.php?id=<?php echo $baoCao['maBaoCao']; ?>" 
+                                           class="file-link" title="Tải xuống file">
+                                            <i class="fas fa-file-download"></i>
+                                            <?php echo htmlspecialchars($baoCao['tenFile']); ?>
+                                        </a>
+                                    </td>
+                                    <td><?php echo date('d/m/Y H:i', strtotime($baoCao['ngayNop'])); ?></td>
+                                    <td>
+                                        <a href="download.php?id=<?php echo $baoCao['maBaoCao']; ?>" 
+                                           class="action-btn view-btn" title="Tải xuống file">
+                                            <i class="fas fa-download"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

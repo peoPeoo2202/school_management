@@ -17,12 +17,12 @@ $maGV = $_SESSION['maGV'] ?? null;
 // Nếu $data không được định nghĩa, khởi tạo nó
 if (!isset($data)) {
     require_once(__DIR__ . '/../../model/mTeachingSchedule.php');
-    
+
     $model = new mTeachingSchedule();
-    
+
     // Lấy danh sách phân công chấm điểm của giáo viên
     $phanCongResult = $model->getGradingAssignment($maGV);
-    
+
     $data = [
         'gradingAssignment' => [
             'success' => $phanCongResult['success'],
@@ -58,7 +58,7 @@ if (!isset($data)) {
         .header {
             background: white;
             padding: 24px;
-            border-radius: 12px;
+            border-radius: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 32px;
             font-size: 14px;
@@ -66,8 +66,7 @@ if (!isset($data)) {
 
         .header h1 {
             margin: 0;
-            font-size: 26px;
-            font-weight: 600;
+            font-size: 24px;
             color: #5081BE;
         }
 
@@ -113,23 +112,28 @@ if (!isset($data)) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
         }
 
         .card-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin:0px;
+            margin-bottom: 24px;
+        }
+        .card-title i {
+            color: #5081BE;
         }
 
         .filter-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 16px;
             margin-bottom: 25px;
-            padding: 20px;
+            padding: 24px;
             background: #f8f9ff;
             border-radius: 8px;
         }
@@ -140,29 +144,32 @@ if (!isset($data)) {
         }
 
         .filter-group label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            text-align: left;
+            padding-left: 2px;
         }
 
         .filter-group select {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 12px;
             background: white;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            font-size: 14px;
         }
 
         .btn-primary {
@@ -171,7 +178,7 @@ if (!isset($data)) {
         }
 
         .btn-primary:hover {
-            background: #5568d3;
+            background: #2d5a8c;
         }
 
         .table-responsive {
@@ -188,18 +195,20 @@ if (!isset($data)) {
         }
 
         th {
-            padding: 15px;
+            padding: 8px;
             text-align: left;
             font-weight: 600;
-            color: #333;
+            color: white;
             font-size: 14px;
-            border-bottom: 2px solid #e0e0e0;
+            background-color: #5081BE;
+            text-align: center;
         }
 
         td {
-            padding: 15px;
+            padding: 8px;
             border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
+            font-size: 12px;
+            font-weight: 400;
         }
 
         tbody tr {
@@ -318,10 +327,14 @@ if (!isset($data)) {
         .stats-row {
             display: flex;
             justify-content: space-around;
-            padding: 20px;
             background: #f8f9ff;
             border-radius: 8px;
-            margin-bottom: 25px;
+            margin-bottom: 24px;
+            background-color: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
         }
 
         .stat-item {
@@ -341,9 +354,9 @@ if (!isset($data)) {
         }
 
         .action-btn {
-            padding: 6px 12px;
+            padding: 8px 12px ;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 500;
@@ -358,7 +371,7 @@ if (!isset($data)) {
         }
 
         .action-btn.view:hover {
-            background: #5568d3;
+            background: #2d5a8c;
         }
 
         @media (max-width: 768px) {
@@ -374,7 +387,7 @@ if (!isset($data)) {
 
             .stats-row {
                 flex-direction: column;
-                gap: 15px;
+                gap: 16px;
             }
 
             table {
@@ -392,216 +405,216 @@ if (!isset($data)) {
 <body>
     <div class="main-wrapper">
         <!-- Sidebar Navigation -->
-            <div class="main-wrapper">
-        <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
+        <div class="main-wrapper">
+            <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
 
-        <!-- Main Content -->
-        <div class="content-area">
-            <div class="header">
-                <h1><i class="fas fa-pen-square"></i> Phân công chấm điểm</h1>
-            </div>
-
-            <!-- Statistics -->
-            <?php if ($data['gradingAssignment']['success']): ?>
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <div class="stat-value"><?php echo $data['gradingAssignment']['total']; ?></div>
-                        <div class="stat-label">Tổng phân công</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">
-                            <?php
-                            $pending = 0;
-                            foreach ($data['gradingAssignment']['data'] as $item) {
-                                if ($item['trangThai'] == 'pending') {
-                                    $pending++;
-                                }
-                            }
-                            echo $pending;
-                            ?>
-                        </div>
-                        <div class="stat-label">Chưa bắt đầu</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">
-                            <?php
-                            $inProgress = 0;
-                            foreach ($data['gradingAssignment']['data'] as $item) {
-                                if ($item['trangThai'] == 'in_progress') {
-                                    $inProgress++;
-                                }
-                            }
-                            echo $inProgress;
-                            ?>
-                        </div>
-                        <div class="stat-label">Đang làm</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">
-                            <?php
-                            $completed = 0;
-                            foreach ($data['gradingAssignment']['data'] as $item) {
-                                if ($item['trangThai'] == 'completed') {
-                                    $completed++;
-                                }
-                            }
-                            echo $completed;
-                            ?>
-                        </div>
-                        <div class="stat-label">Hoàn thành</div>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <!-- Main Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title"><i class="fas fa-list"></i> Danh sách phân công chấm điểm</h2>
+            <!-- Main Content -->
+            <div class="content-area">
+                <div class="header">
+                    <h1><i class="fas fa-pen-square"></i> Phân công chấm điểm</h1>
                 </div>
 
-                <!-- Filter Section -->
-                <form method="GET" action="">
-                    <input type="hidden" name="action" value="viewGradingAssignment">
-                    <div class="filter-section">
-                        <div class="filter-group">
-                            <label>Trạng thái</label>
-                            <select name="trangThai">
-                                <option value="">Tất cả</option>
-                                <option value="pending" <?php echo ($data['filters']['trangThai'] == 'pending') ? 'selected' : ''; ?>>Chưa bắt đầu</option>
-                                <option value="in_progress" <?php echo ($data['filters']['trangThai'] == 'in_progress') ? 'selected' : ''; ?>>Đang làm</option>
-                                <option value="completed" <?php echo ($data['filters']['trangThai'] == 'completed') ? 'selected' : ''; ?>>Hoàn thành</option>
-                                <option value="cancelled" <?php echo ($data['filters']['trangThai'] == 'cancelled') ? 'selected' : ''; ?>>Đã hủy</option>
-                            </select>
+                <!-- Statistics -->
+                <?php if ($data['gradingAssignment']['success']): ?>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-value"><?php echo $data['gradingAssignment']['total']; ?></div>
+                            <div class="stat-label">Tổng phân công</div>
                         </div>
-
-                        <div class="filter-group">
-                            <label>Loại kiểm tra</label>
-                            <select name="loaiKiemTra">
-                                <option value="">Tất cả</option>
-                                <option value="Miệng" <?php echo ($data['filters']['loaiKiemTra'] == 'Miệng') ? 'selected' : ''; ?>>Miệng</option>
-                                <option value="15 phút" <?php echo ($data['filters']['loaiKiemTra'] == '15 phút') ? 'selected' : ''; ?>>15 phút</option>
-                                <option value="1 tiết" <?php echo ($data['filters']['loaiKiemTra'] == '1 tiết') ? 'selected' : ''; ?>>1 tiết</option>
-                                <option value="Giữa kỳ" <?php echo ($data['filters']['loaiKiemTra'] == 'Giữa kỳ') ? 'selected' : ''; ?>>Giữa kỳ</option>
-                                <option value="Cuối kỳ" <?php echo ($data['filters']['loaiKiemTra'] == 'Cuối kỳ') ? 'selected' : ''; ?>>Cuối kỳ</option>
-                            </select>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <?php
+                                $pending = 0;
+                                foreach ($data['gradingAssignment']['data'] as $item) {
+                                    if ($item['trangThai'] == 'pending') {
+                                        $pending++;
+                                    }
+                                }
+                                echo $pending;
+                                ?>
+                            </div>
+                            <div class="stat-label">Chưa bắt đầu</div>
                         </div>
-
-                        <div class="filter-group">
-                            <label>Học kỳ</label>
-                            <select name="hocKy">
-                                <option value="">Tất cả</option>
-                                <option value="1" <?php echo ($data['filters']['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                <option value="2" <?php echo ($data['filters']['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                            </select>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <?php
+                                $inProgress = 0;
+                                foreach ($data['gradingAssignment']['data'] as $item) {
+                                    if ($item['trangThai'] == 'in_progress') {
+                                        $inProgress++;
+                                    }
+                                }
+                                echo $inProgress;
+                                ?>
+                            </div>
+                            <div class="stat-label">Đang làm</div>
                         </div>
-
-                        <div class="filter-group">
-                            <label>&nbsp;</label>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Lọc
-                            </button>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <?php
+                                $completed = 0;
+                                foreach ($data['gradingAssignment']['data'] as $item) {
+                                    if ($item['trangThai'] == 'completed') {
+                                        $completed++;
+                                    }
+                                }
+                                echo $completed;
+                                ?>
+                            </div>
+                            <div class="stat-label">Hoàn thành</div>
                         </div>
                     </div>
-                </form>
+                <?php endif; ?>
 
-                <!-- Table -->
-                <div class="table-responsive">
-                    <?php if ($data['gradingAssignment']['success'] && count($data['gradingAssignment']['data']) > 0): ?>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Loại kiểm tra</th>
-                                    <th>Môn học</th>
-                                    <th>Lớp</th>
-                                    <th>Số lượng</th>
-                                    <th>Hình thức</th>
-                                    <th>Ngày chấm</th>
-                                    <th>Tiến độ</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($data['gradingAssignment']['data'] as $index => $item): ?>
+                <!-- Main Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fas fa-list"></i> Danh sách phân công chấm điểm</h2>
+                    </div>
+
+                    <!-- Filter Section -->
+                    <form method="GET" action="">
+                        <input type="hidden" name="action" value="viewGradingAssignment">
+                        <div class="filter-section">
+                            <div class="filter-group">
+                                <label>Trạng thái</label>
+                                <select name="trangThai">
+                                    <option value="">Tất cả</option>
+                                    <option value="pending" <?php echo ($data['filters']['trangThai'] == 'pending') ? 'selected' : ''; ?>>Chưa bắt đầu</option>
+                                    <option value="in_progress" <?php echo ($data['filters']['trangThai'] == 'in_progress') ? 'selected' : ''; ?>>Đang làm</option>
+                                    <option value="completed" <?php echo ($data['filters']['trangThai'] == 'completed') ? 'selected' : ''; ?>>Hoàn thành</option>
+                                    <option value="cancelled" <?php echo ($data['filters']['trangThai'] == 'cancelled') ? 'selected' : ''; ?>>Đã hủy</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Loại kiểm tra</label>
+                                <select name="loaiKiemTra">
+                                    <option value="">Tất cả</option>
+                                    <option value="Miệng" <?php echo ($data['filters']['loaiKiemTra'] == 'Miệng') ? 'selected' : ''; ?>>Miệng</option>
+                                    <option value="15 phút" <?php echo ($data['filters']['loaiKiemTra'] == '15 phút') ? 'selected' : ''; ?>>15 phút</option>
+                                    <option value="1 tiết" <?php echo ($data['filters']['loaiKiemTra'] == '1 tiết') ? 'selected' : ''; ?>>1 tiết</option>
+                                    <option value="Giữa kỳ" <?php echo ($data['filters']['loaiKiemTra'] == 'Giữa kỳ') ? 'selected' : ''; ?>>Giữa kỳ</option>
+                                    <option value="Cuối kỳ" <?php echo ($data['filters']['loaiKiemTra'] == 'Cuối kỳ') ? 'selected' : ''; ?>>Cuối kỳ</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Học kỳ</label>
+                                <select name="hocKy">
+                                    <option value="">Tất cả</option>
+                                    <option value="1" <?php echo ($data['filters']['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                    <option value="2" <?php echo ($data['filters']['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter"></i> Lọc
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <?php if ($data['gradingAssignment']['success'] && count($data['gradingAssignment']['data']) > 0): ?>
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td><?php echo $index + 1; ?></td>
-                                        <td>
-                                            <?php
-                                            $loaiKTClass = 'mieng';
-                                            if ($item['loaiKiemTra'] == '15 phút') $loaiKTClass = 'phut15';
-                                            elseif ($item['loaiKiemTra'] == '1 tiết') $loaiKTClass = 'tiet1';
-                                            elseif ($item['loaiKiemTra'] == 'Giữa kỳ') $loaiKTClass = 'giuaky';
-                                            elseif ($item['loaiKiemTra'] == 'Cuối kỳ') $loaiKTClass = 'cuoiky';
-                                            ?>
-                                            <span class="badge <?php echo $loaiKTClass; ?>">
-                                                <?php echo htmlspecialchars($item['loaiKiemTra']); ?>
-                                            </span>
-                                        </td>
-                                        <td><strong><?php echo htmlspecialchars($item['tenMonHoc']); ?></strong></td>
-                                        <td><?php echo htmlspecialchars($item['tenLop']); ?></td>
-                                        <td>
-                                            <i class="fas fa-users"></i>
-                                            <?php echo $item['soDaCham']; ?>/<?php echo $item['soLuongHocSinh']; ?>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($item['hinhThucCham']); ?></td>
-                                        <td>
-                                            <?php
-                                            if ($item['ngayCham']) {
-                                                echo date('d/m/Y', strtotime($item['ngayCham']));
-                                            } else {
-                                                echo '<span style="color: #999;">Chưa xác định</span>';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <div class="progress-container">
-                                                <?php
-                                                $percent = round($item['phanTramHoanThanh'] ?? 0);
-                                                $progressClass = 'low';
-                                                if ($percent >= 100) $progressClass = 'complete';
-                                                elseif ($percent >= 70) $progressClass = 'high';
-                                                elseif ($percent >= 40) $progressClass = 'medium';
-                                                ?>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill <?php echo $progressClass; ?>"
-                                                        style="width: <?php echo $percent; ?>%"></div>
-                                                </div>
-                                                <div class="progress-text"><?php echo $percent; ?>%</div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge <?php echo htmlspecialchars($item['trangThai']); ?>">
-                                                <?php
-                                                $statusLabels = [
-                                                    'pending' => 'Chưa bắt đầu',
-                                                    'in_progress' => 'Đang làm',
-                                                    'completed' => 'Hoàn thành',
-                                                    'cancelled' => 'Đã hủy'
-                                                ];
-                                                echo $statusLabels[$item['trangThai']] ?? $item['trangThai'];
-                                                ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="#" class="action-btn view" title="Xem chi tiết">
-                                                <i class="fas fa-eye"></i> Chi tiết
-                                            </a>
-                                        </td>
+                                        <th>STT</th>
+                                        <th>Loại kiểm tra</th>
+                                        <th>Môn học</th>
+                                        <th>Lớp</th>
+                                        <th>Số lượng</th>
+                                        <th>Hình thức</th>
+                                        <th>Ngày chấm</th>
+                                        <th>Tiến độ</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
                                     </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-clipboard-list"></i>
-                            <h3>Không tìm thấy phân công chấm điểm nào</h3>
-                            <p>Vui lòng thử lại với các tiêu chí lọc khác</p>
-                        </div>
-                    <?php endif; ?>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($data['gradingAssignment']['data'] as $index => $item): ?>
+                                        <tr>
+                                            <td><?php echo $index + 1; ?></td>
+                                            <td>
+                                                <?php
+                                                $loaiKTClass = 'mieng';
+                                                if ($item['loaiKiemTra'] == '15 phút') $loaiKTClass = 'phut15';
+                                                elseif ($item['loaiKiemTra'] == '1 tiết') $loaiKTClass = 'tiet1';
+                                                elseif ($item['loaiKiemTra'] == 'Giữa kỳ') $loaiKTClass = 'giuaky';
+                                                elseif ($item['loaiKiemTra'] == 'Cuối kỳ') $loaiKTClass = 'cuoiky';
+                                                ?>
+                                                <span class="badge <?php echo $loaiKTClass; ?>">
+                                                    <?php echo htmlspecialchars($item['loaiKiemTra']); ?>
+                                                </span>
+                                            </td>
+                                            <td><strong><?php echo htmlspecialchars($item['tenMonHoc']); ?></strong></td>
+                                            <td><?php echo htmlspecialchars($item['tenLop']); ?></td>
+                                            <td>
+                                                <i class="fas fa-users"></i>
+                                                <?php echo $item['soDaCham']; ?>/<?php echo $item['soLuongHocSinh']; ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($item['hinhThucCham']); ?></td>
+                                            <td>
+                                                <?php
+                                                if ($item['ngayCham']) {
+                                                    echo date('d/m/Y', strtotime($item['ngayCham']));
+                                                } else {
+                                                    echo '<span style="color: #999;">Chưa xác định</span>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <div class="progress-container">
+                                                    <?php
+                                                    $percent = round($item['phanTramHoanThanh'] ?? 0);
+                                                    $progressClass = 'low';
+                                                    if ($percent >= 100) $progressClass = 'complete';
+                                                    elseif ($percent >= 70) $progressClass = 'high';
+                                                    elseif ($percent >= 40) $progressClass = 'medium';
+                                                    ?>
+                                                    <div class="progress-bar">
+                                                        <div class="progress-fill <?php echo $progressClass; ?>"
+                                                            style="width: <?php echo $percent; ?>%"></div>
+                                                    </div>
+                                                    <div class="progress-text"><?php echo $percent; ?>%</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge <?php echo htmlspecialchars($item['trangThai']); ?>">
+                                                    <?php
+                                                    $statusLabels = [
+                                                        'pending' => 'Chưa bắt đầu',
+                                                        'in_progress' => 'Đang làm',
+                                                        'completed' => 'Hoàn thành',
+                                                        'cancelled' => 'Đã hủy'
+                                                    ];
+                                                    echo $statusLabels[$item['trangThai']] ?? $item['trangThai'];
+                                                    ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="#" class="action-btn view" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i> Chi tiết
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h3>Không tìm thấy phân công chấm điểm nào</h3>
+                                <p>Vui lòng thử lại với các tiêu chí lọc khác</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
 </body>
 
 </html>

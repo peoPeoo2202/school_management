@@ -1,17 +1,5 @@
 <?php
-// Session đã được start từ controller, không cần start lại
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -299,79 +287,83 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </h1>
                 </div>
 
-                <div class="filter-section">
-                    <div class="filter-title">
-                        <i class="fas fa-filter"></i>
-                        Bộ lọc báo cáo
-                    </div>
-                    <form method="GET" action="../../controller/cReport.php" class="filter-form">
-                        <input type="hidden" name="action" value="academic">
+        <div class="filter-section">
+            <div class="filter-title">
+                <i class="fas fa-filter"></i>
+                Bộ lọc báo cáo
+            </div>
+            <form method="GET" action="" class="filter-form" id="filter-form">
+                <input type="hidden" name="action" value="hoc-tap">
 
-                        <div class="form-group">
-                            <label for="maLop">Lớp:</label>
-                            <select name="maLop" id="maLop">
-                                <option value="">Tất cả lớp</option>
-                                <?php foreach ($danhSachLop as $lop): ?>
-                                    <option value="<?php echo $lop['maLop']; ?>"
-                                        <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($lop['tenLop']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="maMonHoc">Môn học:</label>
-                            <select name="maMonHoc" id="maMonHoc">
-                                <option value="">Tất cả môn</option>
-                                <?php foreach ($danhSachMonHoc as $monHoc): ?>
-                                    <option value="<?php echo $monHoc['maMonHoc']; ?>"
-                                        <?php echo (isset($_GET['maMonHoc']) && $_GET['maMonHoc'] == $monHoc['maMonHoc']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($monHoc['tenMonHoc']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="hocKy">Học kỳ:</label>
-                            <select name="hocKy" id="hocKy">
-                                <option value="">Tất cả học kỳ</option>
-                                <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="namHoc">Năm học:</label>
-                            <select name="namHoc" id="namHoc">
-                                <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                                <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                            </select>
-                        </div>
-                    </form>
-
-                    <div class="filter-buttons">
-                        <button type="submit" form="filter-form" class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                            Lọc kết quả
-                        </button>
-                        <a href="cReport.php?action=xuat-excel&type=hoc-tap&<?php echo http_build_query($_GET); ?>" class="btn btn-success">
-                            <i class="fas fa-file-excel"></i>
-                            Xuất Excel
-                        </a>
+                <div class="form-group">
+                    <label for="tenMonHoc">Môn học:</label>
+                    <div style="padding: 6px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;">
+                        <strong><?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?></strong>
                     </div>
                 </div>
 
-                <div class="report-section">
-                    <div class="report-header">
-                        <h3>
-                            <i class="fas fa-table"></i>
-                            Kết quả học tập
-                        </h3>
-                    </div>
+                <div class="form-group">
+                    <label for="maLop">Lớp: <span style="color: #dc3545;">*</span></label>
+                    <select name="maLop" id="maLop" required>
+                        <option value="">Chọn lớp</option>
+                        <?php foreach ($danhSachLop as $lop): ?>
+                            <option value="<?php echo $lop['maLop']; ?>"
+                                <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($lop['tenLop']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                    <?php if (!empty($duLieuBaoCao)): ?>
+                <div class="form-group">
+                    <label for="hocKy">Học kỳ: <span style="color: #dc3545;">*</span></label>
+                    <select name="hocKy" id="hocKy" required>
+                        <option value="">Chọn học kỳ</option>
+                        <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                        <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="namHoc">Năm học: <span style="color: #dc3545;">*</span></label>
+                    <select name="namHoc" id="namHoc" required>
+                        <option value="">Chọn năm học</option>
+                        <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                        <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="filter-buttons">
+                <button type="submit" form="filter-form" class="btn btn-primary" name="submit" value="1">
+                    <i class="fas fa-search"></i>
+                    Xem kết quả
+                </button>
+                <?php if (isset($_GET['submit']) && !empty($duLieuBaoCao)): ?>
+                <?php 
+                $params = $_GET;
+                $params['action'] = 'xuat-excel';
+                $params['type'] = 'hoc-tap';
+                unset($params['submit']);
+                ?>
+                <a href="?<?php echo http_build_query($params); ?>" class="btn btn-success">
+                    <i class="fas fa-file-excel"></i>
+                    Xuất Excel
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php if (isset($_GET['submit'])): ?>
+        <div class="report-section">
+            <div class="report-header">
+                <h3>
+                    <i class="fas fa-table"></i>
+                    Kết quả học tập
+                </h3>
+            </div>
+
+            <?php if (!empty($duLieuBaoCao)): ?>
                         <div class="table-container">
                             <table class="report-table">
                                 <thead>
@@ -383,7 +375,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <th>Học kỳ</th>
                                         <th>Năm học</th>
                                         <th>Điểm miệng</th>
-                                        <th>Điểm 15 phút</th>
+                                        <th>Điểm 15p (L1)</th>
+                                        <th>Điểm 15p (L2)</th>
                                         <th>Điểm 1 tiết</th>
                                         <th>Điểm giữa kỳ</th>
                                         <th>Điểm cuối kỳ</th>
@@ -425,11 +418,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
                                             <td><?php echo $row['hocKy']; ?></td>
                                             <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
-                                            <td><?php echo $row['diemMieng'] ? number_format($row['diemMieng'], 1) : '-'; ?></td>
-                                            <td><?php echo $row['diem15phut'] ? number_format($row['diem15phut'], 1) : '-'; ?></td>
-                                            <td><?php echo $row['diem1tiet'] ? number_format($row['diem1tiet'], 1) : '-'; ?></td>
-                                            <td><?php echo $row['diemGiuaKy'] ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
-                                            <td><?php echo $row['diemCuoiKy'] ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemMieng']) && $row['diemMieng'] !== null ? number_format($row['diemMieng'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diem15Phut1']) && $row['diem15Phut1'] !== null ? number_format($row['diem15Phut1'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diem15Phut2']) && $row['diem15Phut2'] !== null ? number_format($row['diem15Phut2'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diem1Tiet']) && $row['diem1Tiet'] !== null ? number_format($row['diem1Tiet'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemGiuaKy']) && $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemCuoiKy']) && $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
                                             <td><strong><?php echo number_format($diemTB, 2); ?></strong></td>
                                             <td><span class="<?php echo $classXepLoai; ?>"><?php echo $xepLoai; ?></span></td>
                                         </tr>
@@ -450,7 +444,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="stat-item">
                                 <div class="stat-label">Số HS giỏi</div>
                                 <div class="stat-value grade-excellent">
-                                    <?php
+                                    <?php 
                                     $soGioi = 0;
                                     foreach ($duLieuBaoCao as $row) {
                                         if (floatval($row['diemTrungBinh']) >= 8.0) $soGioi++;
@@ -462,7 +456,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="stat-item">
                                 <div class="stat-label">Số HS khá</div>
                                 <div class="stat-value grade-good">
-                                    <?php
+                                    <?php 
                                     $soKha = 0;
                                     foreach ($duLieuBaoCao as $row) {
                                         $diem = floatval($row['diemTrungBinh']);
@@ -475,7 +469,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="stat-item">
                                 <div class="stat-label">Số HS trung bình</div>
                                 <div class="stat-value grade-average">
-                                    <?php
+                                    <?php 
                                     $soTB = 0;
                                     foreach ($duLieuBaoCao as $row) {
                                         $diem = floatval($row['diemTrungBinh']);
@@ -488,7 +482,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="stat-item">
                                 <div class="stat-label">Số HS yếu</div>
                                 <div class="stat-value grade-weak">
-                                    <?php
+                                    <?php 
                                     $soYeu = 0;
                                     foreach ($duLieuBaoCao as $row) {
                                         if (floatval($row['diemTrungBinh']) < 5.0) $soYeu++;
@@ -501,21 +495,25 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <?php else: ?>
                         <div class="no-data">
                             <i class="fas fa-info-circle"></i>
-                            Không có dữ liệu để hiển thị. Vui lòng chọn bộ lọc phù hợp.
+                            Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
                         </div>
                     <?php endif; ?>
-                </div>
             </div>
         </div>
+        <?php else: ?>
+        <div class="report-section">
+            <div class="no-data">
+                <i class="fas fa-info-circle"></i><br>
+                Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
 
-        <script>
-            // Auto submit form when filter changes
-            document.querySelectorAll('select').forEach(function(select) {
-                select.addEventListener('change', function() {
-                    document.querySelector('form').submit();
-                });
-            });
-        </script>
+    <script>
+        // Form validation handled by HTML5 required attributes
+        // User must manually click "Xem kết quả" button
+    </script>
 </body>
 
 </html>

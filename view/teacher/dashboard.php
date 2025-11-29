@@ -1,9 +1,6 @@
 <?php
 session_start();
 
-// Load config - Updated path
-require_once(__DIR__ . '/../../config.php');
-
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: " . url('public/index.php'));
@@ -57,10 +54,11 @@ $maGV = $_SESSION['maGV'] ?? null;
             justify-content: space-between;
 
         }
-       
+
         .header-left h2 {
             color: #5081BE;
-            margin:0;
+            margin: 0;
+            font-size: 24px;
         }
 
         .header-left p {
@@ -83,57 +81,7 @@ $maGV = $_SESSION['maGV'] ?? null;
         .header-right .user-name {
             color: #5081BE;
             font-weight: 600;
-            font-size: 17px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: white;
-        }
-
-        .stat-icon.blue {
-            background: linear-gradient(135deg, #5081BE 0%, #2d5a8c 100%);
-        }
-
-        .stat-icon.green {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-
-        .stat-icon.orange {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .stat-icon.purple {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            font-size: 16px;
         }
 
         .stat-info h3 {
@@ -159,37 +107,39 @@ $maGV = $_SESSION['maGV'] ?? null;
         .content-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
+            gap: 32px;
         }
 
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
+            border-radius: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 8px 24px 24px 24px;
+        }
+
+        .card-info {
+            margin-bottom: 32px;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #333;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .card-title i {
             color: #5081BE;
-            font-size: 20px;
+            font-size: 16px;
         }
 
         .view-link {
@@ -208,9 +158,11 @@ $maGV = $_SESSION['maGV'] ?? null;
         }
 
         .quick-links {
+            font-size: 14px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
+            font-weight: 400;
         }
 
         .quick-link {
@@ -306,53 +258,24 @@ $maGV = $_SESSION['maGV'] ?? null;
                 </div>
             </div>
 
-            <!-- Statistics Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon blue">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Lịch dạy</h3>
-                        <p>Xem lịch dạy của bạn</p>
-                        <span class="stat-value">Hôm nay</span>
-                    </div>
-                </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon green">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Danh sách lớp</h3>
-                        <p>Quản lý các lớp học</p>
-                        <span class="stat-value">Nhiều lớp</span>
-                    </div>
+            <!-- Thông tin hệ thống -->
+            <div class="card card-info">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-info-circle"></i> Thông tin tài khoản
+                    </h2>
                 </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon orange">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Báo cáo</h3>
-                        <p>Xem báo cáo thống kê</p>
-                        <span class="stat-value">6 loại</span>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon purple">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>Phân công</h3>
-                        <p>Xem nhiệm vụ được giao</p>
-                        <span class="stat-value">Cập nhật</span>
-                    </div>
+                <div class="info-box">
+                    <h4><i class="fas fa-user"></i> Thông tin cá nhân</h4>
+                    <p>
+                        <strong>Họ tên:</strong> <?php echo htmlspecialchars($hoTen); ?><br>
+                        <strong>Tên đăng nhập:</strong> <?php echo htmlspecialchars($tenDangNhap); ?><br>
+                        <strong>Mã giáo viên:</strong> <?php echo $maGV ? $maGV : '<em style="color: #dc3545;">Chưa liên kết</em>'; ?><br>
+                        <strong>Loại tài khoản:</strong> Giáo viên
+                    </p>
                 </div>
             </div>
-
             <!-- Content Grid -->
             <div class="content-grid">
                 <!-- Chức năng chính -->
@@ -366,7 +289,7 @@ $maGV = $_SESSION['maGV'] ?? null;
                         </a>
                     </div>
                     <div class="quick-links">
-                        <a href="<?php echo url('controller/cTeachingSchedule.php?action=dashboard'); ?>" class="quick-link">
+                        <a href="../../controller/cTeachingSchedule.php?action=dashboard" class="quick-link">
                             <i class="fas fa-calendar-alt"></i>
                             <span>Tra cứu Lịch dạy</span>
                         </a>
@@ -427,23 +350,7 @@ $maGV = $_SESSION['maGV'] ?? null;
                     </div>
                 </div>
 
-                <!-- Thông tin hệ thống -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-info-circle"></i> Thông tin tài khoản
-                        </h2>
-                    </div>
-                    <div class="info-box">
-                        <h4><i class="fas fa-user"></i> Thông tin cá nhân</h4>
-                        <p>
-                            <strong>Họ tên:</strong> <?php echo htmlspecialchars($hoTen); ?><br>
-                            <strong>Tên đăng nhập:</strong> <?php echo htmlspecialchars($tenDangNhap); ?><br>
-                            <strong>Mã giáo viên:</strong> <?php echo $maGV ? $maGV : '<em style="color: #dc3545;">Chưa liên kết</em>'; ?><br>
-                            <strong>Loại tài khoản:</strong> Giáo viên
-                        </p>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>

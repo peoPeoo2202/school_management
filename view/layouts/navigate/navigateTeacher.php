@@ -1,12 +1,15 @@
 <?php
+// Load config
+require_once(__DIR__ . '/../../../config.php');
+
 // Kiểm tra session
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
+    header("Location: " . url('public/index.php'));
     exit();
 }
 
 if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
-    header("Location: ../../public/index.php?error=access_denied");
+    header("Location: " . url('public/index.php?error=access_denied'));
     exit();
 }
 
@@ -35,7 +38,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     <ul class="navbar-menu">
         <!-- Dashboard -->
         <li>
-            <a href="../../view/teacher/dashboard.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/dashboard.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
@@ -43,7 +46,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Lịch dạy -->
         <li>
-            <a href="../../controller/cTeachingSchedule.php?action=dashboard" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'cTeachingSchedule.php') ? 'active' : ''; ?>">
+            <a href="../../view/teacher/vTeachingSchedule.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vTeachingSchedule.php') ? 'active' : ''; ?>">
                 <i class="fas fa-calendar-alt"></i>
                 <span>Lịch dạy</span>
             </a>
@@ -51,7 +54,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Danh sách lớp -->
         <li>
-            <a href="../../view/teacher/vClassList.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vClassList.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
                 <i class="fas fa-list"></i>
                 <span>Danh sách lớp</span>
             </a>
@@ -59,7 +62,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Phân công coi thi -->
         <li>
-            <a href="../../view/teacher/vExamSupervision.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>">
                 <i class="fas fa-eye"></i>
                 <span>Phân công coi thi</span>
             </a>
@@ -67,7 +70,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
         <!-- Phân công chấm điểm -->
         <li>
-            <a href="../../view/teacher/vGradingAssignment.php" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/vGradingAssignment.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>">
                 <i class="fas fa-pen-square"></i>
                 <span>Phân công chấm điểm</span>
             </a>
@@ -82,37 +85,37 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
             <ul class="submenu" id="reports-submenu">
                 <li>
-                    <a href="../../controller/cReport.php?action=academic" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'academic') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=academic'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'academic') ? 'active' : ''; ?>">
                         <i class="fas fa-book"></i>
                         <span>Báo cáo kết quả học tập</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=attendance" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'attendance') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=attendance'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'attendance') ? 'active' : ''; ?>">
                         <i class="fas fa-clipboard-check"></i>
                         <span>Báo cáo chuyên cần</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=teaching" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'teaching') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=teaching'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'teaching') ? 'active' : ''; ?>">
                         <i class="fas fa-chalkboard"></i>
                         <span>Báo cáo giảng dạy</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=grade_stats" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'grade_stats') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=grade_stats'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'grade_stats') ? 'active' : ''; ?>">
                         <i class="fas fa-chart-line"></i>
                         <span>Thống kê điểm môn học</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=student_stats" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'student_stats') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=student_stats'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'student_stats') ? 'active' : ''; ?>">
                         <i class="fas fa-users"></i>
                         <span>Thống kê học sinh</span>
                     </a>
                 </li>
                 <li>
-                    <a href="../../controller/cReport.php?action=submit" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'submit') ? 'active' : ''; ?>">
+                    <a href="<?php echo url('controller/cReport.php?action=submit'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'submit') ? 'active' : ''; ?>">
                         <i class="fas fa-upload"></i>
                         <span>Nộp báo cáo</span>
                     </a>
@@ -122,7 +125,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     </ul>
 
     <div class="navbar-footer">
-        <a href="../../public/logout.php" class="logout-link">
+        <a href="<?php echo url('public/logout.php'); ?>" class="logout-link">
             <i class="fas fa-sign-out-alt"></i>
             <span>Đăng xuất</span>
         </a>
@@ -131,22 +134,20 @@ $maGV = $_SESSION['maGV'] ?? '';
 
 <style>
     .teacher-navbar {
-        width: 250px;
+        min-width: 250px;
         background: linear-gradient(180deg, #2d5a8c 0%, #5081BE 100%);
         color: white;
         padding: 0;
         position: relative;
         height: 100vh;
         overflow-y: auto;
-        z-index: 1000;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         display: flex;
         flex-direction: column;
         flex-shrink: 0;
     }
 
     .navbar-header {
-        padding: 20px;
+        padding: 16px;
         background: #1a2f42;
         border-bottom: 2px solid #5081BE;
         display: flex;
@@ -162,11 +163,6 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .navbar-toggle {
         display: none;
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-        font-size: 20px;
     }
 
     .navbar-user {
@@ -175,7 +171,7 @@ $maGV = $_SESSION['maGV'] ?? '';
         background: rgba(80, 129, 190, 0.1);
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
     }
 
     .user-avatar {
@@ -202,7 +198,7 @@ $maGV = $_SESSION['maGV'] ?? '';
 
     .navbar-menu {
         list-style: none;
-        padding: 10px 0;
+        padding: 8px 0;
         margin: 0;
         flex: 1;
         overflow-y: auto;
@@ -225,7 +221,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     }
 
     .menu-item i:first-child {
-        min-width: 20px;
+        min-width: 16px;
         text-align: center;
     }
 
@@ -238,7 +234,7 @@ $maGV = $_SESSION['maGV'] ?? '';
     .menu-item.active {
         background: #5081BE;
         color: white;
-        border-left: 4px solid #7EBADA;
+        border-left: 2px solid #7EBADA;
         padding-left: 16px;
     }
 
@@ -273,7 +269,7 @@ $maGV = $_SESSION['maGV'] ?? '';
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 16px 16px 8px 30px;
+        padding: 16px 16px 8px 32px;
         text-decoration: none;
         color: #a8b4c6;
         transition: all 0.3s;
@@ -291,22 +287,23 @@ $maGV = $_SESSION['maGV'] ?? '';
     }
 
     .navbar-footer {
-        padding: 15px 20px;
+        padding: 8px;
         margin-top: auto;
         border-top: 2px solid #7EBADA;
         background: #1a2f42;
+        font-size: 16px;
     }
 
     .logout-link {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         color: #CADEFA;
         text-decoration: none;
         transition: all 0.3s;
-        padding: 10px;
-        border-radius: 6px;
-        border-left: 3px solid transparent;
+        padding: 8px;
+        border-radius: 8px;
+        border-left: 2px solid transparent;
     }
 
     .logout-link:hover {

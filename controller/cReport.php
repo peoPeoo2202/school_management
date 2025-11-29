@@ -55,6 +55,9 @@ class cReport {
             case 'xu-ly-upload':
                 $this->xuLyUploadBaoCao();
                 break;
+            case 'download':
+                $this->downloadFile();
+                break;
             case 'xuat-excel':
                 $this->xuatExcel();
                 break;
@@ -68,9 +71,10 @@ class cReport {
         }
     }
     
-    // Hiển thị danh sách các loại báo cáo
+    // Hiển thị danh sách báo cáo
     private function hienThiDanhSachBaoCao() {
-        $danhSachBaoCaoDaLuu = $this->model->getDanhSachBaoCao();
+        $maGV = $_SESSION['maGV'];
+        $danhSachBaoCaoDaLuu = $this->model->getDanhSachBaoCao($maGV);
         include '../view/teacher/vReportList.php';
     }
     
@@ -117,14 +121,19 @@ class cReport {
     private function xemThongKeDiemMonHoc() {
         $maGV = $_SESSION['maGV'];
         $maMonHoc = $_GET['maMonHoc'] ?? null;
+        $maLop = $_GET['maLop'] ?? null;
         $hocKy = $_GET['hocKy'] ?? null;
         $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        $showResults = isset($_GET['submit']) && !empty($maMonHoc);
         
         $danhSachMonHoc = $this->model->getDanhSachMonHocCuaGiaoVien($maGV);
+        $danhSachLop = $this->model->getDanhSachLopCuaGiaoVien($maGV);
         $duLieuBaoCao = null;
+        $danhSachHocSinh = null;
         
-        if ($maMonHoc) {
-            $duLieuBaoCao = $this->model->getThongKeDiemMonHoc($maGV, $maMonHoc, $hocKy, $namHoc);
+        if ($showResults && $maMonHoc) {
+            $duLieuBaoCao = $this->model->getThongKeDiemMonHoc($maGV, $maMonHoc, $hocKy, $namHoc, $maLop);
+            $danhSachHocSinh = $this->model->getDanhSachHocSinhTheoMon($maGV, $maMonHoc, $hocKy, $namHoc, $maLop);
         }
         
         include '../view/teacher/vGradeStatistics.php';
@@ -151,43 +160,110 @@ class cReport {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tenBaoCao = $_POST['tenBaoCao'] ?? '';
             $loaiBaoCao = $_POST['loaiBaoCao'] ?? '';
-            $hocKy = $_POST['hocKy'] ?? 1;
-            $namHoc = $_POST['namHoc'] ?? '2024-2025';
-            $maLop = $_POST['maLop'] ?? null;
             $moTa = $_POST['moTa'] ?? '';
+            $maGV = $_SESSION['maGV'];
             
             // Xử lý upload file
             if (isset($_FILES['fileBaoCao']) && $_FILES['fileBaoCao']['error'] === 0) {
-                $uploadDir = '../uploads/reports/';
+                // Tạo đường dẫn tuyệt đối cho thư mục uploads
+                $baseDir = dirname(dirname(__FILE__)); // Lấy thư mục gốc của project
+                $uploadDir = $baseDir . '/uploads/reports/';
+                
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
                 
-                $fileName = time() . '_' . $_FILES['fileBaoCao']['name'];
+                $originalFileName = $_FILES['fileBaoCao']['name'];
+                $fileExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
+                $fileName = time() . '_' . uniqid() . '.' . $fileExtension;
                 $uploadPath = $uploadDir . $fileName;
                 
+                // Kiểm tra loại file
+                $allowedTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+                if (!in_array(strtolower($fileExtension), $allowedTypes)) {
+                    header("Location: cReport.php?action=submit&error=invalid_file_type");
+                    exit();
+                }
+                
+                // Kiểm tra kích thước file (10MB)
+                $maxFileSize = 10 * 1024 * 1024; // 10MB
+                if ($_FILES['fileBaoCao']['size'] > $maxFileSize) {
+                    header("Location: cReport.php?action=submit&error=file_too_large");
+                    exit();
+                }
+                
                 if (move_uploaded_file($_FILES['fileBaoCao']['tmp_name'], $uploadPath)) {
-                    $noiDung = json_encode([
-                        'file_name' => $fileName,
-                        'file_path' => $uploadPath,
-                        'upload_time' => date('Y-m-d H:i:s'),
-                        'mo_ta' => $moTa
-                    ]);
-                    
-                    $result = $this->model->luuBaoCao($tenBaoCao, $loaiBaoCao, $noiDung, $hocKy, $namHoc, $maLop, null);
+                    // Lưu thông tin báo cáo vào database
+                    $result = $this->model->luuBaoCao($tenBaoCao, $loaiBaoCao, $originalFileName, $uploadPath, $moTa, $maGV);
                     
                     if ($result) {
                         header("Location: cReport.php?action=index&success=upload_success");
                     } else {
-                        header("Location: cReport.php?action=nop-bao-cao&error=save_failed");
+                        // Xóa file đã upload nếu lưu database thất bại
+                        if (file_exists($uploadPath)) {
+                            unlink($uploadPath);
+                        }
+                        header("Location: cReport.php?action=submit&error=save_failed");
                     }
                 } else {
-                    header("Location: cReport.php?action=nop-bao-cao&error=upload_failed");
+                    header("Location: cReport.php?action=submit&error=upload_failed");
                 }
             } else {
-                header("Location: cReport.php?action=nop-bao-cao&error=no_file");
+                header("Location: cReport.php?action=submit&error=no_file");
             }
         }
+    }
+    
+    // Download file báo cáo
+    private function downloadFile() {
+        if (!isset($_GET['id'])) {
+            header("Location: cReport.php?action=index&error=invalid_file");
+            exit();
+        }
+        
+        $maBaoCao = (int)$_GET['id'];
+        $maGV = $_SESSION['maGV'];
+        
+        // Lấy thông tin file từ database
+        $baoCao = $this->model->getBaoCaoById($maBaoCao, $maGV);
+        
+        if (!$baoCao) {
+            header("Location: cReport.php?action=index&error=file_not_found");
+            exit();
+        }
+        
+        $filePath = $baoCao['duongDan'];
+        
+        // Kiểm tra file có tồn tại không
+        if (!file_exists($filePath)) {
+            header("Location: cReport.php?action=index&error=file_not_exists");
+            exit();
+        }
+        
+        // Thiết lập header cho download
+        $fileName = $baoCao['tenFile'];
+        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+        
+        // Xác định MIME type
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+        
+        $mimeType = $mimeTypes[strtolower($fileExtension)] ?? 'application/octet-stream';
+        
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        
+        // Đọc và xuất file
+        readfile($filePath);
+        exit();
     }
     
     // Xuất báo cáo ra Excel
@@ -195,14 +271,23 @@ class cReport {
         $loaiBaoCao = $_GET['type'] ?? '';
         $maGV = $_SESSION['maGV'];
         
-        // Set headers for Excel download
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment; filename="bao_cao_' . $loaiBaoCao . '_' . date('Y-m-d') . '.xls"');
+        // Set headers for Excel download with proper encoding
+        header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="bao_cao_' . $loaiBaoCao . '_' . date('Y-m-d_H-i-s') . '.xls"');
         header('Cache-Control: max-age=0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
         
+        echo "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
         echo '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
-        echo '<head><meta charset="UTF-8">';
-        echo '<style>table { border-collapse: collapse; } th, td { border: 1px solid black; padding: 5px; }</style>';
+        echo '<head>';
+        echo '<meta charset="UTF-8">';
+        echo '<style>';
+        echo 'table { border-collapse: collapse; font-family: Arial, sans-serif; }';
+        echo 'th, td { border: 1px solid #000; padding: 8px; text-align: center; }';
+        echo 'th { background-color: #f0f0f0; font-weight: bold; }';
+        echo 'h2, h3 { font-family: Arial, sans-serif; }';
+        echo '</style>';
         echo '</head><body>';
         
         switch ($loaiBaoCao) {
@@ -228,7 +313,12 @@ class cReport {
     }
     
     private function xuatExcelKetQuaHocTap($maGV) {
-        $duLieu = $this->model->getBaoCaoKetQuaHocTap($maGV);
+        $maLop = $_GET['maLop'] ?? null;
+        $maMonHoc = $_GET['maMonHoc'] ?? null;
+        $hocKy = $_GET['hocKy'] ?? null;
+        $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        
+        $duLieu = $this->model->getBaoCaoKetQuaHocTap($maGV, $maLop, $maMonHoc, $hocKy, $namHoc);
         
         echo '<h2>BÁO CÁO KẾT QUẢ HỌC TẬP</h2>';
         echo '<table>';
@@ -266,27 +356,35 @@ class cReport {
     }
     
     private function xuatExcelChuyenCan($maGV) {
-        $duLieu = $this->model->getBaoCaoChuyenCan($maGV);
+        $maLop = $_GET['maLop'] ?? null;
+        $hocKy = $_GET['hocKy'] ?? null;
+        $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        
+        $duLieu = $this->model->getBaoCaoChuyenCan($maGV, $maLop, $hocKy, $namHoc);
         
         echo '<h2>BÁO CÁO CHUYÊN CẦN</h2>';
         echo '<table>';
         echo '<tr>';
         echo '<th>Họ tên</th>';
         echo '<th>Lớp</th>';
+        echo '<th>Giới tính</th>';
         echo '<th>Nghỉ có phép</th>';
+        echo '<th>Lý do</th>';
         echo '<th>Nghỉ không phép</th>';
         echo '<th>Tổng số nghỉ</th>';
-        echo '<th>Hạnh kiểm</th>';
+        echo '<th>Xếp loại chuyên cần</th>';
         echo '</tr>';
         
         foreach ($duLieu as $row) {
             echo '<tr>';
             echo '<td>' . htmlspecialchars($row['tenHocSinh']) . '</td>';
             echo '<td>' . htmlspecialchars($row['tenLop']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['gioiTinh']) . '</td>';
             echo '<td>' . $row['soNghiCoPhep'] . '</td>';
+            echo '<td>' . (!empty($row['lyDoNghiCoPhep']) ? htmlspecialchars($row['lyDoNghiCoPhep']) : '-') . '</td>';
             echo '<td>' . $row['soNghiKhongPhep'] . '</td>';
             echo '<td>' . $row['tongSoNghi'] . '</td>';
-            echo '<td>' . htmlspecialchars($row['tenHanhKiem']) . '</td>';
+            echo '<td>' . htmlspecialchars($row['xepLoaiChuyenCan']) . '</td>';
             echo '</tr>';
         }
         
@@ -294,7 +392,10 @@ class cReport {
     }
     
     private function xuatExcelGiangDay($maGV) {
-        $duLieu = $this->model->getBaoCaoGiangDay($maGV);
+        $hocKy = $_GET['hocKy'] ?? null;
+        $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        
+        $duLieu = $this->model->getBaoCaoGiangDay($maGV, $hocKy, $namHoc);
         
         echo '<h2>BÁO CÁO GIẢNG DẠY</h2>';
         echo '<table>';
@@ -328,12 +429,22 @@ class cReport {
     }
     
     private function xuatExcelThongKeDiem($maGV) {
+        $maMonHoc = $_GET['maMonHoc'] ?? null;
+        $maLop = $_GET['maLop'] ?? null;
+        $hocKy = $_GET['hocKy'] ?? null;
+        $namHoc = $_GET['namHoc'] ?? '2024-2025';
+        
         $danhSachMonHoc = $this->model->getDanhSachMonHocCuaGiaoVien($maGV);
         
         echo '<h2>THỐNG KÊ ĐIỂM MÔN HỌC</h2>';
         
         foreach ($danhSachMonHoc as $monHoc) {
-            $duLieu = $this->model->getThongKeDiemMonHoc($maGV, $monHoc['maMonHoc']);
+            // Nếu có filter môn học, chỉ xuất môn đó
+            if ($maMonHoc && $monHoc['maMonHoc'] != $maMonHoc) {
+                continue;
+            }
+            
+            $duLieu = $this->model->getThongKeDiemMonHoc($maGV, $monHoc['maMonHoc'], $hocKy, $namHoc, $maLop);
             
             if (!empty($duLieu)) {
                 echo '<h3>Môn: ' . htmlspecialchars($monHoc['tenMonHoc']) . '</h3>';
@@ -372,7 +483,9 @@ class cReport {
     }
     
     private function xuatExcelThongKeHocSinh($maGV) {
-        $duLieu = $this->model->getThongKeSoLieuHocSinh($maGV);
+        $maLop = $_GET['maLop'] ?? null;
+        
+        $duLieu = $this->model->getThongKeSoLieuHocSinh($maGV, $maLop);
         
         echo '<h2>THỐNG KÊ SỐ LIỆU HỌC SINH</h2>';
         echo '<table>';
