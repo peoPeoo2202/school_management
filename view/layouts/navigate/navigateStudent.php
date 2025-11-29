@@ -15,11 +15,8 @@ $maHS = $_SESSION['maHS'] ?? '';
 ?>
 
 <nav class="student-navbar">
-    <div class="navbar-header">
+    <div  class="navbar-header">
         <h2><i class="fas fa-graduation-cap"></i> Hệ thống HS</h2>
-        <button class="navbar-toggle" id="navbarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
     </div>
 
     <div class="navbar-user">
