@@ -243,13 +243,17 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
 
         .modal-content {
             background: white;
-            margin: 5% auto;
+            margin: 3% auto;
             padding: 0;
             border-radius: 10px;
             width: 90%;
             max-width: 600px;
+            max-height: 90vh;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: slideDown 0.3s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         @keyframes slideDown {
@@ -271,6 +275,7 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .modal-header h2 {
@@ -292,6 +297,8 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
 
         .modal-body {
             padding: 25px;
+            overflow-y: auto;
+            flex: 1;
         }
 
         .modal-footer {
@@ -301,6 +308,8 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            flex-shrink: 0;
+            border-top: 1px solid #e9ecef;
         }
 
         .alert {
@@ -356,6 +365,76 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             margin-bottom: 20px;
             opacity: 0.3;
         }
+
+        /* Enhanced Info Card Styles */
+        .info-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 18px 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .info-card:hover::before {
+            opacity: 1;
+        }
+
+        .info-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #212529;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        /* Custom Scrollbar */
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+        }
     </style>
 </head>
 <body>
@@ -389,7 +468,10 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     </select>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="loadTeachers()">🔍 Tìm kiếm</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="loadTeachers()">🔍 Tìm kiếm</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Xóa bộ lọc</button>
+            </div>
         </div>
 
         <div class="table-container">
@@ -403,6 +485,82 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             <button onclick="changePage('prev')" id="btnPrev">« Trước</button>
             <span class="page-info" id="pageInfo"></span>
             <button onclick="changePage('next')" id="btnNext">Sau »</button>
+        </div>
+    </div>
+
+    <!-- Modal View (Xem thông tin) -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Thông tin Giáo viên</h2>
+                <span class="close" onclick="closeViewModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">🆔</i>
+                            Mã giáo viên:
+                        </div>
+                        <div id="view_maGV" class="info-value"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">👤</i>
+                            Họ tên:
+                        </div>
+                        <div id="view_hoTen" class="info-value" style="font-weight: 700; color: #667eea;"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">🎂</i>
+                            Ngày sinh:
+                        </div>
+                        <div id="view_ngaySinh" class="info-value"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">⚧️</i>
+                            Giới tính:
+                        </div>
+                        <div id="view_gioiTinh" class="info-value"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">📧</i>
+                            Email:
+                        </div>
+                        <div id="view_email" class="info-value" style="word-break: break-all;"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">📱</i>
+                            Số điện thoại:
+                        </div>
+                        <div id="view_soDienThoai" class="info-value"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">📚</i>
+                            Tổ bộ môn:
+                        </div>
+                        <div id="view_toBoMon" class="info-value"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">
+                            <i style="color: #667eea; margin-right: 8px;">🏫</i>
+                            Lớp chủ nhiệm:
+                        </div>
+                        <div id="view_lopChuNhiem" class="info-value"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeViewModal()">
+                    <span style="margin-right: 5px;">✖️</span>
+                    Đóng
+                </button>
+            </div>
         </div>
     </div>
 
@@ -468,6 +626,22 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
         document.addEventListener('DOMContentLoaded', function() {
             loadDepartments();
             loadTeachers();
+            
+            // Thêm sự kiện Enter cho ô tìm kiếm
+            document.getElementById('filterName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadTeachers();
+                }
+            });
+            
+            // Tự động tìm kiếm khi thay đổi select
+            document.getElementById('filterDepartment').addEventListener('change', function() {
+                loadTeachers();
+            });
+            
+            document.getElementById('filterGender').addEventListener('change', function() {
+                loadTeachers();
+            });
         });
 
         // Load danh sách tổ bộ môn
@@ -479,8 +653,8 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                         const select = document.getElementById('filterDepartment');
                         data.data.forEach(dept => {
                             const option = document.createElement('option');
-                            option.value = dept.toBoMon;
-                            option.textContent = dept.toBoMon;
+                            option.value = dept;
+                            option.textContent = dept;
                             select.appendChild(option);
                         });
                     }
@@ -521,6 +695,14 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                 });
         }
 
+        // Reset bộ lọc
+        function resetFilters() {
+            document.getElementById('filterName').value = '';
+            document.getElementById('filterDepartment').value = '';
+            document.getElementById('filterGender').value = '';
+            loadTeachers(1);
+        }
+
         // Display teachers table
         function displayTeachers(teachers) {
             const container = document.getElementById('tableContent');
@@ -540,6 +722,7 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                 <table>
                     <thead>
                         <tr>
+                            <th>STT</th>
                             <th>Mã GV</th>
                             <th>Họ tên</th>
                             <th>Ngày sinh</th>
@@ -553,10 +736,12 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     <tbody>
             `;
 
-            teachers.forEach(teacher => {
+            teachers.forEach((teacher, index) => {
                 const genderBadge = teacher.gioiTinh === 'Nam' ? 'badge-male' : 'badge-female';
+                const stt = (currentPage - 1) * 20 + index + 1;
                 html += `
                     <tr>
+                        <td>${stt}</td>
                         <td>${teacher.maGV}</td>
                         <td><strong>${teacher.hoTen || ''}</strong></td>
                         <td>${teacher.ngaySinh || ''}</td>
@@ -566,6 +751,7 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                         <td>${teacher.toBoMon || ''}</td>
                         <td>
                             <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="openViewModal(${teacher.maGV})">👁️ Xem</button>
                                 <button class="btn btn-warning" onclick="openEditModal(${teacher.maGV})">✏️ Sửa</button>
                                 <button class="btn btn-danger" onclick="deleteTeacher(${teacher.maGV}, '${teacher.hoTen}')">🗑️ Xóa</button>
                             </div>
@@ -609,6 +795,44 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             document.getElementById('teacherForm').reset();
             document.getElementById('teacherId').value = '';
             document.getElementById('teacherModal').style.display = 'block';
+        }
+
+        // Open view modal
+        function openViewModal(maGV) {
+            fetch(`../../controller/cTeacherManagement.php?action=get&id=${maGV}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const teacher = data.data;
+                        document.getElementById('view_maGV').textContent = teacher.maGV || 'N/A';
+                        document.getElementById('view_hoTen').textContent = teacher.hoTen || 'N/A';
+                        document.getElementById('view_ngaySinh').textContent = teacher.ngaySinh || 'N/A';
+                        
+                        // Hiển thị giới tính với badge
+                        const genderHtml = teacher.gioiTinh ? 
+                            `<span class="badge ${teacher.gioiTinh === 'Nam' ? 'badge-male' : 'badge-female'}">${teacher.gioiTinh}</span>` : 
+                            'N/A';
+                        document.getElementById('view_gioiTinh').innerHTML = genderHtml;
+                        
+                        document.getElementById('view_email').textContent = teacher.email || 'N/A';
+                        document.getElementById('view_soDienThoai').textContent = teacher.soDienThoai || 'N/A';
+                        document.getElementById('view_toBoMon').textContent = teacher.toBoMon || 'N/A';
+                        document.getElementById('view_lopChuNhiem').textContent = teacher.lopChuNhiem || 'N/A';
+                        
+                        document.getElementById('viewModal').style.display = 'block';
+                    } else {
+                        showError('Không thể tải thông tin giáo viên');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('Lỗi kết nối server');
+                });
+        }
+
+        // Close view modal
+        function closeViewModal() {
+            document.getElementById('viewModal').style.display = 'none';
         }
 
         // Open edit modal
@@ -735,8 +959,12 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('teacherModal');
+            const viewModal = document.getElementById('viewModal');
             if (event.target == modal) {
                 closeModal();
+            }
+            if (event.target == viewModal) {
+                closeViewModal();
             }
         }
     </script>

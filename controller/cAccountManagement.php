@@ -75,6 +75,12 @@ class cAccountManagement
             case 'groups':
                 $this->getGroups();
                 break;
+            case 'students':
+                $this->listStudents();
+                break;
+            case 'assign-student':
+                $this->assignStudentAccount();
+                break;
             default:
                 $this->jsonResponse(['success' => false, 'message' => 'Action không hợp lệ'], 400);
         }
@@ -574,6 +580,184 @@ class cAccountManagement
             'success' => true,
             'data' => $groups
         ]);
+    }
+
+    /**
+     * Lấy danh sách học sinh để cấp tài khoản
+     * GET /controller/cAccountManagement.php?action=students
+     */
+    private function listStudents()
+    {
+        require_once(__DIR__ . '/../model/mStudent.php');
+        $mStudent = new mStudent();
+
+        $filters = [
+            'maHocSinh' => $_GET['maHocSinh'] ?? '',
+            'tenHocSinh' => $_GET['tenHocSinh'] ?? '',
+            'maLop' => $_GET['maLop'] ?? '',
+            'hasAccount' => $_GET['hasAccount'] ?? ''
+        ];
+
+        // Loại bỏ filter rỗng
+        $filters = array_filter($filters, function($value) {
+            return $value !== '';
+        });
+
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = isset($_GET['limit']) ? max(1, min(100, intval($_GET['limit']))) : 20;
+
+        $result = $mStudent->getStudentsForAccountAssignment($filters, $page, $limit);
+        
+        $this->jsonResponse([
+            'success' => true,
+            'data' => $result['data'],
+            'pagination' => [
+                'total' => $result['total'],
+                'page' => $result['page'],
+                'limit' => $result['limit'],
+                'totalPages' => $result['totalPages']
+            ]
+        ]);
+    }
+
+    /**
+     * Cấp tài khoản cho học sinh
+     * POST /controller/cAccountManagement.php?action=assign-student&maHocSinh=123
+     */
+    private function assignStudentAccount()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => 'Method not allowed'], 405);
+            return;
+        }
+
+        // Validate CSRF token
+        if (!$this->validateCSRFToken()) {
+            $this->jsonResponse(['success' => false, 'message' => 'CSRF token không hợp lệ'], 403);
+            return;
+        }
+
+        $maHocSinh = $_GET['maHocSinh'] ?? null;
+        
+        if (!$maHocSinh) {
+            $this->jsonResponse(['success' => false, 'message' => 'Mã học sinh không hợp lệ'], 400);
+            return;
+        }
+
+        // Validate required fields
+        $required = ['tenDangNhap', 'hoTen', 'matKhau'];
+        foreach ($required as $field) {
+            if (empty($_POST[$field])) {
+                $this->jsonResponse([
+                    'success' => false, 
+                    'message' => "Thiếu trường bắt buộc: $field"
+                ], 400);
+                return;
+            }
+        }
+
+        // Validate username format
+        if (!$this->validateUsername($_POST['tenDangNhap'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Tên đăng nhập không hợp lệ (4-32 ký tự, chỉ chữ, số, dấu chấm, gạch dưới)'
+            ], 400);
+            return;
+        }
+
+        // Validate email nếu có
+        if (!empty($_POST['email']) && !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Email không hợp lệ'
+            ], 400);
+            return;
+        }
+
+        // Validate phone nếu có
+        if (!empty($_POST['soDienThoai']) && !$this->validatePhone($_POST['soDienThoai'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Số điện thoại không hợp lệ (9-11 chữ số)'
+            ], 400);
+            return;
+        }
+
+        // Validate password strength
+        if (!$this->validatePassword($_POST['matKhau'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số'
+            ], 400);
+            return;
+        }
+
+        // Kiểm tra học sinh có tồn tại và chưa có tài khoản
+        require_once(__DIR__ . '/../model/mStudent.php');
+        $mStudent = new mStudent();
+        $student = $mStudent->getStudentById($maHocSinh);
+
+        if (!$student) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Không tìm thấy học sinh'
+            ], 404);
+            return;
+        }
+
+        if (!empty($student['maTaiKhoan'])) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Học sinh đã có tài khoản'
+            ], 400);
+            return;
+        }
+
+        // Tạo tài khoản
+        $accountData = [
+            'tenDangNhap' => trim($_POST['tenDangNhap']),
+            'matKhau' => $_POST['matKhau'],
+            'hoTen' => trim($_POST['hoTen']),
+            'email' => !empty($_POST['email']) ? trim($_POST['email']) : null,
+            'soDienThoai' => !empty($_POST['soDienThoai']) ? trim($_POST['soDienThoai']) : null,
+            'loaiTaiKhoan' => 'hocsinh',
+            'trangThaiTaiKhoan' => $_POST['trangThaiTaiKhoan'] ?? 'active',
+            'maNhom' => !empty($_POST['maNhom']) ? intval($_POST['maNhom']) : null,
+            'nguoiTao' => $this->currentUser,
+            'batBuocDoiMatKhau' => isset($_POST['batBuocDoiMatKhau']) ? 1 : 0
+        ];
+
+        $maTaiKhoan = $this->mUser->createAccount($accountData);
+
+        if (!$maTaiKhoan) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Tạo tài khoản thất bại (có thể username hoặc email đã tồn tại)'
+            ], 400);
+            return;
+        }
+
+        // Cập nhật maTaiKhoan cho học sinh
+        $updateResult = $mStudent->updateStudent($maHocSinh, ['maTaiKhoan' => $maTaiKhoan]);
+
+        if (!$updateResult) {
+            // Rollback: Xóa tài khoản vừa tạo
+            $this->mUser->deleteAccount($maTaiKhoan, $this->currentUser);
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Cập nhật thông tin học sinh thất bại'
+            ], 400);
+            return;
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'message' => 'Cấp tài khoản cho học sinh thành công!',
+            'data' => [
+                'maTaiKhoan' => $maTaiKhoan,
+                'tenDangNhap' => $_POST['tenDangNhap']
+            ]
+        ], 201);
     }
 
     /**

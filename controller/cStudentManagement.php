@@ -141,6 +141,15 @@ class cStudentManagement
             }
         }
 
+        // Xử lý thông tin phụ huynh nếu có
+        $maPH = null;
+        if (!empty($_POST['tenPhuHuynh']) && !empty($_POST['soDienThoaiPH'])) {
+            $maPH = $this->findOrCreateParent(
+                trim($_POST['tenPhuHuynh']), 
+                trim($_POST['soDienThoaiPH'])
+            );
+        }
+
         $data = [
             'hoTen' => trim($_POST['hoTen']),
             'ngaySinh' => $_POST['ngaySinh'],
@@ -148,7 +157,7 @@ class cStudentManagement
             'diaChi' => !empty($_POST['diaChi']) ? trim($_POST['diaChi']) : null,
             'trangThaiHocTap' => $_POST['trangThaiHocTap'] ?? 'danghoc',
             'maLop' => !empty($_POST['maLop']) ? intval($_POST['maLop']) : null,
-            'maPH' => !empty($_POST['maPH']) ? intval($_POST['maPH']) : null,
+            'maPH' => $maPH,
             'maTaiKhoan' => !empty($_POST['maTaiKhoan']) ? intval($_POST['maTaiKhoan']) : null
         ];
 
@@ -185,6 +194,15 @@ class cStudentManagement
             return;
         }
 
+        // Xử lý thông tin phụ huynh nếu có
+        $maPH = null;
+        if (!empty($_POST['tenPhuHuynh']) && !empty($_POST['soDienThoaiPH'])) {
+            $maPH = $this->findOrCreateParent(
+                trim($_POST['tenPhuHuynh']), 
+                trim($_POST['soDienThoaiPH'])
+            );
+        }
+
         $data = [];
         
         if (isset($_POST['hoTen'])) $data['hoTen'] = trim($_POST['hoTen']);
@@ -193,7 +211,7 @@ class cStudentManagement
         if (isset($_POST['diaChi'])) $data['diaChi'] = trim($_POST['diaChi']);
         if (isset($_POST['trangThaiHocTap'])) $data['trangThaiHocTap'] = $_POST['trangThaiHocTap'];
         if (isset($_POST['maLop'])) $data['maLop'] = $_POST['maLop'];
-        if (isset($_POST['maPH'])) $data['maPH'] = $_POST['maPH'];
+        if ($maPH) $data['maPH'] = $maPH;
 
         $result = $this->mStudent->updateStudent($maHS, $data);
 
@@ -208,6 +226,29 @@ class cStudentManagement
                 'message' => 'Cập nhật học sinh thất bại'
             ], 400);
         }
+    }
+
+    /**
+     * Tìm hoặc tạo mới phụ huynh
+     */
+    private function findOrCreateParent($hoTen, $soDienThoai)
+    {
+        // Tìm phụ huynh theo số điện thoại
+        $existingParent = $this->mStudent->findParentByPhone($soDienThoai);
+        
+        if ($existingParent) {
+            // Nếu đã tồn tại, cập nhật tên nếu khác
+            if ($existingParent['hoTen'] !== $hoTen) {
+                $this->mStudent->updateParent($existingParent['maPH'], ['hoTen' => $hoTen]);
+            }
+            return $existingParent['maPH'];
+        }
+        
+        // Nếu chưa tồn tại, tạo mới
+        return $this->mStudent->createParent([
+            'hoTen' => $hoTen,
+            'soDienThoai' => $soDienThoai
+        ]);
     }
 
     /**
