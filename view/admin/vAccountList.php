@@ -242,6 +242,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
+            font-size: 14px;
         }
 
         .form-group input,
@@ -250,6 +251,19 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .form-group input[type="checkbox"] {
+            width: auto;
         }
 
         .alert {
@@ -275,6 +289,43 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             padding: 40px;
             color: #666;
         }
+
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+
+        .tab-content {
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -291,8 +342,82 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             </button>
         </div>
 
+        <!-- Tabs Section -->
+        <div class="tabs-container" style="margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
+            <button class="tab-btn active" onclick="switchTab('assign')" id="tab-assign">
+                Cấp tài khoản
+            </button>
+            <button class="tab-btn" onclick="switchTab('manage')" id="tab-manage">
+                Tạo tài khoản
+            </button>
+        </div>
+
         <div id="alert-container"></div>
 
+        <!-- Tab Content: Cấp tài khoản -->
+        <div id="assign-account-tab" class="tab-content">
+            <h3 style="margin-bottom: 20px;">Cấp tài khoản cho học sinh</h3>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Mã học sinh</label>
+                    <input type="text" id="filter-student-id" placeholder="Nhập mã học sinh...">
+                </div>
+                <div class="filter-group">
+                    <label>Tên học sinh</label>
+                    <input type="text" id="filter-student-name" placeholder="Nhập tên học sinh...">
+                </div>
+                <div class="filter-group">
+                    <label>Lớp</label>
+                    <select id="filter-student-class">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Trạng thái tài khoản</label>
+                    <select id="filter-has-account">
+                        <option value="">Tất cả</option>
+                        <option value="no">Chưa có tài khoản</option>
+                        <option value="yes">Đã có tài khoản</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-primary" onclick="loadStudents()">Tìm kiếm</button>
+                    <button class="btn btn-warning" onclick="resetStudentFilters()">Đặt lại</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="student-loading" class="loading" style="display: none;">
+                    Đang tải dữ liệu...
+                </div>
+                <table id="students-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã HS</th>
+                            <th>Tên học sinh</th>
+                            <th>Ngày sinh</th>
+                            <th>Lớp</th>
+                            <th>Tài khoản</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-tbody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="student-pagination">
+            </div>
+        </div>
+
+        <!-- Tab Content: Tạo tài khoản (existing content) -->
+        <div id="manage-account-tab" class="tab-content" style="display: none;">
+
+        <!-- Tab Content: Tạo tài khoản (existing content) -->
+        <div id="manage-account-tab" class="tab-content" style="display: none;">
         <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-group">
@@ -357,6 +482,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         <!-- Pagination -->
         <div class="pagination" id="pagination">
             <!-- Pagination loaded via JavaScript -->
+        </div>
         </div>
     </div>
 
@@ -434,15 +560,424 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         </div>
     </div>
 
+    <!-- Assign Account Modal -->
+    <div id="assign-account-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px;">
+                <h3 id="assign-modal-title" style="margin: 0; color: white;">Cấp tài khoản cho học sinh</h3>
+            </div>
+            <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
+                <form id="assign-account-form">
+                    <input type="hidden" id="assign-maHocSinh" name="maHocSinh">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+                    <input type="hidden" name="loaiTaiKhoan" value="hocsinh">
+
+                    <!-- Thông tin học sinh -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">📋 Thông tin học sinh</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <strong>Mã HS:</strong> <span id="info-maHS">-</span>
+                            </div>
+                            <div>
+                                <strong>Lớp:</strong> <span id="info-lop">-</span>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <strong>Họ tên:</strong> <span id="info-hoTen">-</span>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <strong>Ngày sinh:</strong> <span id="info-ngaySinh">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form nhập thông tin tài khoản -->
+                    <div class="form-group">
+                        <label>Tên đăng nhập <span style="color: red;">*</span></label>
+                        <input type="text" id="assign-tenDangNhap" name="tenDangNhap" required 
+                               placeholder="Nhập tên đăng nhập (4-32 ký tự)">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Chỉ bao gồm chữ cái, số, dấu chấm và gạch dưới
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ tên <span style="color: red;">*</span></label>
+                        <input type="text" id="assign-hoTen" name="hoTen" required 
+                               placeholder="Họ và tên đầy đủ">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="assign-email" name="email" 
+                               placeholder="email@example.com">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Có thể để trống, sẽ sử dụng cho việc khôi phục mật khẩu
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="text" id="assign-soDienThoai" name="soDienThoai" 
+                               placeholder="0123456789" maxlength="11">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            9-11 chữ số
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu <span style="color: red;">*</span></label>
+                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                            <input type="text" id="assign-matKhau" name="matKhau" required 
+                                   placeholder="Nhập hoặc tạo tự động" style="flex: 1;">
+                            <button type="button" class="btn btn-warning" onclick="generateRandomPassword()" 
+                                    style="white-space: nowrap;">
+                                🎲 Tạo ngẫu nhiên
+                            </button>
+                        </div>
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường và số
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nhóm người dùng</label>
+                        <select id="assign-maNhom" name="maNhom">
+                            <option value="">-- Chọn nhóm (tùy chọn) --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Trạng thái tài khoản <span style="color: red;">*</span></label>
+                        <select id="assign-trangThaiTaiKhoan" name="trangThaiTaiKhoan" required>
+                            <option value="active">Hoạt động</option>
+                            <option value="locked">Đã khóa</option>
+                            <option value="disabled">Vô hiệu hóa</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="assign-batBuocDoiMatKhau" name="batBuocDoiMatKhau" 
+                                   value="1" checked style="margin-right: 8px; width: auto;">
+                            <span>Bắt buộc đổi mật khẩu khi đăng nhập lần đầu</span>
+                        </label>
+                        <small style="color: #666; display: block; margin-top: 5px; margin-left: 28px;">
+                            Khuyến nghị bật để bảo mật
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #e0e0e0; padding-top: 20px; margin-top: 20px;">
+                <button class="btn" onclick="closeAssignModal()" style="background: #6c757d; color: white;">
+                    ❌ Hủy
+                </button>
+                <button class="btn btn-success" onclick="saveAssignAccount()">
+                    ✅ Cấp tài khoản
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentPage = 1;
+        let currentStudentPage = 1;
         let groups = [];
+        let currentTab = 'assign';
 
         // Load groups on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadGroups();
-            loadAccounts();
+            loadClasses();
+            loadStudents();
         });
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('tab-' + tab).classList.add('active');
+            
+            // Update tab content
+            if (tab === 'assign') {
+                document.getElementById('assign-account-tab').style.display = 'block';
+                document.getElementById('manage-account-tab').style.display = 'none';
+                loadStudents();
+            } else {
+                document.getElementById('assign-account-tab').style.display = 'none';
+                document.getElementById('manage-account-tab').style.display = 'block';
+                loadAccounts();
+            }
+        }
+
+        async function loadClasses() {
+            try {
+                const response = await fetch('../../controller/cStudentManagement.php?action=classes');
+                if (!response.ok) return;
+                
+                const result = await response.json();
+                if (result.success) {
+                    const select = document.getElementById('filter-student-class');
+                    select.innerHTML = '<option value="">Tất cả</option>';
+                    result.data.forEach(cls => {
+                        const option = document.createElement('option');
+                        option.value = cls.maLop;
+                        option.textContent = cls.tenLop;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        async function loadStudents(page = 1) {
+            currentStudentPage = page;
+            
+            const filters = {
+                maHocSinh: document.getElementById('filter-student-id').value,
+                tenHocSinh: document.getElementById('filter-student-name').value,
+                maLop: document.getElementById('filter-student-class').value,
+                hasAccount: document.getElementById('filter-has-account').value,
+                page: page,
+                limit: 20
+            };
+
+            const queryString = new URLSearchParams(filters).toString();
+            
+            document.getElementById('student-loading').style.display = 'block';
+            document.getElementById('students-table').style.opacity = '0.5';
+
+            try {
+                const response = await fetch(`../../controller/cAccountManagement.php?action=students&${queryString}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderStudents(result.data);
+                    renderStudentPagination(result.pagination);
+                } else {
+                    showAlert('Lỗi tải dữ liệu: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            } finally {
+                document.getElementById('student-loading').style.display = 'none';
+                document.getElementById('students-table').style.opacity = '1';
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('students-tbody');
+            
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666;">Không có dữ liệu</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = students.map((student, index) => {
+                const stt = (currentStudentPage - 1) * 20 + index + 1;
+                return `
+                    <tr>
+                        <td>${stt}</td>
+                        <td>${student.maHocSinh}</td>
+                        <td>${student.tenHocSinh}</td>
+                        <td>${formatDate(student.ngaySinh)}</td>
+                        <td>${student.tenLop || '-'}</td>
+                        <td>${student.tenDangNhap || '-'}</td>
+                        <td>
+                            ${student.maTaiKhoan 
+                                ? `<span class="badge badge-${student.trangThaiTaiKhoan}">${getStatusText(student.trangThaiTaiKhoan)}</span>`
+                                : '<span class="badge" style="background: #ffc107; color: #000;">Chưa có TK</span>'
+                            }
+                        </td>
+                        <td>
+                            <div class="actions">
+                                ${!student.maTaiKhoan 
+                                    ? `<button class="btn btn-sm btn-success" onclick="assignAccount('${student.maHocSinh}')" title="Cấp tài khoản">
+                                        📝 Cấp TK
+                                    </button>`
+                                    : `<button class="btn btn-sm btn-primary" onclick="viewStudentAccount('${student.maHocSinh}')" title="Xem tài khoản">
+                                        👁️ Xem
+                                    </button>`
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderStudentPagination(pagination) {
+            const container = document.getElementById('student-pagination');
+            
+            container.innerHTML = `
+                <button class="btn" ${pagination.page <= 1 ? 'disabled' : ''} 
+                        onclick="loadStudents(${pagination.page - 1})">Trước</button>
+                <span>Trang ${pagination.page} / ${pagination.totalPages} (Tổng: ${pagination.total})</span>
+                <button class="btn" ${pagination.page >= pagination.totalPages ? 'disabled' : ''} 
+                        onclick="loadStudents(${pagination.page + 1})">Sau</button>
+            `;
+        }
+
+        function resetStudentFilters() {
+            document.getElementById('filter-student-id').value = '';
+            document.getElementById('filter-student-name').value = '';
+            document.getElementById('filter-student-class').value = '';
+            document.getElementById('filter-has-account').value = '';
+            loadStudents(1);
+        }
+
+        function assignAccount(maHocSinh) {
+            // Load student info and open modal
+            loadStudentInfoForAssign(maHocSinh);
+        }
+
+        async function loadStudentInfoForAssign(maHocSinh) {
+            try {
+                const response = await fetch(`../../controller/cStudentManagement.php?action=get&id=${maHocSinh}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const student = result.data;
+                    
+                    // Fill student info
+                    document.getElementById('assign-maHocSinh').value = student.maHS;
+                    document.getElementById('info-maHS').textContent = student.maHS;
+                    document.getElementById('info-hoTen').textContent = student.hoTen;
+                    document.getElementById('info-ngaySinh').textContent = formatDate(student.ngaySinh);
+                    document.getElementById('info-lop').textContent = student.tenLop || '-';
+                    
+                    // Pre-fill form with student data
+                    document.getElementById('assign-hoTen').value = student.hoTen;
+                    
+                    // Generate suggested username (e.g., hs12345 or student's name without spaces)
+                    const suggestedUsername = 'hs' + student.maHS;
+                    document.getElementById('assign-tenDangNhap').value = suggestedUsername;
+                    
+                    // Reset other fields
+                    document.getElementById('assign-email').value = '';
+                    document.getElementById('assign-soDienThoai').value = '';
+                    document.getElementById('assign-matKhau').value = '';
+                    document.getElementById('assign-maNhom').value = '';
+                    document.getElementById('assign-trangThaiTaiKhoan').value = 'active';
+                    document.getElementById('assign-batBuocDoiMatKhau').checked = true;
+                    
+                    // Load groups for assign modal
+                    updateAssignGroupDropdown();
+                    
+                    // Open modal
+                    document.getElementById('assign-account-modal').style.display = 'block';
+                } else {
+                    showAlert('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        function updateAssignGroupDropdown() {
+            const select = document.getElementById('assign-maNhom');
+            select.innerHTML = '<option value="">-- Chọn nhóm (tùy chọn) --</option>';
+            
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.maNhom;
+                option.textContent = group.tenNhom;
+                select.appendChild(option);
+            });
+        }
+
+        function generateRandomPassword() {
+            const length = 12;
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            let password = "";
+            
+            // Ensure at least 1 uppercase, 1 lowercase, 1 number
+            password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+            password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+            password += "0123456789"[Math.floor(Math.random() * 10)];
+            
+            // Fill the rest randomly
+            for (let i = 3; i < length; i++) {
+                password += charset[Math.floor(Math.random() * charset.length)];
+            }
+            
+            // Shuffle the password
+            password = password.split('').sort(() => Math.random() - 0.5).join('');
+            
+            document.getElementById('assign-matKhau').value = password;
+        }
+
+        async function saveAssignAccount() {
+            const form = document.getElementById('assign-account-form');
+            const formData = new FormData(form);
+            const maHocSinh = document.getElementById('assign-maHocSinh').value;
+
+            // Validate required fields
+            const tenDangNhap = document.getElementById('assign-tenDangNhap').value.trim();
+            const hoTen = document.getElementById('assign-hoTen').value.trim();
+            const matKhau = document.getElementById('assign-matKhau').value;
+
+            if (!tenDangNhap || !hoTen || !matKhau) {
+                showAlert('Vui lòng điền đầy đủ các trường bắt buộc (*)!', 'error');
+                return;
+            }
+
+            // Validate username format
+            if (!/^[a-zA-Z0-9._]{4,32}$/.test(tenDangNhap)) {
+                showAlert('Tên đăng nhập không hợp lệ (4-32 ký tự, chỉ chữ, số, dấu chấm và gạch dưới)!', 'error');
+                return;
+            }
+
+            // Validate password strength
+            if (matKhau.length < 8 || !/[A-Z]/.test(matKhau) || !/[a-z]/.test(matKhau) || !/[0-9]/.test(matKhau)) {
+                showAlert('Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`../../controller/cAccountManagement.php?action=assign-student&maHocSinh=${maHocSinh}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const text = await response.text();
+                console.log('Response:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON response:', text);
+                    showAlert('Lỗi: Server không trả về dữ liệu hợp lệ', 'error');
+                    return;
+                }
+
+                if (result.success) {
+                    showAlert(result.message + '\nTên đăng nhập: ' + tenDangNhap + '\nMật khẩu: ' + matKhau, 'success');
+                    closeAssignModal();
+                    loadStudents(currentStudentPage);
+                } else {
+                    showAlert('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error assigning account:', error);
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assign-account-modal').style.display = 'none';
+            document.getElementById('assign-account-form').reset();
+        }
+
+        function viewStudentAccount(maHocSinh) {
+            // TODO: Implement view student account
+            alert('Chức năng xem tài khoản học sinh ' + maHocSinh + ' sẽ được triển khai');
+        }
 
         async function loadGroups() {
             try {
@@ -818,8 +1353,12 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('account-modal');
+            const assignModal = document.getElementById('assign-account-modal');
             if (event.target === modal) {
                 closeModal();
+            }
+            if (event.target === assignModal) {
+                closeAssignModal();
             }
         }
     </script>

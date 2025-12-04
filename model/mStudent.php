@@ -242,12 +242,14 @@ public function getStudentInfoByAccount($tenDangNhap)
     public function getStudentById($maHS)
     {
         $sql = "SELECT hs.*, lh.tenLop, kh.khoiLop, tk.tenDangNhap, tk.trangThaiTaiKhoan,
-                       ph.hoTen as tenPhuHuynh, ph.soDienThoai as sdtPhuHuynh
+                       ph.hoTen as tenPhuHuynh, ph.soDienThoai as sdtPhuHuynh,
+                       gv.hoTen as tenGVCN
                 FROM hocsinh hs
                 LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi kh ON lh.maKhoi = kh.maKhoi
                 LEFT JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
                 LEFT JOIN phuhuynh ph ON hs.maPH = ph.maPH
+                LEFT JOIN giaovien gv ON lh.maGV = gv.maGV
                 WHERE hs.maHS = ?";
         
         $stmt = $this->conn->prepare($sql);
@@ -644,6 +646,116 @@ public function getStudentInfoByAccount($tenDangNhap)
     }
 
     /**
+     * Tìm phụ huynh theo số điện thoại
+     */
+    public function findParentByPhone($soDienThoai)
+    {
+        if (!$this->conn) {
+            return null;
+        }
+
+        $sql = "SELECT maPH, hoTen, soDienThoai, email 
+                FROM phuhuynh 
+                WHERE soDienThoai = ?
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            return null;
+        }
+        
+        $stmt->bind_param('s', $soDienThoai);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $parent = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $parent;
+    }
+
+    /**
+     * Tạo phụ huynh mới
+     */
+    public function createParent($data)
+    {
+        if (!$this->conn) {
+            return false;
+        }
+
+        $sql = "INSERT INTO phuhuynh (hoTen, soDienThoai) VALUES (?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            return false;
+        }
+        
+        $stmt->bind_param('ss', $data['hoTen'], $data['soDienThoai']);
+
+        if ($stmt->execute()) {
+            $maPH = $stmt->insert_id;
+            $stmt->close();
+            return $maPH;
+        }
+
+        $stmt->close();
+        return false;
+    }
+
+    /**
+     * Cập nhật thông tin phụ huynh
+     */
+    public function updateParent($maPH, $data)
+    {
+        if (!$this->conn) {
+            return false;
+        }
+
+        $updates = [];
+        $params = [];
+        $types = '';
+
+        if (isset($data['hoTen'])) {
+            $updates[] = 'hoTen = ?';
+            $params[] = $data['hoTen'];
+            $types .= 's';
+        }
+
+        if (isset($data['soDienThoai'])) {
+            $updates[] = 'soDienThoai = ?';
+            $params[] = $data['soDienThoai'];
+            $types .= 's';
+        }
+
+        if (isset($data['email'])) {
+            $updates[] = 'email = ?';
+            $params[] = $data['email'];
+            $types .= 's';
+        }
+
+        if (empty($updates)) {
+            return false;
+        }
+
+        $params[] = $maPH;
+        $types .= 'i';
+
+        $sql = "UPDATE phuhuynh SET " . implode(', ', $updates) . " WHERE maPH = ?";
+        $stmt = $this->conn->prepare($sql);
+        
+        if (!$stmt) {
+            return false;
+        }
+        
+        $stmt->bind_param($types, ...$params);
+        
+        $result = $stmt->execute();
+        $stmt->close();
+        
+        return $result;
+    }
+
+    /**
      * Tạo học sinh mới (cho admin - không cần tạo account)
      */
     public function createStudentSimple($data)
@@ -705,6 +817,141 @@ public function getStudentInfoByAccount($tenDangNhap)
 
         $stmt->close();
         return false;
+    }
+
+    /**
+     * Lấy danh sách học sinh để cấp tài khoản (có thông tin tài khoản)
+     */
+    public function getStudentsForAccountAssignment($filters = [], $page = 1, $limit = 20)
+    {
+        if (!$this->conn) {
+            return ['data' => [], 'total' => 0, 'page' => $page, 'limit' => $limit, 'totalPages' => 0];
+        }
+
+        // Count total
+        $countSql = "SELECT COUNT(*) as total 
+                     FROM hocsinh hs
+                     LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
+                     LEFT JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
+                     WHERE 1=1";
+
+        $params = [];
+        $types = '';
+
+        // Apply filters to count
+        if (!empty($filters['maHocSinh'])) {
+            $countSql .= " AND hs.maHS LIKE ?";
+            $params[] = '%' . $filters['maHocSinh'] . '%';
+            $types .= 's';
+        }
+
+        if (!empty($filters['tenHocSinh'])) {
+            $countSql .= " AND hs.hoTen LIKE ?";
+            $params[] = '%' . $filters['tenHocSinh'] . '%';
+            $types .= 's';
+        }
+
+        if (!empty($filters['maLop'])) {
+            $countSql .= " AND hs.maLop = ?";
+            $params[] = intval($filters['maLop']);
+            $types .= 'i';
+        }
+
+        if (!empty($filters['hasAccount'])) {
+            if ($filters['hasAccount'] === 'no') {
+                $countSql .= " AND hs.maTaiKhoan IS NULL";
+            } else if ($filters['hasAccount'] === 'yes') {
+                $countSql .= " AND hs.maTaiKhoan IS NOT NULL";
+            }
+        }
+
+        $stmt = $this->conn->prepare($countSql);
+        if (!$stmt) {
+            return ['data' => [], 'total' => 0, 'page' => $page, 'limit' => $limit, 'totalPages' => 0];
+        }
+
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $total = $result->fetch_assoc()['total'];
+        $stmt->close();
+
+        // Get data
+        $offset = ($page - 1) * $limit;
+        
+        $sql = "SELECT hs.maHS, hs.hoTen as tenHocSinh, hs.ngaySinh, 
+                       lh.tenLop, hs.maLop, hs.maTaiKhoan,
+                       tk.tenDangNhap, tk.trangThaiTaiKhoan
+                FROM hocsinh hs
+                LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
+                LEFT JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
+                WHERE 1=1";
+
+        $params2 = [];
+        $types2 = '';
+
+        if (!empty($filters['maHocSinh'])) {
+            $sql .= " AND hs.maHS LIKE ?";
+            $params2[] = '%' . $filters['maHocSinh'] . '%';
+            $types2 .= 's';
+        }
+
+        if (!empty($filters['tenHocSinh'])) {
+            $sql .= " AND hs.hoTen LIKE ?";
+            $params2[] = '%' . $filters['tenHocSinh'] . '%';
+            $types2 .= 's';
+        }
+
+        if (!empty($filters['maLop'])) {
+            $sql .= " AND hs.maLop = ?";
+            $params2[] = intval($filters['maLop']);
+            $types2 .= 'i';
+        }
+
+        if (!empty($filters['hasAccount'])) {
+            if ($filters['hasAccount'] === 'no') {
+                $sql .= " AND hs.maTaiKhoan IS NULL";
+            } else if ($filters['hasAccount'] === 'yes') {
+                $sql .= " AND hs.maTaiKhoan IS NOT NULL";
+            }
+        }
+
+        $sql .= " ORDER BY hs.maHS DESC LIMIT ? OFFSET ?";
+        $params2[] = $limit;
+        $params2[] = $offset;
+        $types2 .= 'ii';
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return ['data' => [], 'total' => 0, 'page' => $page, 'limit' => $limit, 'totalPages' => 0];
+        }
+
+        if (!empty($params2)) {
+            $stmt->bind_param($types2, ...$params2);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $students = [];
+        while ($row = $result->fetch_assoc()) {
+            $students[] = $row;
+        }
+        
+        $stmt->close();
+
+        $totalPages = ceil($total / $limit);
+
+        return [
+            'data' => $students,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'totalPages' => $totalPages
+        ];
     }
 
     public function __destruct()

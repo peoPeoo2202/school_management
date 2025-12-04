@@ -142,10 +142,13 @@ class mTeacherAdmin
             return null;
         }
 
-        $sql = "SELECT gv.*, tk.tenDangNhap
+        $sql = "SELECT gv.*, tk.tenDangNhap,
+                GROUP_CONCAT(lh.tenLop ORDER BY lh.tenLop SEPARATOR ', ') as lopChuNhiem
                 FROM giaovien gv
                 LEFT JOIN taikhoan tk ON gv.maTaiKhoan = tk.maTaiKhoan
-                WHERE gv.maGV = ?";
+                LEFT JOIN lophoc lh ON gv.maGV = lh.maGV
+                WHERE gv.maGV = ?
+                GROUP BY gv.maGV";
         
         $stmt = $this->conn->prepare($sql);
         

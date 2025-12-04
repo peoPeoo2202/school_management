@@ -77,7 +77,7 @@ if (isset($_POST["btnSub"])) {
                 exit();
                 
             case 'ttbm':
-                header("Location: ../view/ttbm/index.php");
+                header("Location: ../view/toTruongBoMon/index.php");
                 exit();
                 
             default:
