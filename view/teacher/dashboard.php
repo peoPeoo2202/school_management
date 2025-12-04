@@ -350,7 +350,28 @@ $maGV = $_SESSION['maGV'] ?? null;
                     </div>
                 </div>
 
-
+                <!-- Xem thông tin lớp chủ nhiệm -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chalkboard-teacher"></i> Lớp chủ nhiệm
+                        </h2>
+                    </div>
+                    <div class="quick-links">
+                        <a href="../../controller/cListofStudents.php" class="quick-link">
+                            <i class="fas fa-users"></i>
+                            <span>Danh sách học sinh</span>
+                        </a>
+                        <a href="../../controller/cClassPerformance.php" class="quick-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Kết quả học tập và rèn luyện lớp</span>
+                        </a>
+                        <a href="../../controller/cStudentClassification.php" class="quick-link">
+                            <i class="fas fa-star"></i>
+                            <span>Xếp loại học sinh</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

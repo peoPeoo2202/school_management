@@ -2,147 +2,174 @@
    GLOBAL STYLES - Student Module
    ============================================ */
 * {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	background: #f5f7fa;
-	color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f5f5;
 }
 
 /* ============================================
    NAVBAR - Student Sidebar Navigation
    ============================================ */
 .student-navbar {
-	background: linear-gradient(180deg, #2d5a8c 0%, #5081BE 100%);
-	color: white;
-	padding: 0;
-	height: 100vh;
-	overflow-y: auto;
-	box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-	display: flex;
-	flex-direction: column;
-	flex-shrink: 0;
-	min-width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 }
 
 .navbar-header {
-	padding: 16px;
-	background: #1e3f5a;
-	border-bottom: 2px solid #5081BE;
-	/* display: flex;
-	justify-content: space-between; */
-	align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .navbar-header h2 {
-	margin: 0;
-	font-size: 18px;
-	color: #5081be;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .navbar-toggle {
-	display: none;
+    display: none;
 }
 
 .navbar-user {
-	padding: 8px;
-	border-bottom: 1px solid #1e3f5a;
-	display: flex;
-	align-items: center;
-	gap: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .user-avatar {
-	font-size: 40px;
-	color: #5081be;
+    font-size: 40px;
+    color: #3498db;
 }
 
 .user-details {
-	flex: 1;
+    flex: 1;
 }
 
 .user-name {
-	margin: 0;
-	font-weight: 600;
-	font-size: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
 }
 
 .user-role {
-	margin: 0;
-	font-size: 12px;
-	color: #95a5a6;
+    font-size: 13px;
+    color: #bdc3c7;
 }
 
+/* Navbar menu */
 .navbar-menu {
-	list-style: none;
-	padding: 8px 0;
-	margin: 0;
-	flex: 1;
-	overflow-y: auto;
+    list-style: none;
+    padding: 10px 0;
 }
 
-.navbar-menu > li {
-	margin: 0;
+.navbar-menu li {
+    margin: 5px 0;
 }
 
 .menu-item {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 16px;
-	text-decoration: none;
-	color: #ecf0f1;
-	transition: all 0.3s;
-	font-size: 14px;
-}
-
-.menu-item i:first-child {
-	text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
 }
 
 .menu-item:hover {
-	background: rgba(80, 129, 190, 0.2);
-	padding-left: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: #3498db;
+    padding-left: 25px;
 }
 
 .menu-item.active {
-	background: #5081be;
-	color: white;
-	border-left: 2px solid #7ebada;
-	padding-left: 16px;
+    background: rgba(52, 152, 219, 0.2);
+    border-left-color: #3498db;
+    font-weight: 600;
 }
 
+.menu-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Navbar footer */
 .navbar-footer {
-	padding: 8px 16px;
-	margin-top: auto;
-	border-top: 1px solid #1e3f5a;
-	background: #1e3f5a;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logout-link {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	color: #e74c3c;
-	text-decoration: none;
-	transition: all 0.3s;
-	padding: 8px;
-	border-radius: 8px;
-	font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: #e74c3c;
+    text-decoration: none;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 5px;
+    transition: all 0.3s ease;
 }
 
 .logout-link:hover {
-	background: rgba(231, 76, 60, 0.1);
-	color: #c0392b;
+    background: rgba(231, 76, 60, 0.2);
+    transform: translateX(5px);
 }
 
-/* Firefox */
-.student-navbar {
-	scrollbar-width: none;
+.logout-link i {
+    font-size: 18px;
+}
+
+/* Content area - with margin for fixed navbar */
+.content-area {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    padding: 30px;
+    background: #f5f5f5;
+}
+
+/* Scrollbar styling for navbar */
+.student-navbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.student-navbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.student-navbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.student-navbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* ============================================
@@ -261,18 +288,7 @@ table .buoi-cell {
    ============================================ */
 .main-wrapper {
 	display: flex;
-	height: 100vh;
-	width: 100%;
-}
-
-.content-area {
-	flex: 1;
-	padding: 32px;
-	overflow-y: auto;
-	overflow-x: hidden;
-	height: 100vh;
-	box-sizing: border-box;
-	background: #f5f7fa;
+	min-height: 100vh;
 }
 
 /* ============================================
@@ -617,4 +633,53 @@ table tbody td:first-child small {
 
 ::-webkit-scrollbar-thumb:hover {
 	background: #999;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .student-navbar {
+        transform: translateX(-250px);
+    }
+    
+    .student-navbar.active {
+        transform: translateX(0);
+    }
+    
+    .content-area {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+    
+    /* Toggle button for mobile */
+    .navbar-toggle {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-size: 18px;
+    }
+    
+    .navbar-toggle:hover {
+        background: #34495e;
+    }
+}
+
+/* Tablet responsive */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .student-navbar {
+        width: 200px;
+    }
+    
+    .content-area {
+        margin-left: 200px;
+        width: calc(100% - 200px);
+    }
 }

@@ -114,9 +114,10 @@ if ($hocKy === 'canam') {
                     <tr class="grades-table-header">
                         <th>STT</th>
                         <th>Môn học</th>
-                        <th>Điểm miệng</th>
-                        <th>Điểm 15 phút</th>
-                        <th>Điểm 1 tiết</th>
+                        <th>Điểm TX1</th>
+                        <th>Điểm TX2</th>
+                        <th>Điểm TX3</th>
+                        <th>Điểm TX4</th>
                         <th>Điểm giữa kỳ</th>
                         <th>Điểm cuối kỳ</th>
                         <th>Điểm trung bình</th>
@@ -128,9 +129,10 @@ if ($hocKy === 'canam') {
                         <tr class="grades-table-body">
                             <td><?= $stt++ ?></td>
                             <td class="subject-name"><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
-                            <td><?= $grade['diemMieng'] ?? '-' ?></td>
-                            <td><?= $grade['diem15Phut'] ?? '-' ?></td>
-                            <td><?= $grade['diem1Tiet'] ?? '-' ?></td>
+                            <td><?= $grade['diemThuongXuyen1'] ?? '-' ?></td>
+                            <td><?= $grade['diemThuongXuyen2'] ?? '-' ?></td>
+                            <td><?= $grade['diemThuongXuyen3'] ?? '-' ?></td>
+                            <td><?= $grade['diemThuongXuyen4'] ?? '-' ?></td>
                             <td><?= $grade['diemGiuaKy'] ?? '-' ?></td>
                             <td><?= $grade['diemCuoiKy'] ?? '-' ?></td>
                             <td><strong><?= number_format($grade['diemTB'], 2) ?></strong></td>

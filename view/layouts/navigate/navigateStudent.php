@@ -53,6 +53,14 @@ $maHS = $_SESSION['maHS'] ?? '';
                 <span>Xếp loại</span>
             </a>
         </li>
+
+        <!-- Nộp bài tập -->
+        <li>
+            <a href="index.php?page=submitHomework" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'submitHomework') ? 'active' : ''; ?>">
+                <i class="fas fa-tasks"></i>
+                <span>Làm bài tập</span>
+            </a>
+        </li> 
     </ul>
 
     <div class="navbar-footer">

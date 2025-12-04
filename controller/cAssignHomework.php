@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Kiểm tra và khởi tạo session một lần duy nhất
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once(__DIR__ . '/../model/mAssignHomework.php');
 
 class cAssignHomework {
@@ -19,22 +22,15 @@ class cAssignHomework {
 
         $maGV = $_SESSION['maGV'];
         
-        // Lấy danh sách lớp và môn học combo
-        $classesWithSubjects = $this->model->getTeacherClassesWithSubjects($maGV);
-        
-        // Lấy danh sách bài tập
-        $maLop = isset($_GET['maLop']) ? $_GET['maLop'] : null;
-        $maMonHoc = isset($_GET['maMonHoc']) ? $_GET['maMonHoc'] : null;
-        $homeworks = $this->model->getHomeworkList($maGV, $maLop, $maMonHoc);
-        
-        // Lấy danh sách lớp riêng cho filter
+        // Lấy danh sách lớp
         $classes = $this->model->getTeacherClasses($maGV);
         
-        // Nếu có lớp được chọn, lấy môn học
+        // Lấy danh sách bài tập (chỉ lọc theo lớp, môn học tự động)
+        $maLop = isset($_GET['maLop']) ? $_GET['maLop'] : null;
+        $homeworks = $this->model->getHomeworkList($maGV, $maLop);
+        
+        // Subjects không cần thiết nữa
         $subjects = null;
-        if ($maLop) {
-            $subjects = $this->model->getTeacherSubjects($maGV, $maLop);
-        }
         
         include(__DIR__ . '/../view/teacher/vAssignHomework.php');
     }
@@ -61,6 +57,136 @@ class cAssignHomework {
         echo json_encode(['success' => true, 'subjects' => $data]);
     }
 
+    // Hàm chuyển đổi tiếng Việt có dấu sang không dấu
+    private function removeVietnameseTones($str) {
+        $vietnameseTones = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+            'À', 'Á', 'Ạ', 'Ả', 'Ã', 'Â', 'Ầ', 'Ấ', 'Ậ', 'Ẩ', 'Ẫ', 'Ă', 'Ằ', 'Ắ', 'Ặ', 'Ẳ', 'Ẵ',
+            'È', 'É', 'Ẹ', 'Ẻ', 'Ẽ', 'Ê', 'Ề', 'Ế', 'Ệ', 'Ể', 'Ễ',
+            'Ì', 'Í', 'Ị', 'Ỉ', 'Ĩ',
+            'Ò', 'Ó', 'Ọ', 'Ỏ', 'Õ', 'Ô', 'Ồ', 'Ố', 'Ộ', 'Ổ', 'Ỗ', 'Ơ', 'Ờ', 'Ớ', 'Ợ', 'Ở', 'Ỡ',
+            'Ù', 'Ú', 'Ụ', 'Ủ', 'Ũ', 'Ư', 'Ừ', 'Ứ', 'Ự', 'Ử', 'Ữ',
+            'Ỳ', 'Ý', 'Ỵ', 'Ỷ', 'Ỹ',
+            'Đ'
+        ];
+        
+        $noTones = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E',
+            'I', 'I', 'I', 'I', 'I',
+            'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O',
+            'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U',
+            'Y', 'Y', 'Y', 'Y', 'Y',
+            'D'
+        ];
+        
+        return str_replace($vietnameseTones, $noTones, $str);
+    }
+
+    // Hàm tạo slug từ tên bài tập - CẢI TIẾN HOÀN TOÀN
+    private function createSlug($text) {
+        // Nếu rỗng, trả về tên mặc định
+        if (empty(trim($text))) {
+            return 'bai-tap';
+        }
+        
+        // Chuyển sang chữ thường
+        $text = mb_strtolower($text, 'UTF-8');
+        
+        // Bỏ dấu tiếng Việt
+        $text = $this->removeVietnameseTones($text);
+        
+        // Thay thế khoảng trắng và ký tự đặc biệt bằng dấu gạch ngang
+        $text = preg_replace('/[^a-z0-9]+/', '-', $text);
+        
+        // Loại bỏ dấu gạch ngang ở đầu và cuối
+        $text = trim($text, '-');
+        
+        // Nếu sau khi xử lý vẫn rỗng, dùng tên mặc định
+        if (empty($text)) {
+            return 'bai-tap';
+        }
+        
+        // Giới hạn độ dài (tối đa 50 ký tự)
+        if (strlen($text) > 50) {
+            $text = substr($text, 0, 50);
+            $text = trim($text, '-');
+        }
+        
+        return $text;
+    }
+
+    // Xử lý upload file - CẢI TIẾN
+    private function handleFileUpload($file, $tenBaiTap = '') {
+        $allowedTypes = ['application/pdf', 'application/msword', 
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                         'application/vnd.ms-excel',
+                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         'application/vnd.ms-powerpoint',
+                         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                         'text/plain'];
+        
+        $maxSize = 10 * 1024 * 1024; // 10MB
+        
+        // Kiểm tra kích thước
+        if ($file['size'] > $maxSize) {
+            return ['success' => false, 'message' => 'File vượt quá 10MB'];
+        }
+        
+        // Kiểm tra loại file
+        if (!in_array($file['type'], $allowedTypes)) {
+            return ['success' => false, 'message' => 'Loại file không được hỗ trợ'];
+        }
+        
+        // Tạo thư mục upload nếu chưa có
+        $uploadDir = __DIR__ . '/../uploads/homework/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        
+        // Lấy extension từ file gốc
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        
+        // Tạo slug từ tên bài tập
+        $slug = $this->createSlug($tenBaiTap);
+        
+        // Thêm timestamp để tránh trùng lặp
+        $timestamp = time();
+        $fileName = $slug . '-' . $timestamp . '.' . $extension;
+        $filePath = $uploadDir . $fileName;
+        
+        // Kiểm tra nếu file vẫn tồn tại (rất hiếm), thêm random string
+        if (file_exists($filePath)) {
+            $randomStr = substr(md5(uniqid(rand(), true)), 0, 8);
+            $fileName = $slug . '-' . $timestamp . '-' . $randomStr . '.' . $extension;
+            $filePath = $uploadDir . $fileName;
+        }
+        
+        // Upload file
+        if (move_uploaded_file($file['tmp_name'], $filePath)) {
+            return [
+                'success' => true,
+                'tenFile' => $fileName,
+                'duongDan' => $filePath
+            ];
+        } else {
+            return ['success' => false, 'message' => 'Không thể upload file'];
+        }
+    }
+
     // Thêm bài tập mới
     public function create() {
         header('Content-Type: application/json');
@@ -75,54 +201,40 @@ class cAssignHomework {
             return;
         }
 
-        try {
-            // Debug: Log dữ liệu nhận được
-            error_log("POST data: " . print_r($_POST, true));
-            error_log("FILES data: " . print_r($_FILES, true));
+        $data = [
+            'tenBaiTap' => trim($_POST['tenBaiTap']),
+            'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap']),
+            'thoiGianNop' => $_POST['thoiGianNop'],
+            'maLop' => $_POST['maLop'],
+            'maMonHoc' => $_POST['maMonHoc'],
+            'maGV' => $_SESSION['maGV'],
+            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0
+        ];
 
-            $data = [
-                'maGV' => $_SESSION['maGV'], // Thêm maGV để tự động xác định môn học
-                'tenBaiTap' => trim($_POST['tenBaiTap'] ?? ''),
-                'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap'] ?? ''),
-                'thoiGianNop' => $_POST['thoiGianNop'] ?? '',
-                'maLop' => $_POST['maLop'] ?? '',
-                'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? intval($_POST['choPhepNopTre']) : 1
-            ];
+        // Validate
+        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || 
+            empty($data['maLop']) || empty($data['maMonHoc'])) {
+            echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin']);
+            return;
+        }
 
-            // Kiểm tra dữ liệu bắt buộc (không cần maMonHoc nữa)
-            if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || empty($data['maLop'])) {
-                echo json_encode([
-                    'success' => false, 
-                    'message' => 'Vui lòng điền đầy đủ thông tin bắt buộc!'
-                ]);
+        // Xử lý upload file nếu có - TRUYỀN TÊN BÀI TẬP VÀO
+        if (isset($_FILES['fileBaiTap']) && $_FILES['fileBaiTap']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = $this->handleFileUpload($_FILES['fileBaiTap'], $data['tenBaiTap']);
+            
+            if ($uploadResult['success']) {
+                $data['tenFile'] = $uploadResult['tenFile'];
+                $data['duongDan'] = $uploadResult['duongDan'];
+            } else {
+                echo json_encode(['success' => false, 'message' => $uploadResult['message']]);
                 return;
             }
+        }
 
-            // Thêm file nếu có
-            if (isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
-                    $data['file'] = $_FILES['file'];
-                    error_log("File will be uploaded: " . $_FILES['file']['name']);
-                } else {
-                    error_log("File upload error code: " . $_FILES['file']['error']);
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Lỗi upload file: ' . $_FILES['file']['error']
-                    ]);
-                    return;
-                }
-            }
-
-            $result = $this->model->createHomework($data);
-            error_log("Create result: " . print_r($result, true));
-            echo json_encode($result);
-            
-        } catch (Exception $e) {
-            error_log("Exception in create: " . $e->getMessage());
-            echo json_encode([
-                'success' => false,
-                'message' => 'Lỗi: ' . $e->getMessage()
-            ]);
+        if ($this->model->createHomework($data)) {
+            echo json_encode(['success' => true, 'message' => 'Giao bài tập thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi giao bài tập']);
         }
     }
 
@@ -141,8 +253,12 @@ class cAssignHomework {
         }
 
         $maBaiTap = $_POST['maBaiTap'];
-        $result = $this->model->deleteHomework($maBaiTap);
-        echo json_encode($result);
+        
+        if ($this->model->deleteHomework($maBaiTap)) {
+            echo json_encode(['success' => true, 'message' => 'Xóa bài tập thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi xóa bài tập']);
+        }
     }
 
     // Lấy thông tin bài tập để chỉnh sửa
@@ -167,28 +283,22 @@ class cAssignHomework {
         include(__DIR__ . '/../view/teacher/vEditHomework.php');
     }
 
-    // Lấy thông tin bài tập (AJAX)
-    public function getHomework() {
+    // Lấy chi tiết bài tập (AJAX)
+    public function getDetail() {
         header('Content-Type: application/json');
         
-        if (!isset($_SESSION['maGV']) || !isset($_GET['id'])) {
+        if (!isset($_SESSION['maGV']) || !isset($_POST['maBaiTap'])) {
             echo json_encode(['success' => false, 'message' => 'Invalid request']);
             return;
         }
 
-        $maBaiTap = intval($_GET['id']);
+        $maBaiTap = $_POST['maBaiTap'];
         $homework = $this->model->getHomeworkById($maBaiTap);
         
         if ($homework) {
-            echo json_encode([
-                'success' => true,
-                'homework' => $homework
-            ]);
+            echo json_encode(['success' => true, 'homework' => $homework]);
         } else {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Không tìm thấy bài tập'
-            ]);
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy bài tập']);
         }
     }
 
@@ -206,119 +316,47 @@ class cAssignHomework {
             return;
         }
 
-        try {
-            $maBaiTap = intval($_POST['maBaiTap']);
-            $maGV = $_POST['maGV'] ?? $_SESSION['maGV'];
-            $maLop = $_POST['maLop'];
+        $maBaiTap = $_POST['maBaiTap'];
+        $data = [
+            'tenBaiTap' => trim($_POST['tenBaiTap']),
+            'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap']),
+            'thoiGianNop' => $_POST['thoiGianNop'],
+            'maLop' => $_POST['maLop'],
+            'maMonHoc' => $_POST['maMonHoc'],
+            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0
+        ];
+
+        // Validate
+        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || 
+            empty($data['maLop']) || empty($data['maMonHoc'])) {
+            echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin']);
+            return;
+        }
+
+        // Xử lý upload file mới nếu có - TRUYỀN TÊN BÀI TẬP VÀO
+        if (isset($_FILES['fileBaiTap']) && $_FILES['fileBaiTap']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = $this->handleFileUpload($_FILES['fileBaiTap'], $data['tenBaiTap']);
             
-            // Tự động lấy môn học từ phân công giảng dạy
-            $subjectInfo = $this->model->getTeacherSubjectForClass($maGV, $maLop);
-            
-            if (!$subjectInfo) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Không tìm thấy môn học bạn đang dạy cho lớp này.'
-                ]);
+            if ($uploadResult['success']) {
+                $data['tenFile'] = $uploadResult['tenFile'];
+                $data['duongDan'] = $uploadResult['duongDan'];
+                
+                // Xóa file cũ nếu có
+                $oldHomework = $this->model->getHomeworkById($maBaiTap);
+                if ($oldHomework && !empty($oldHomework['duongDan']) && file_exists($oldHomework['duongDan'])) {
+                    @unlink($oldHomework['duongDan']);
+                }
+            } else {
+                echo json_encode(['success' => false, 'message' => $uploadResult['message']]);
                 return;
             }
-            
-            $data = [
-                'tenBaiTap' => trim($_POST['tenBaiTap']),
-                'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap'] ?? ''),
-                'thoiGianNop' => $_POST['thoiGianNop'],
-                'maLop' => $maLop,
-                'maMonHoc' => $subjectInfo['maMonHoc'], // Tự động xác định
-                'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? intval($_POST['choPhepNopTre']) : 1,
-                'removeCurrentFile' => isset($_POST['removeCurrentFile']) ? true : false
-            ];
-
-            // Thêm file mới nếu có
-            if (isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
-                    $data['file'] = $_FILES['file'];
-                } else {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Lỗi upload file: ' . $_FILES['file']['error']
-                    ]);
-                    return;
-                }
-            }
-
-            $result = $this->model->updateHomework($maBaiTap, $data);
-            echo json_encode($result);
-            
-        } catch (Exception $e) {
-            error_log("Exception in update: " . $e->getMessage());
-            echo json_encode([
-                'success' => false,
-                'message' => 'Lỗi: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Download file bài tập
-     */
-    public function download() {
-        if (!isset($_SESSION['maGV']) || !isset($_GET['id'])) {
-            die('Invalid request');
         }
 
-        $maBaiTap = intval($_GET['id']);
-        $result = $this->model->downloadHomeworkFile($maBaiTap);
-        
-        if (!$result['success']) {
-            die($result['message']);
+        if ($this->model->updateHomework($maBaiTap, $data)) {
+            echo json_encode(['success' => true, 'message' => 'Cập nhật bài tập thành công']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi cập nhật']);
         }
-
-        $filePath = $result['filePath'];
-        $fileName = $result['fileName'];
-        
-        // Xác định content type
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-        $contentType = 'application/octet-stream';
-        
-        switch ($extension) {
-            case 'pdf':
-                $contentType = 'application/pdf';
-                break;
-            case 'doc':
-                $contentType = 'application/msword';
-                break;
-            case 'docx':
-                $contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-                break;
-            case 'xls':
-                $contentType = 'application/vnd.ms-excel';
-                break;
-            case 'xlsx':
-                $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-                break;
-            case 'jpg':
-            case 'jpeg':
-                $contentType = 'image/jpeg';
-                break;
-            case 'png':
-                $contentType = 'image/png';
-                break;
-        }
-
-        header('Content-Type: ' . $contentType);
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        header('Content-Length: ' . filesize($filePath));
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Pragma: public');
-
-        readfile($filePath);
-        exit;
-    }
-
-    /**
-     * Lấy danh sách năm học
-     */
-    public function getSchoolYears() {
-        return $this->model->getSchoolYears();
     }
 }
 
@@ -333,20 +371,17 @@ switch ($action) {
     case 'getSubjects':
         $controller->getSubjectsByClass();
         break;
+    case 'getDetail':
+        $controller->getDetail();
+        break;
     case 'create':
         $controller->create();
-        break;
-    case 'getHomework':
-        $controller->getHomework();
         break;
     case 'update':
         $controller->update();
         break;
     case 'delete':
         $controller->delete();
-        break;
-    case 'download':
-        $controller->download();
         break;
     default:
         $controller->index();

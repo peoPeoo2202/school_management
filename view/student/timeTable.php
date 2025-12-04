@@ -102,13 +102,15 @@ while ($row = $schedule->fetch_assoc()) {
 }
 ?>
 <div class="timetable-header">
-  <div class="timetable-header-left">
+  <h2>Lịch học của bạn</h2>
+  <!-- <div class="timetable-header-left">
   <i class="fas fa-calendar-alt"></i>
   <h4>Thời khóa biểu Lớp: <?= htmlspecialchars($info['tenLop']) ?></h4>
-  </div>
+  <p><?= htmlspecialchars($info['hoTen']) ?></p>
+  </div> -->
 
   <div class="timetable-header-right">
-    <p><?php echo htmlspecialchars($hoTen); ?></p>
+    <!-- Remove or keep empty if not needed -->
   </div>
 </div>
 <div class="timetable-container">
