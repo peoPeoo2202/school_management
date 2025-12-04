@@ -1,9 +1,6 @@
 <?php
 session_start();
 
-// Load config
-require_once(__DIR__ . '/../../config.php');
-
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: " . url('public/index.php'));
@@ -292,7 +289,7 @@ $maGV = $_SESSION['maGV'] ?? null;
                         </a>
                     </div>
                     <div class="quick-links">
-                        <a href="../../view/teacher/vTeachingSchedule.php" class="quick-link">
+                        <a href="../../controller/cTeachingSchedule.php?action=dashboard" class="quick-link">
                             <i class="fas fa-calendar-alt"></i>
                             <span>Tra cứu Lịch dạy</span>
                         </a>
@@ -307,6 +304,18 @@ $maGV = $_SESSION['maGV'] ?? null;
                         <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="quick-link">
                             <i class="fas fa-eye"></i>
                             <span>Phân công coi thi</span>
+                        </a>
+                        <a href="<?php echo url('controller/cInsertGrade.php'); ?>" class="quick-link">
+                            <i class="fas fa-edit"></i>
+                            <span>Nhập điểm</span>
+                        </a>
+                        <a href="<?php echo url('view/teacher/vSubmitExam.php'); ?>" class="quick-link">
+                            <i class="fas fa-file-upload"></i>
+                            <span>Gửi đề thi</span>
+                        </a>
+                        <a href="<?php echo url('controller/cAssignHomework.php'); ?>" class="quick-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Giao bài tập</span>
                         </a>
                     </div>
                 </div>
@@ -341,7 +350,28 @@ $maGV = $_SESSION['maGV'] ?? null;
                     </div>
                 </div>
 
-
+                <!-- Xem thông tin lớp chủ nhiệm -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chalkboard-teacher"></i> Lớp chủ nhiệm
+                        </h2>
+                    </div>
+                    <div class="quick-links">
+                        <a href="../../controller/cListofStudents.php" class="quick-link">
+                            <i class="fas fa-users"></i>
+                            <span>Danh sách học sinh</span>
+                        </a>
+                        <a href="../../controller/cClassPerformance.php" class="quick-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Kết quả học tập và rèn luyện lớp</span>
+                        </a>
+                        <a href="../../controller/cStudentClassification.php" class="quick-link">
+                            <i class="fas fa-star"></i>
+                            <span>Xếp loại học sinh</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

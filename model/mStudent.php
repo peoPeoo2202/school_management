@@ -492,27 +492,16 @@ public function getStudentInfoByAccount($tenDangNhap)
 
         $sql = "SELECT 
                     mh.tenMonHoc,
-                    MAX(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem END) as diemMieng,
-                    MAX(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem END) as diem15Phut,
-                    MAX(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem END) as diem1Tiet,
-                    MAX(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem END) as diemGiuaKy,
-                    MAX(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem END) as diemCuoiKy,
-                    ROUND(
-                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem * 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem * 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem * 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem * 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem * 3 END), 0)) /
-                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN 3 END), 0) + 0.0001),
-                    2) as diemTB
+                    bd.diemTX1 as diemThuongXuyen1,
+                    bd.diemTX2 as diemThuongXuyen2,
+                    bd.diemTX3 as diemThuongXuyen3,
+                    bd.diemTX4 as diemThuongXuyen4,
+                    bd.diemGiuaKy,
+                    bd.diemCuoiKy,
+                    bd.tbDiem as diemTB
                 FROM bangdiem bd
                 INNER JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
                 WHERE bd.maHS = ? AND bd.namHoc = ? AND bd.hocKy = ?
-                GROUP BY mh.maMonHoc, mh.tenMonHoc
                 ORDER BY mh.tenMonHoc";
         
         $stmt = $this->conn->prepare($sql);
@@ -550,22 +539,10 @@ public function getStudentInfoByAccount($tenDangNhap)
         $sql = "SELECT 
                     mh.tenMonHoc,
                     bd.hocKy,
-                    ROUND(
-                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN bd.diem * 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN bd.diem * 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN bd.diem * 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN bd.diem * 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN bd.diem * 3 END), 0)) /
-                        (COALESCE(SUM(CASE WHEN bd.loaiDiem = 'mieng' THEN 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '15phut' THEN 1 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = '1tiet' THEN 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'giuaky' THEN 2 END), 0) +
-                         COALESCE(SUM(CASE WHEN bd.loaiDiem = 'cuoiky' THEN 3 END), 0) + 0.0001),
-                    2) as diemTB
+                    bd.tbDiem as diemTB
                 FROM bangdiem bd
                 INNER JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
                 WHERE bd.maHS = ? AND bd.namHoc = ?
-                GROUP BY mh.maMonHoc, mh.tenMonHoc, bd.hocKy
                 ORDER BY mh.tenMonHoc, bd.hocKy";
         
         $stmt = $this->conn->prepare($sql);
@@ -582,6 +559,8 @@ public function getStudentInfoByAccount($tenDangNhap)
         $grades = [];
         while ($row = $result->fetch_assoc()) {
             $tenMonHoc = $row['tenMonHoc'];
+            $hocKy = $row['hocKy'];
+            
             if (!isset($grades[$tenMonHoc])) {
                 $grades[$tenMonHoc] = [
                     'tenMonHoc' => $tenMonHoc,
@@ -590,9 +569,9 @@ public function getStudentInfoByAccount($tenDangNhap)
                 ];
             }
             
-            if ($row['hocKy'] == 1) {
+            if ($hocKy == 1) {
                 $grades[$tenMonHoc]['hocKy1'] = $row['diemTB'];
-            } else if ($row['hocKy'] == 2) {
+            } else if ($hocKy == 2) {
                 $grades[$tenMonHoc]['hocKy2'] = $row['diemTB'];
             }
         }
