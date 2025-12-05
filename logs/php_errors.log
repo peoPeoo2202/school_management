@@ -1,0 +1,24 @@
+[02-Dec-2025 15:57:11 Europe/Berlin] PHP Fatal error:  Uncaught Error: Cannot access private property ModelStudentClassification::$conn in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php:123
+Stack trace:
+#0 C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php(417): ControllerStudentClassification->getClassificationData(10001, 1, '2024-2025', 'overview')
+#1 {main}
+  thrown in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php on line 123
+[02-Dec-2025 15:59:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: Cannot access private property ModelStudentClassification::$conn in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php:123
+Stack trace:
+#0 C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php(417): ControllerStudentClassification->getClassificationData(10001, 1, '2024-2025', 'overview')
+#1 {main}
+  thrown in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php on line 123
+[02-Dec-2025 15:59:32 Europe/Berlin] PHP Fatal error:  Uncaught Error: Cannot access private property ModelStudentClassification::$conn in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php:123
+Stack trace:
+#0 C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php(417): ControllerStudentClassification->getClassificationData(10001, 1, '2024-2025', 'overview')
+#1 {main}
+  thrown in C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php on line 123
+[02-Dec-2025 16:38:19 Europe/Berlin] PHP Fatal error:  Cannot redeclare ModelStudentClassification::getStudentTitles() in C:\Users\MY DUYEN\Desktop\pj\school_management\model\mStudentClassification.php on line 978
+[02-Dec-2025 16:38:21 Europe/Berlin] PHP Fatal error:  Cannot redeclare ModelStudentClassification::getStudentTitles() in C:\Users\MY DUYEN\Desktop\pj\school_management\model\mStudentClassification.php on line 978
+[02-Dec-2025 16:38:29 Europe/Berlin] PHP Fatal error:  Cannot redeclare ModelStudentClassification::getStudentTitles() in C:\Users\MY DUYEN\Desktop\pj\school_management\model\mStudentClassification.php on line 978
+[02-Dec-2025 16:38:30 Europe/Berlin] PHP Fatal error:  Cannot redeclare ModelStudentClassification::getStudentTitles() in C:\Users\MY DUYEN\Desktop\pj\school_management\model\mStudentClassification.php on line 978
+[04-Dec-2025 11:13:35 Europe/Berlin] Error in getClassificationData: Table 'school_management.hocsinh_danhhieu' doesn't exist
+[04-Dec-2025 11:13:35 Europe/Berlin] Stack trace: #0 C:\Users\MY DUYEN\Desktop\pj\school_management\model\mStudentClassification.php(925): mysqli->prepare('SELECT \r\n      ...')
+#1 C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php(104): ModelStudentClassification->getStudentTitles(10001, 1, '2024-2025')
+#2 C:\Users\MY DUYEN\Desktop\pj\school_management\controller\cStudentClassification.php(417): ControllerStudentClassification->getClassificationData(10001, 1, '2024-2025', 'title')
+#3 {main}
