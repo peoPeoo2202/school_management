@@ -77,6 +77,10 @@ class ControllerClassPerformance {
         $conductStats = $this->model->getConductStatistics($maLop, $hocKy, $namHoc);
         $academicStats = $this->model->getAcademicStatistics($maLop, $hocKy, $namHoc);
         
+        // Lấy thống kê nghỉ học
+        $absenceStats = $this->model->getAbsenceStatistics($maLop, $hocKy, $namHoc);
+        $topAbsentStudents = $this->model->getTopAbsentStudents($maLop, $hocKy, $namHoc, 5);
+        
         return [
             'classes' => $classes,
             'classInfo' => $classInfo,
@@ -93,21 +97,23 @@ class ControllerClassPerformance {
             'violationsTB' => $violationsTB,
             'violationsNang' => $violationsNang,
             'conductStats' => $conductStats,
-            'academicStats' => $academicStats
+            'academicStats' => $academicStats,
+            'absenceStats' => $absenceStats,
+            'topAbsentStudents' => $topAbsentStudents
         ];
     }
 }
 
 // Xử lý request
-require_once(__DIR__ . '/../config.php');
+require_once(__DIR__ . '/../model/mConnect.php');
 
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+// Tạo kết nối database sử dụng mConnect
+$mConnect = new mConnect();
+$conn = $mConnect->mConnect();
 
-if ($conn->connect_error) {
-    die("Kết nối thất bại: " . $conn->connect_error);
+if (!$conn) {
+    die("Kết nối thất bại!");
 }
-
-$conn->set_charset("utf8mb4");
 
 $controller = new ControllerClassPerformance($conn);
 

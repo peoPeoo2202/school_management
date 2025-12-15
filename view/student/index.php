@@ -15,11 +15,9 @@ if (!$info) {
   exit;
 }
 
-// Lưu maHS vào session nếu chưa có
-if (!isset($_SESSION['maHS'])) {
-    $_SESSION['maHS'] = $info['maHS'];
-    $_SESSION['hoTen'] = $info['hoTen'];
-}
+// Lưu maHS vào session - LUÔN cập nhật để đảm bảo đúng với tài khoản hiện tại
+$_SESSION['maHS'] = $info['maHS'];
+$_SESSION['hoTen'] = $info['hoTen'];
 ?>
 
 <!DOCTYPE html>

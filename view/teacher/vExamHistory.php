@@ -281,6 +281,11 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             color: #155724;
         }
 
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
         .badge-danger {
             background: #f8d7da;
             color: #721c24;
@@ -624,8 +629,9 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                 <label for="filter_trangThai">Trạng thái</label>
                                 <select id="filter_trangThai" name="trangThai">
                                     <option value="">-- Tất cả --</option>
-                                    <option value="Choduyet" <?php echo ($filters['trangThai'] == 'Choduyet') ? 'selected' : ''; ?>>Chờ duyệt</option>
+                                    <option value="Chuaduyet" <?php echo ($filters['trangThai'] == 'Chuaduyet') ? 'selected' : ''; ?>>Chờ duyệt</option>
                                     <option value="Daduyet" <?php echo ($filters['trangThai'] == 'Daduyet') ? 'selected' : ''; ?>>Đã duyệt</option>
+                                    <option value="Dachon" <?php echo ($filters['trangThai'] == 'Dachon') ? 'selected' : ''; ?>>Đã chọn</option>
                                     <option value="Tuchoi" <?php echo ($filters['trangThai'] == 'Tuchoi') ? 'selected' : ''; ?>>Từ chối</option>
                                 </select>
                             </div>
@@ -650,7 +656,6 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                 <tr>
                                     <th>STT</th>
                                     <th>Tên đề thi</th>
-                                    <th>Môn học</th>
                                     <th>HK/Năm học</th>
                                     <th>Tải File</th>
                                     <th>Trạng thái</th>
@@ -665,6 +670,8 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                     $badgeClass = 'badge-warning';
                                     if ($exam['trangThai'] == 'Daduyet') {
                                         $badgeClass = 'badge-success';
+                                    } elseif ($exam['trangThai'] == 'Dachon') {
+                                        $badgeClass = 'badge-info';
                                     } elseif ($exam['trangThai'] == 'Tuchoi') {
                                         $badgeClass = 'badge-danger';
                                     }
@@ -692,7 +699,6 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                             <br><small style="color: #999;"><?php echo htmlspecialchars(substr($exam['moTa'], 0, 50)) . (strlen($exam['moTa']) > 50 ? '...' : ''); ?></small>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?php echo htmlspecialchars($exam['tenMonHoc']); ?></td>
                                     <td>HK<?php echo $exam['hocKy']; ?> / <?php echo $exam['namHoc']; ?></td>
                                     <td>
                                         <?php if ($exam['tenFile']): ?>
@@ -714,7 +720,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                     <td><?php echo date('d/m/Y H:i', strtotime($exam['ngayTao'])); ?></td>
                                     <td>
                                         <div class="action-buttons">
-                                            <?php if (in_array($exam['trangThai'], ['Choduyet', 'Tuchoi'])): ?>
+                                            <?php if ($exam['trangThai'] == 'Chuaduyet'): ?>
                                                 <button class="btn btn-sm btn-warning" 
                                                         onclick='editExam(<?php echo json_encode($exam, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
                                                         title="Sửa">
@@ -726,7 +732,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             <?php else: ?>
-                                                <span style="color: #999; font-size: 12px;">Đã duyệt</span>
+                                                <span style="color: #999; font-size: 12px;">-</span>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -759,17 +765,6 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                     <div class="form-group">
                         <label for="edit_tenDeThi">Tên đề thi <span class="required">*</span></label>
                         <input type="text" id="edit_tenDeThi" name="tenDeThi" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="edit_maMonHoc">Môn học <span class="required">*</span></label>
-                        <select id="edit_maMonHoc" name="maMonHoc" required>
-                            <?php foreach ($subjects as $subject): ?>
-                                <option value="<?php echo $subject['maMonHoc']; ?>">
-                                    <?php echo htmlspecialchars($subject['tenMonHoc']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
                     </div>
 
                     <div class="form-group">
@@ -856,11 +851,13 @@ $exams = $controller->getTeacherExams($maGV, $filters);
         function editExam(exam) {
             document.getElementById('edit_maDeThi').value = exam.maDeThi;
             document.getElementById('edit_tenDeThi').value = exam.tenDeThi;
-            document.getElementById('edit_maMonHoc').value = exam.maMonHoc;
             document.getElementById('edit_loaiDeThi').value = exam.loaiDeThi || 'de-thi';
             document.getElementById('edit_hocKy').value = exam.hocKy;
             document.getElementById('edit_namHoc').value = exam.namHoc;
-            document.getElementById('edit_moTa').value = exam.moTa || '';
+            
+            // Xử lý mô tả - không hiển thị "0" mà để placeholder
+            const moTa = exam.moTa && exam.moTa !== '0' ? exam.moTa : '';
+            document.getElementById('edit_moTa').value = moTa;
             
             // Hiển thị thông tin file hiện tại
             const fileInfo = document.getElementById('currentFileInfo');

@@ -15,6 +15,16 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
+// Nếu chưa có dữ liệu, include controller để xử lý
+if (!isset($classes) || !isset($selectedHocKy) || !isset($selectedNamHoc)) {
+    define('INCLUDED_FROM_VIEW', true); // Đánh dấu được gọi từ view
+    require_once(__DIR__ . '/../../controller/cInsertGrade.php');
+    
+    // Gọi controller để set các biến
+    $controller = new cInsertGrade();
+    $controller->showInsertGradePage();
+}
+
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
@@ -380,7 +390,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 <?php endif; ?>
 
                 <!-- Bộ lọc -->
-                <form method="GET" action="cInsertGrade.php" id="filterForm">
+                <form method="GET" action="" id="filterForm">
                     <div class="filter-section">
                         <!-- Chọn lớp -->
                         <div class="form-group">
@@ -391,7 +401,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                     <?php foreach ($classes as $class): ?>
                                         <option value="<?php echo $class['maLop']; ?>"
                                             <?php echo ($selectedClass == $class['maLop']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($class['tenLop']) . ' - ' . htmlspecialchars($class['khoiLop']); ?>
+                                            <?php echo htmlspecialchars($class['tenLop']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -438,7 +448,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <?php if (!empty($students)): ?>
                 <!-- Bảng nhập điểm -->
                 <div class="card">
-                    <form method="POST" action="cInsertGrade.php?action=save" id="gradeForm">
+                    <form method="POST" action="?action=save" id="gradeForm">
                         <input type="hidden" name="maMonHoc" value="<?php echo $selectedSubject; ?>">
                         <input type="hidden" name="maLop" value="<?php echo $selectedClass; ?>">
                         <input type="hidden" name="hocKy" value="<?php echo $selectedHocKy; ?>">
@@ -447,10 +457,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <!-- Nút hành động ở trên -->
                         <div class="button-group-top">
                             <div class="left-buttons">
-                                <button type="submit" class="btn btn-success" onclick="return confirm('Bạn có chắc chắn muốn lưu điểm?')">
+                                <button type="submit" class="btn btn-success">
                                     <i class="fas fa-save"></i> Lưu điểm
                                 </button>
-                                <button type="button" class="btn btn-primary" onclick="window.location.href='cInsertGrade.php'">
+                                <button type="button" class="btn btn-primary" onclick="window.location.href=window.location.pathname">
                                     <i class="fas fa-sync-alt"></i> Làm mới
                                 </button>
                             </div>
@@ -486,40 +496,28 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             
                                             <!-- Điểm TX -->
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemTX1]"
                                                        value="<?php echo $student['diemTX1'] !== null ? $student['diemTX1'] : ''; ?>"
                                                        onchange="calculateAverage(<?php echo $student['maHS']; ?>)">
                                             </td>
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemTX2]"
                                                        value="<?php echo $student['diemTX2'] !== null ? $student['diemTX2'] : ''; ?>"
                                                        onchange="calculateAverage(<?php echo $student['maHS']; ?>)">
                                             </td>
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemTX3]"
                                                        value="<?php echo $student['diemTX3'] !== null ? $student['diemTX3'] : ''; ?>"
                                                        onchange="calculateAverage(<?php echo $student['maHS']; ?>)">
                                             </td>
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemTX4]"
                                                        value="<?php echo $student['diemTX4'] !== null ? $student['diemTX4'] : ''; ?>"
@@ -528,10 +526,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             
                                             <!-- Điểm giữa kỳ -->
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemGiuaKy]"
                                                        value="<?php echo $student['diemGiuaKy'] !== null ? $student['diemGiuaKy'] : ''; ?>"
@@ -540,10 +535,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             
                                             <!-- Điểm cuối kỳ -->
                                             <td>
-                                                <input type="number" 
-                                                       step="0.25" 
-                                                       min="0" 
-                                                       max="10" 
+                                                <input type="text" 
                                                        class="grade-input" 
                                                        name="grades[<?php echo $student['maHS']; ?>][diemCuoiKy]"
                                                        value="<?php echo $student['diemCuoiKy'] !== null ? $student['diemCuoiKy'] : ''; ?>"
@@ -657,16 +649,42 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         showPage(currentPage + delta);
     }
 
+    // Lưu giá trị ban đầu để so sánh thay đổi
+    const originalValues = new Map();
+    
     document.addEventListener('DOMContentLoaded', function() {
         initPagination();
         
         const gradeInputs = document.querySelectorAll('.grade-input');
+        const commentInputs = document.querySelectorAll('.comment-input');
+        
+        // Lưu giá trị ban đầu của tất cả các input
+        gradeInputs.forEach(input => {
+            originalValues.set(input.name, input.value);
+        });
+        commentInputs.forEach(input => {
+            originalValues.set(input.name, input.value);
+        });
+        
+        // Tính điểm trung bình cho tất cả học sinh khi load trang
+        const studentIds = new Set();
+        gradeInputs.forEach(input => {
+            const match = input.name.match(/grades\[(\d+)\]/);
+            if (match) {
+                studentIds.add(match[1]);
+            }
+        });
+        studentIds.forEach(maHS => {
+            calculateAverage(maHS);
+        });
         
         gradeInputs.forEach(input => {
             input.addEventListener('input', function(e) {
                 let value = e.target.value;
+                // Chỉ cho phép số và dấu chấm
                 value = value.replace(/[^0-9.]/g, '');
                 
+                // Chỉ cho phép một dấu chấm
                 const parts = value.split('.');
                 if (parts.length > 2) {
                     value = parts[0] + '.' + parts.slice(1).join('');
@@ -674,65 +692,140 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 
                 e.target.value = value;
                 
-                if (value !== '') {
+                // Chỉ đánh dấu lỗi, KHÔNG tự động thay đổi giá trị khi đang nhập
+                if (value !== '' && value !== '.') {
                     const numValue = parseFloat(value);
-                    if (numValue < 0) {
-                        e.target.value = 0;
-                        e.target.classList.add('error');
-                    } else if (numValue > 10) {
-                        e.target.value = 10;
+                    if (!isNaN(numValue) && (numValue < 0 || numValue > 10)) {
                         e.target.classList.add('error');
                     } else {
                         e.target.classList.remove('error');
                     }
                 }
+                
+                // Đánh dấu đã thay đổi
+                markAsChanged(e.target);
             });
             
             input.addEventListener('blur', function(e) {
-                if (e.target.value !== '' && !isNaN(e.target.value)) {
-                    const numValue = parseFloat(e.target.value);
-                    e.target.value = numValue.toFixed(2);
+                let value = e.target.value.trim();
+                
+                // Bỏ qua nếu rỗng
+                if (value === '' || value === '.') {
+                    e.target.value = '';
+                    e.target.classList.remove('error');
+                    markAsChanged(e.target);
+                    return;
                 }
+                
+                const numValue = parseFloat(value);
+                
+                // Kiểm tra giá trị hợp lệ
+                if (isNaN(numValue)) {
+                    e.target.value = '';
+                    e.target.classList.remove('error');
+                    markAsChanged(e.target);
+                    return;
+                }
+                
+                // Giới hạn giá trị trong khoảng 0-10
+                let finalValue = numValue;
+                if (finalValue < 0) {
+                    finalValue = 0;
+                } else if (finalValue > 10) {
+                    finalValue = 10;
+                }
+                
+                // Format với 2 chữ số thập phân
+                e.target.value = finalValue.toFixed(2);
+                e.target.classList.remove('error');
+                markAsChanged(e.target);
+            });
+        });
+        
+        // Đánh dấu thay đổi cho textarea nhận xét
+        commentInputs.forEach(input => {
+            // Lắng nghe input event để đánh dấu ngay khi gõ
+            input.addEventListener('input', function(e) {
+                markAsChanged(e.target);
+            });
+            // Vẫn giữ change event cho trường hợp paste hoặc autofill
+            input.addEventListener('change', function(e) {
+                markAsChanged(e.target);
             });
         });
     });
+    
+    function markAsChanged(element) {
+        const currentValue = element.value;
+        const originalValue = originalValues.get(element.name) || '';
+        
+        if (currentValue !== originalValue) {
+            element.setAttribute('data-changed', 'true');
+            element.style.backgroundColor = '#fff9e6'; // Highlight màu vàng nhạt
+        } else {
+            element.removeAttribute('data-changed');
+            element.style.backgroundColor = '';
+        }
+    }
 
     function calculateAverage(maHS) {
-        const tx1 = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemTX1]"]`).value) || null;
-        const tx2 = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemTX2]"]`).value) || null;
-        const tx3 = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemTX3]"]`).value) || null;
-        const tx4 = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemTX4]"]`).value) || null;
-        const diemGK = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemGiuaKy]"]`).value) || null;
-        const diemCK = parseFloat(document.querySelector(`input[name="grades[${maHS}][diemCuoiKy]"]`).value) || null;
+        // Lấy giá trị và kiểm tra chính xác (không dùng ||)
+        const getValue = (selector) => {
+            const value = document.querySelector(selector).value.trim();
+            return value === '' ? null : parseFloat(value);
+        };
         
-        let txScores = [];
-        if (tx1 !== null) txScores.push(tx1);
-        if (tx2 !== null) txScores.push(tx2);
-        if (tx3 !== null) txScores.push(tx3);
-        if (tx4 !== null) txScores.push(tx4);
+        const tx1 = getValue(`input[name="grades[${maHS}][diemTX1]"]`);
+        const tx2 = getValue(`input[name="grades[${maHS}][diemTX2]"]`);
+        const tx3 = getValue(`input[name="grades[${maHS}][diemTX3]"]`);
+        const tx4 = getValue(`input[name="grades[${maHS}][diemTX4]"]`);
+        const diemGK = getValue(`input[name="grades[${maHS}][diemGiuaKy]"]`);
+        const diemCK = getValue(`input[name="grades[${maHS}][diemCuoiKy]"]`);
         
-        const diemTX = txScores.length > 0 ? txScores.reduce((a, b) => a + b, 0) / txScores.length : null;
+        // ĐIỀU KIỆN BẮT BUỘC: Phải có điểm GK VÀ điểm CK mới tính được ĐTB
+        if (diemGK === null || diemCK === null) {
+            document.getElementById(`avg-${maHS}`).textContent = '-';
+            document.getElementById(`avg-${maHS}`).style.color = '#999';
+            return;
+        }
         
+        // Tính điểm trung bình môn theo công thức:
+        // Mỗi điểm TX có hệ số 1, GK hệ số 2, CK hệ số 3
+        // ĐTB = (TX1×1 + TX2×1 + TX3×1 + TX4×1 + GK×2 + CK×3) / (số TX có + 2 + 3)
         let sum = 0;
         let totalCoefficient = 0;
         
-        if (diemTX !== null) {
-            sum += diemTX * 1;
+        // Cộng từng điểm TX với hệ số 1
+        if (tx1 !== null) {
+            sum += tx1 * 1;
+            totalCoefficient += 1;
+        }
+        if (tx2 !== null) {
+            sum += tx2 * 1;
+            totalCoefficient += 1;
+        }
+        if (tx3 !== null) {
+            sum += tx3 * 1;
+            totalCoefficient += 1;
+        }
+        if (tx4 !== null) {
+            sum += tx4 * 1;
             totalCoefficient += 1;
         }
         
-        if (diemGK !== null) {
-            sum += diemGK * 2;
-            totalCoefficient += 2;
-        }
+        // Cộng điểm GK với hệ số 2
+        sum += diemGK * 2;
+        totalCoefficient += 2;
         
-        if (diemCK !== null) {
-            sum += diemCK * 3;
-            totalCoefficient += 3;
-        }
+        // Cộng điểm CK với hệ số 3
+        sum += diemCK * 3;
+        totalCoefficient += 3;
         
-        const average = totalCoefficient > 0 ? (sum / totalCoefficient).toFixed(2) : '-';
+        // Tính trung bình (chia 8 hoặc 9 tùy số điểm TX)
+        const average = (sum / totalCoefficient).toFixed(2);
+        
         document.getElementById(`avg-${maHS}`).textContent = average;
+        document.getElementById(`avg-${maHS}`).style.color = '#27ae60';
     }
 
     document.getElementById('gradeForm')?.addEventListener('submit', function(e) {
@@ -754,6 +847,48 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             alert('Vui lòng kiểm tra lại các điểm đã nhập! Điểm phải là số từ 0 đến 10.');
             return false;
         }
+        
+        // Chỉ gửi dữ liệu đã thay đổi
+        e.preventDefault();
+        
+        const allInputs = this.querySelectorAll('.grade-input, .comment-input');
+        const changedData = {};
+        let hasChanges = false;
+        
+        allInputs.forEach(input => {
+            if (input.getAttribute('data-changed') === 'true') {
+                const nameParts = input.name.match(/grades\[(\d+)\]\[(\w+)\]/);
+                if (nameParts) {
+                    const maHS = nameParts[1];
+                    const field = nameParts[2];
+                    
+                    if (!changedData[maHS]) {
+                        changedData[maHS] = {};
+                    }
+                    changedData[maHS][field] = input.value;
+                    hasChanges = true;
+                }
+            }
+        });
+        
+        if (!hasChanges) {
+            alert('Không có thay đổi nào để lưu!');
+            return false;
+        }
+        
+        console.log('Dữ liệu đã thay đổi:', changedData);
+        
+        // Disable tất cả input KHÔNG thay đổi để không gửi lên server
+        allInputs.forEach(input => {
+            if (input.getAttribute('data-changed') !== 'true') {
+                input.disabled = true;
+            } else {
+                console.log('Input đã thay đổi:', input.name, '=', input.value);
+            }
+        });
+        
+        // Submit form - chỉ gửi các input đã thay đổi (không disabled)
+        this.submit();
     });
     </script>
 </body>

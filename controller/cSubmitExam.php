@@ -67,12 +67,23 @@ class cSubmitExam
         $data = [
             'tenDeThi' => trim($_POST['tenDeThi'] ?? ''),
             'loaiDeThi' => trim($_POST['loaiDeThi'] ?? 'de-thi'),
-            'maMonHoc' => intval($_POST['maMonHoc'] ?? 0),
             'hocKy' => intval($_POST['hocKy'] ?? 0),
             'namHoc' => trim($_POST['namHoc'] ?? ''),
             'moTa' => trim($_POST['moTa'] ?? ''),
             'maGV' => $maGV
         ];
+
+        // Tự động lấy môn học mà giáo viên đang dạy
+        $maMonHoc = $this->model->getTeacherMainSubject($maGV);
+        
+        if (!$maMonHoc) {
+            return [
+                'success' => false,
+                'message' => 'Không tìm thấy môn học bạn đang giảng dạy!'
+            ];
+        }
+        
+        $data['maMonHoc'] = $maMonHoc;
 
         // Thêm thông tin file nếu có
         if (isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -141,12 +152,24 @@ class cSubmitExam
         // Lấy dữ liệu từ form
         $data = [
             'tenDeThi' => trim($_POST['tenDeThi'] ?? ''),
-            'maMonHoc' => intval($_POST['maMonHoc'] ?? 0),
+            'loaiDeThi' => trim($_POST['loaiDeThi'] ?? 'de-thi'),
             'hocKy' => intval($_POST['hocKy'] ?? 0),
             'namHoc' => trim($_POST['namHoc'] ?? ''),
             'moTa' => trim($_POST['moTa'] ?? ''),
             'maGV' => $maGV
         ];
+
+        // Tự động lấy môn học mà giáo viên đang dạy
+        $maMonHoc = $this->model->getTeacherMainSubject($maGV);
+        
+        if (!$maMonHoc) {
+            return [
+                'success' => false,
+                'message' => 'Không tìm thấy môn học bạn đang giảng dạy!'
+            ];
+        }
+        
+        $data['maMonHoc'] = $maMonHoc;
 
         // Thêm thông tin file nếu có
         if (isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE) {

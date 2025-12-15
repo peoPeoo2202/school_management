@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Bật hiển thị lỗi để debug (tắt khi production)
 error_reporting(E_ALL);
@@ -83,8 +85,17 @@ class ControllerStudentClassification {
                 
                 // Tính xếp loại cho từng học sinh
                 foreach ($students as &$student) {
-                    $ranking = $this->model->calculateAcademicRanking($student['maHS'], $hocKy, $namHoc);
-                    $student['ranking'] = $ranking;
+                    // Nếu chưa đủ điểm các môn → xếp "Chưa đạt"
+                    if (isset($student['chuaDuDiem']) && $student['chuaDuDiem']) {
+                        $student['ranking'] = [
+                            'average' => $student['diemTB_HS'],
+                            'ranking' => 'Chưa đạt',
+                            'grades' => $student['grades'] ?? []
+                        ];
+                    } else {
+                        $ranking = $this->model->calculateAcademicRanking($student['maHS'], $hocKy, $namHoc);
+                        $student['ranking'] = $ranking;
+                    }
                 }
                 
                 return ['students' => $students];
@@ -101,14 +112,26 @@ class ControllerStudentClassification {
                 return ['students' => $students];
             } elseif ($type === 'title') {
                 // Lấy thông tin danh hiệu
+                error_log("Controller: Getting title data for maLop=$maLop, hocKy=$hocKy, namHoc=$namHoc");
                 $students = $this->model->getStudentTitles($maLop, $hocKy, $namHoc);
                 
-                // Tính toán danh hiệu cho từng học sinh
-                foreach ($students as &$student) {
-                    $titleData = $this->model->calculateTitleRanking($student['maHS'], $hocKy, $namHoc);
-                    $student['calculatedTitle'] = $titleData;
+                error_log("Controller: getStudentTitles returned " . count($students) . " students");
+                
+                if ($students === false || $students === null) {
+                    error_log("ERROR: getStudentTitles returned invalid data");
+                    return ['error' => 'Không thể lấy dữ liệu danh hiệu', 'students' => []];
                 }
                 
+                if (empty($students)) {
+                    error_log("WARNING: No students found in class");
+                }
+                
+                // Log sample data
+                if (!empty($students)) {
+                    error_log("Sample student: " . json_encode($students[0]));
+                }
+                
+                // Trả về dữ liệu - luôn trả về students array
                 return ['students' => $students];
             } else {
                 // Overview
@@ -392,16 +415,16 @@ class ControllerStudentClassification {
 }
 
 // Xử lý request
-require_once(__DIR__ . '/../config.php');
+require_once(__DIR__ . '/../model/mConnect.php');
 
 try {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    // Tạo kết nối database sử dụng mConnect
+    $mConnect = new mConnect();
+    $conn = $mConnect->mConnect();
 
-    if ($conn->connect_error) {
-        throw new Exception("Kết nối thất bại: " . $conn->connect_error);
+    if (!$conn) {
+        throw new Exception("Kết nối thất bại!");
     }
-
-    $conn->set_charset("utf8mb4");
 
     $controller = new ControllerStudentClassification($conn);
 
@@ -500,7 +523,12 @@ try {
 
     // Hiển thị trang
     $data = $controller->showClassification();
-    include(__DIR__ . '/../view/teacher/vStudentClassification.php');
+    
+    // Chỉ include view nếu KHÔNG được gọi từ view
+    if (!defined('INCLUDED_FROM_VIEW')) {
+        include(__DIR__ . '/../view/teacher/vStudentClassification.php');
+    }
+    // Nếu được gọi từ view, chỉ cần set $data, view sẽ tự render
 
     $conn->close();
 } catch (Exception $e) {

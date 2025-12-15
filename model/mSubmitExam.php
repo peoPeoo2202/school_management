@@ -49,6 +49,32 @@ class mSubmitExam
     }
 
     /**
+     * Lấy môn học chính mà giáo viên đang giảng dạy (tự động xác định)
+     * @param int $maGV - Mã giáo viên
+     * @return int|null - Mã môn học hoặc null
+     */
+    public function getTeacherMainSubject($maGV)
+    {
+        $sql = "SELECT maMonHoc 
+                FROM phancong_giangday 
+                WHERE maGV = ? AND trangThai = 'active' 
+                LIMIT 1";
+        
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $maGV);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($row = mysqli_fetch_assoc($result)) {
+            mysqli_stmt_close($stmt);
+            return $row['maMonHoc'];
+        }
+        
+        mysqli_stmt_close($stmt);
+        return null;
+    }
+
+    /**
      * Lấy tất cả môn học (cho admin/TTBM)
      * @return array - Danh sách môn học
      */
@@ -89,8 +115,24 @@ class mSubmitExam
             ];
         }
 
-        // Xử lý upload file
-        $uploadResult = $this->uploadFile($data['file']);
+        // Lấy tên môn học để đặt tên file
+        $sqlMonHoc = "SELECT tenMonHoc FROM monhoc WHERE maMonHoc = ?";
+        $stmtMonHoc = mysqli_prepare($this->conn, $sqlMonHoc);
+        mysqli_stmt_bind_param($stmtMonHoc, "i", $data['maMonHoc']);
+        mysqli_stmt_execute($stmtMonHoc);
+        $resultMonHoc = mysqli_stmt_get_result($stmtMonHoc);
+        $rowMonHoc = mysqli_fetch_assoc($resultMonHoc);
+        $tenMonHoc = $rowMonHoc['tenMonHoc'] ?? 'mon-hoc';
+        mysqli_stmt_close($stmtMonHoc);
+        
+        // Xử lý upload file với metadata
+        $fileMetadata = [
+            'tenMonHoc' => $tenMonHoc,
+            'hocKy' => $data['hocKy'],
+            'loaiDeThi' => $data['loaiDeThi'] ?? 'de-thi'
+        ];
+        
+        $uploadResult = $this->uploadFile($data['file'], $fileMetadata);
         if (!$uploadResult['success']) {
             return $uploadResult;
         }
@@ -101,7 +143,7 @@ class mSubmitExam
         // Thêm vào database
         $sql = "INSERT INTO dethi (tenDeThi, loaiDeThi, tenFile, duongDan, moTa, 
                 maGV, maMonHoc, hocKy, namHoc, trangThai, ngayTao) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Choduyet', NOW())";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Chuaduyet', NOW())";
         
         $stmt = mysqli_prepare($this->conn, $sql);
         
@@ -144,11 +186,95 @@ class mSubmitExam
     }
 
     /**
+     * Tạo tên file có cấu trúc từ metadata
+     * @param array $metadata - Thông tin đề thi
+     * @param string $extension - Phần mở rộng file
+     * @return string - Tên file
+     */
+    private function generateFileName($metadata, $extension)
+    {
+        // Chuyển đổi tiếng Việt sang không dấu và thay khoảng trắng bằng gạch ngang
+        $tenMonHoc = $metadata['tenMonHoc'] ?? 'mon-hoc';
+        $tenMonHoc = $this->removeVietnameseTones($tenMonHoc);
+        $tenMonHoc = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $tenMonHoc));
+        $tenMonHoc = trim($tenMonHoc, '-');
+        
+        // Xử lý loại đề thi
+        $loaiDeThi = $metadata['loaiDeThi'] ?? 'de-thi';
+        $loaiDeThiMap = [
+            'de-thi-giua-ky' => 'giua-ky',
+            'de-thi-cuoi-ky' => 'cuoi-ky',
+            'de-thi-thu' => 'thi-thu',
+            'de-thi' => 'de-thi'
+        ];
+        $loaiDeThiText = $loaiDeThiMap[$loaiDeThi] ?? 'de-thi';
+        
+        // Học kỳ
+        $hocKy = $metadata['hocKy'] ?? '';
+        
+        // Tạo tên file: de-thi-[loai]-[ten-mon]-hoc-ky-[X]_timestamp.ext
+        $parts = [$loaiDeThiText, $tenMonHoc];
+        
+        if (!empty($hocKy)) {
+            $parts[] = 'hoc-ky-' . $hocKy;
+        }
+        
+        $parts[] = time() . '_' . uniqid();
+        
+        return implode('-', $parts) . '.' . $extension;
+    }
+    
+    /**
+     * Chuyển đổi tiếng Việt có dấu sang không dấu
+     * @param string $str - Chuỗi cần chuyển đổi
+     * @return string - Chuỗi không dấu
+     */
+    private function removeVietnameseTones($str)
+    {
+        $vietnamese = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+            'À', 'Á', 'Ạ', 'Ả', 'Ã', 'Â', 'Ầ', 'Ấ', 'Ậ', 'Ẩ', 'Ẫ', 'Ă', 'Ằ', 'Ắ', 'Ặ', 'Ẳ', 'Ẵ',
+            'È', 'É', 'Ẹ', 'Ẻ', 'Ẽ', 'Ê', 'Ề', 'Ế', 'Ệ', 'Ể', 'Ễ',
+            'Ì', 'Í', 'Ị', 'Ỉ', 'Ĩ',
+            'Ò', 'Ó', 'Ọ', 'Ỏ', 'Õ', 'Ô', 'Ồ', 'Ố', 'Ộ', 'Ổ', 'Ỗ', 'Ơ', 'Ờ', 'Ớ', 'Ợ', 'Ở', 'Ỡ',
+            'Ù', 'Ú', 'Ụ', 'Ủ', 'Ũ', 'Ư', 'Ừ', 'Ứ', 'Ự', 'Ử', 'Ữ',
+            'Ỳ', 'Ý', 'Ỵ', 'Ỷ', 'Ỹ',
+            'Đ'
+        ];
+        
+        $replacements = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E',
+            'I', 'I', 'I', 'I', 'I',
+            'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O',
+            'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U', 'U',
+            'Y', 'Y', 'Y', 'Y', 'Y',
+            'D'
+        ];
+        
+        return str_replace($vietnamese, $replacements, $str);
+    }
+
+    /**
      * Upload file đề thi
      * @param array $file - Thông tin file từ $_FILES
+     * @param array $metadata - Thông tin để đặt tên file (tenMonHoc, hocKy, loaiDeThi)
      * @return array - Kết quả upload
      */
-    private function uploadFile($file)
+    private function uploadFile($file, $metadata = [])
     {
         // Kiểm tra lỗi upload
         if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -197,8 +323,8 @@ class mSubmitExam
             mkdir($uploadDir, 0777, true);
         }
 
-        // Tạo tên file unique
-        $fileName = time() . '_' . uniqid() . '.' . $fileExtension;
+        // Tạo tên file có cấu trúc dựa trên metadata
+        $fileName = $this->generateFileName($metadata, $fileExtension);
         $filePath = $uploadDir . $fileName;
 
         // Di chuyển file
@@ -226,8 +352,9 @@ class mSubmitExam
     {
         $sql = "SELECT dt.*, mh.tenMonHoc, 
                 CASE 
-                    WHEN dt.trangThai = 'Choduyet' THEN 'Chờ duyệt'
+                    WHEN dt.trangThai = 'Chuaduyet' THEN 'Chờ duyệt'
                     WHEN dt.trangThai = 'Daduyet' THEN 'Đã duyệt'
+                    WHEN dt.trangThai = 'Dachon' THEN 'Đã chọn'
                     WHEN dt.trangThai = 'Tuchoi' THEN 'Từ chối'
                     ELSE dt.trangThai
                 END as trangThaiText
@@ -330,8 +457,8 @@ class mSubmitExam
             ];
         }
 
-        // Chỉ cho phép sửa đề thi có trạng thái 'Choduyet' hoặc 'Tuchoi'
-        if (!in_array($currentExam['trangThai'], ['Choduyet', 'Tuchoi'])) {
+        // Chỉ cho phép sửa đề thi có trạng thái 'Chuaduyet' hoặc 'Tuchoi'
+        if (!in_array($currentExam['trangThai'], ['Chuaduyet', 'Tuchoi'])) {
             return [
                 'success' => false,
                 'message' => 'Chỉ có thể sửa đề thi đang chờ duyệt hoặc bị từ chối!'
@@ -343,7 +470,24 @@ class mSubmitExam
         
         // Xử lý upload file mới nếu có
         if (isset($data['file']) && $data['file']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = $this->uploadFile($data['file']);
+            // Lấy tên môn học để đặt tên file
+            $sqlMonHoc = "SELECT tenMonHoc FROM monhoc WHERE maMonHoc = ?";
+            $stmtMonHoc = mysqli_prepare($this->conn, $sqlMonHoc);
+            mysqli_stmt_bind_param($stmtMonHoc, "i", $data['maMonHoc']);
+            mysqli_stmt_execute($stmtMonHoc);
+            $resultMonHoc = mysqli_stmt_get_result($stmtMonHoc);
+            $rowMonHoc = mysqli_fetch_assoc($resultMonHoc);
+            $tenMonHoc = $rowMonHoc['tenMonHoc'] ?? 'mon-hoc';
+            mysqli_stmt_close($stmtMonHoc);
+            
+            // Xử lý upload file với metadata
+            $fileMetadata = [
+                'tenMonHoc' => $tenMonHoc,
+                'hocKy' => $data['hocKy'],
+                'loaiDeThi' => $data['loaiDeThi'] ?? 'de-thi'
+            ];
+            
+            $uploadResult = $this->uploadFile($data['file'], $fileMetadata);
             if (!$uploadResult['success']) {
                 return $uploadResult;
             }
@@ -359,14 +503,18 @@ class mSubmitExam
 
         // Cập nhật database
         $sql = "UPDATE dethi 
-                SET tenDeThi = ?, moTa = ?, tenFile = ?, duongDan = ?, 
+                SET tenDeThi = ?, loaiDeThi = ?, moTa = ?, tenFile = ?, duongDan = ?, 
                     maMonHoc = ?, hocKy = ?, namHoc = ?, 
-                    trangThai = 'Choduyet', ngayCapNhat = NOW()
+                    trangThai = 'Chuaduyet', ngayCapNhat = NOW()
                 WHERE maDeThi = ? AND maGV = ?";
         
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, "ssssiisii",
+        
+        $loaiDeThi = $data['loaiDeThi'] ?? 'de-thi';
+        
+        mysqli_stmt_bind_param($stmt, "sssssiisii",
             $data['tenDeThi'],
+            $loaiDeThi,
             $data['moTa'],
             $tenFile,
             $duongDan,
@@ -409,8 +557,8 @@ class mSubmitExam
             ];
         }
 
-        // Chỉ cho phép xóa đề thi có trạng thái 'Choduyet' hoặc 'Tuchoi'
-        if (!in_array($exam['trangThai'], ['Choduyet', 'Tuchoi'])) {
+        // Chỉ cho phép xóa đề thi có trạng thái 'Chuaduyet' hoặc 'Tuchoi'
+        if (!in_array($exam['trangThai'], ['Chuaduyet', 'Tuchoi'])) {
             return [
                 'success' => false,
                 'message' => 'Chỉ có thể xóa đề thi đang chờ duyệt hoặc bị từ chối!'

@@ -19,8 +19,10 @@ if (!isset($_SESSION['maHS'])) {
 $controller = new cSubmitHomework();
 $maHS = $_SESSION['maHS'];
 
-// Debug: Show maHS
-echo "<!-- DEBUG: maHS = " . $maHS . " -->";
+// Debug: Show maHS and full session
+echo "<!-- DEBUG: maHS from SESSION = " . $maHS . " -->";
+echo "<!-- DEBUG: Full SESSION data = " . print_r($_SESSION, true) . " -->";
+echo "<!-- DEBUG: Session ID = " . session_id() . " -->";
 
 // Check if viewing specific homework
 if (isset($_GET['id'])) {
@@ -34,15 +36,91 @@ if (isset($_GET['id'])) {
     }
 
     // Get submission if exists
+    echo "<!-- DEBUG VIEW: Calling getStudentSubmission with maBaiTap=" . $maBaiTap . ", maHS=" . $maHS . " -->";
     $submission = $controller->getStudentSubmission($maBaiTap, $maHS);
+    echo "<!-- DEBUG VIEW: Submission result: " . ($submission ? "Found maBaiNop=" . $submission['maBaiNop'] : "NULL") . " -->";
+    if ($submission) {
+        echo "<!-- DEBUG VIEW: Submission belongs to maHS=" . $submission['maHS'] . " -->";
+    }
+
+    // Đặt timezone cho chính xác (nếu chưa có)
+    date_default_timezone_set('Asia/Ho_Chi_Minh');
+    
+    // Kiểm tra xem bài tập đã quá hạn chưa - QUAN TRỌNG: So sánh DATETIME chính xác
+    $currentDateTime = date('Y-m-d H:i:s');
+    $deadlineDateTime = $homework['thoiGianNop'];
+    
+    // Chuyển sang timestamp để so sánh
+    $deadlineTimestamp = strtotime($deadlineDateTime);
+    $currentTimestamp = time();
+    
+    // So sánh: Nếu thời gian hiện tại > deadline thì quá hạn
+    $isOverdue = $currentTimestamp > $deadlineTimestamp;
+    
+    // Debug chi tiết
+    echo "<!-- DEBUG DETAIL: maBaiTap=" . $homework['maBaiTap'] . " -->";
+    echo "<!-- DEBUG DEADLINE: thoiGianNop=" . $deadlineDateTime . " -->";
+    echo "<!-- DEBUG DEADLINE TIMESTAMP: " . $deadlineTimestamp . " (" . date('d/m/Y H:i:s', $deadlineTimestamp) . ") -->";
+    echo "<!-- DEBUG CURRENT TIME: " . $currentDateTime . " -->";
+    echo "<!-- DEBUG CURRENT TIMESTAMP: " . $currentTimestamp . " (" . date('d/m/Y H:i:s', $currentTimestamp) . ") -->";
+    echo "<!-- DEBUG TIME DIFF (seconds): " . ($currentTimestamp - $deadlineTimestamp) . " -->";
+    echo "<!-- DEBUG COMPARISON: isOverdue=" . ($isOverdue ? 'TRUE' : 'FALSE') . " -->";
+    echo "<!-- DEBUG choPhepNopTre: " . ($homework['choPhepNopTre'] ?? 'NULL') . " (type: " . gettype($homework['choPhepNopTre']) . ") -->";
+    echo "<!-- DEBUG submission exists: " . ($submission ? 'YES' : 'NO') . " -->";
+    if ($submission) {
+        echo "<!-- DEBUG submission data: maBaiNop=" . ($submission['maBaiNop'] ?? 'NULL') . ", ngayNop=" . ($submission['ngayNop'] ?? 'NULL') . " -->";
+    }
+    
+    // Logic kiểm tra quyền nộp bài
+    // 0. Kiểm tra bài tập có bị khóa không
+    if (isset($homework['khoaBai']) && $homework['khoaBai'] == 1) {
+        echo "<!-- LOGIC: Bài tập đã bị khóa -->";
+        $canSubmit = false;
+        $submitReason = 'locked';
+    }
+    // 1. Nếu đã quá hạn
+    else if ($isOverdue) {
+        echo "<!-- LOGIC: Đã quá hạn -->";
+        
+        // 1a. Nếu cho phép nộp trễ -> LUÔN cho phép nộp/nộp lại (dù đã nộp hay chưa)
+        if ($homework['choPhepNopTre'] == 1 || $homework['choPhepNopTre'] === '1' || $homework['choPhepNopTre'] === 1) {
+            echo "<!-- LOGIC: Cho phép nộp trễ -> Cho phép nộp/nộp lại -->";
+            $canSubmit = true;
+            $submitReason = 'late_allowed';
+        } 
+        // 1b. Nếu KHÔNG cho phép nộp trễ -> KHÓA hoàn toàn
+        else {
+            echo "<!-- LOGIC: KHÔNG cho phép nộp trễ -> KHÓA -->";
+            $canSubmit = false;
+            $submitReason = $submission ? 'already_submitted_overdue' : 'overdue_not_allowed';
+        }
+    } 
+    // 2. Nếu chưa quá hạn -> luôn cho phép nộp/nộp lại
+    else {
+        echo "<!-- LOGIC: Còn hạn -> Cho phép -->";
+        $canSubmit = true;
+        $submitReason = 'on_time';
+    }
+    
+    echo "<!-- DEBUG RESULT: canSubmit=" . ($canSubmit ? 'TRUE' : 'FALSE') . " -->";
+    echo "<!-- DEBUG REASON: " . $submitReason . " -->";
 
     // Handle submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-        $result = $controller->submitHomework($maBaiTap, $maHS, $_FILES['file'], $_POST['noiDung']);
-        $message = $result['message'];
-        $messageType = $result['success'] ? 'success' : 'error';
-        // Refresh submission data
-        $submission = $controller->getStudentSubmission($maBaiTap, $maHS);
+        if (!$canSubmit) {
+            if ($submitReason == 'locked') {
+                $message = 'Bài tập đã bị khóa. Học sinh không thể nộp bài!';
+            } else {
+                $message = 'Bài tập đã hết hạn nộp và không cho phép nộp trễ! Vui lòng liên hệ giáo viên.';
+            }
+            $messageType = 'error';
+        } else {
+            $result = $controller->submitHomework($maBaiTap, $maHS, $_FILES['file'], $_POST['noiDung']);
+            $message = $result['message'];
+            $messageType = $result['success'] ? 'success' : 'error';
+            // Refresh submission data
+            $submission = $controller->getStudentSubmission($maBaiTap, $maHS);
+        }
     }
     ?>
 
@@ -707,10 +785,30 @@ if (isset($_GET['id'])) {
                             <i class="fas fa-clock"></i>
                             <span>Hạn nộp:</span>
                         </div>
-                        <div class="detail-value" style="color: #dc3545; font-weight: 600;">
-                            <?php echo date('d/m/Y H:i', strtotime($homework['thoiGianNop'])); ?>
+                        <div class="detail-value">
+                            <span style="color: <?php echo $isOverdue ? '#dc3545' : '#28a745'; ?>; font-weight: 600;">
+                                <?php echo date('d/m/Y H:i', strtotime($homework['thoiGianNop'])); ?>
+                                <?php if ($isOverdue): ?>
+                                    <span style="display: inline-block; margin-left: 8px; padding: 4px 10px; background: #f8d7da; color: #721c24; border-radius: 12px; font-size: 12px;">
+                                        <i class="fas fa-exclamation-triangle"></i> Đã quá hạn
+                                    </span>
+                                <?php endif; ?>
+                            </span>
                         </div>
                     </div>
+                    <?php if ($homework['choPhepNopTre'] == 1 && $isOverdue): ?>
+                    <div class="detail-row">
+                        <div class="detail-label">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Nộp trễ:</span>
+                        </div>
+                        <div class="detail-value">
+                            <span style="color: #856404; background: #fff3cd; padding: 6px 12px; border-radius: 12px; font-size: 13px;">
+                                <i class="fas fa-check-circle"></i> Được phép nộp trễ
+                            </span>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     <?php if ($homework['yeuCauBaiTap']): ?>
                     <div class="detail-row">
                         <div class="detail-label">
@@ -824,86 +922,125 @@ if (isset($_GET['id'])) {
                 <?php endif; ?>
 
                 <!-- Form nộp bài -->
-                <div class="form-section">
-                    <h3><?php echo $submission ? 'Nộp lại bài tập' : 'Nộp bài tập'; ?></h3>
-                    
-                    <form method="POST" enctype="multipart/form-data" id="submitForm">
-                        <div class="form-group">
-                            <label for="noiDung">
-                                <i class="fas fa-align-left"></i> Nội dung bài làm (tùy chọn)
-                            </label>
-                            <textarea name="noiDung" id="noiDung" placeholder="Nhập nội dung bài làm hoặc ghi chú của bạn..."><?php echo $submission ? htmlspecialchars($submission['noiDung']) : ''; ?></textarea>
+                <?php if (!$canSubmit): ?>
+                    <div class="form-section">
+                        <h3><i class="fas fa-lock"></i> Nộp bài tập</h3>
+                        <div style="padding: 30px; text-align: center; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 6px;">
+                            <i class="fas fa-<?= $submitReason == 'locked' ? 'lock' : 'exclamation-circle' ?>" style="font-size: 48px; color: #721c24; margin-bottom: 15px;"></i>
+                            <?php if ($submitReason == 'locked'): ?>
+                                <h4 style="color: #721c24; margin-bottom: 10px;">Bài tập đã bị khóa</h4>
+                                <p style="color: #721c24; margin-bottom: 0;">
+                                    Giáo viên đã khóa bài tập này. Học sinh không thể nộp bài.<br>
+                                    Vui lòng liên hệ giáo viên để biết thêm thông tin.
+                                </p>
+                            <?php elseif ($submission): ?>
+                                <h4 style="color: #721c24; margin-bottom: 10px;">Không thể nộp lại bài tập</h4>
+                                <p style="color: #721c24; margin-bottom: 0;">
+                                    Không được phép nộp lại sau khi đã quá thời hạn.<br>
+                                    Vui lòng liên hệ giáo viên nếu cần hỗ trợ.
+                                </p>
+                            <?php else: ?>
+                                <h4 style="color: #721c24; margin-bottom: 10px;">Bài tập đã hết hạn nộp</h4>
+                                <p style="color: #721c24; margin-bottom: 0;">
+                                    Thời gian nộp bài đã kết thúc lúc <strong><?= date('d/m/Y H:i', $deadlineTimestamp) ?></strong>.<br>
+                                    Bài tập này không cho phép nộp trễ. Bạn đã bỏ lỡ cơ hội nộp bài.<br>
+                                    Vui lòng liên hệ giáo viên để được hỗ trợ.
+                                </p>
+                            <?php endif; ?>
                         </div>
-
-                        <div class="form-group">
-                            <label>
-                                <i class="fas fa-cloud-upload-alt"></i> Tải lên file bài làm
-                            </label>
-                            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
-                                <div class="file-upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <div class="file-upload-text">
-                                    Kéo thả file vào đây hoặc click để chọn file
-                                </div>
-                                <div class="file-upload-hint">
-                                    Định dạng: PDF, Word, Ảnh (JPG, PNG), File nén (ZIP, RAR). Tối đa 10MB
-                                </div>
-                                <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar">
+                    </div>
+                <?php else: ?>
+                    <div class="form-section">
+                        <h3>
+                            <?php echo $submission ? 'Nộp lại bài tập' : 'Nộp bài tập'; ?>
+                            <?php if ($isOverdue && $homework['choPhepNopTre'] == 1): ?>
+                                <!-- <span style="font-size: 14px; color: #856404; font-weight: normal;">
+                                    <i class="fas fa-exclamation-triangle"></i> (Nộp trễ - vui lòng nộp sớm nhất có thể)
+                                </span> -->
+                            <?php endif; ?>
+                        </h3>
+                        
+                        <form method="POST" enctype="multipart/form-data" id="submitForm">
+                            <div class="form-group">
+                                <label for="noiDung">
+                                    <i class="fas fa-align-left"></i> Nội dung bài làm (tùy chọn)
+                                </label>
+                                <textarea name="noiDung" id="noiDung" placeholder="Nhập nội dung bài làm hoặc ghi chú của bạn..."><?php echo $submission ? htmlspecialchars($submission['noiDung']) : ''; ?></textarea>
                             </div>
-                            <div class="selected-file" id="selectedFile">
-                                <div class="file-icon">
-                                    <i class="fas fa-file-alt"></i>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-cloud-upload-alt"></i> Tải lên file bài làm
+                                </label>
+                                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                                    <div class="file-upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="file-upload-text">
+                                        Kéo thả file vào đây hoặc click để chọn file
+                                    </div>
+                                    <div class="file-upload-hint">
+                                        Định dạng: PDF, Word, Ảnh (JPG, PNG), File nén (ZIP, RAR). Tối đa 10MB
+                                    </div>
+                                    <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar">
                                 </div>
-                                <div class="file-info">
-                                    <div class="file-name" id="fileName"></div>
-                                    <div class="file-size" id="fileSize"></div>
+                                <div class="selected-file" id="selectedFile">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="file-info">
+                                        <div class="file-name" id="fileName"></div>
+                                        <div class="file-size" id="fileSize"></div>
+                                    </div>
+                                    <button type="button" class="remove-file" onclick="removeFile()">
+                                        <i class="fas fa-times"></i> Xóa
+                                    </button>
                                 </div>
-                                <button type="button" class="remove-file" onclick="removeFile()">
-                                    <i class="fas fa-times"></i> Xóa
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" name="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Nộp bài
                                 </button>
                             </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="submit" name="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Nộp bài
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                        </form>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
         <script>
-            // File upload handling
+            // File upload handling - chỉ chạy nếu form tồn tại (được phép nộp)
             const fileInput = document.getElementById('fileInput');
             const fileUploadArea = document.getElementById('fileUploadArea');
             const selectedFile = document.getElementById('selectedFile');
             const fileName = document.getElementById('fileName');
             const fileSize = document.getElementById('fileSize');
+            const submitForm = document.getElementById('submitForm');
 
-            fileInput.addEventListener('change', handleFileSelect);
+            if (fileInput && fileUploadArea && selectedFile) {
+                fileInput.addEventListener('change', handleFileSelect);
 
-            // Drag and drop
-            fileUploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.add('dragover');
-            });
+                // Drag and drop
+                fileUploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.add('dragover');
+                });
 
-            fileUploadArea.addEventListener('dragleave', () => {
-                fileUploadArea.classList.remove('dragover');
-            });
+                fileUploadArea.addEventListener('dragleave', () => {
+                    fileUploadArea.classList.remove('dragover');
+                });
 
-            fileUploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.remove('dragover');
-                fileInput.files = e.dataTransfer.files;
-                handleFileSelect();
-            });
+                fileUploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('dragover');
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                });
+            }
 
             function handleFileSelect() {
-                if (fileInput.files.length > 0) {
+                if (fileInput && fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     fileName.textContent = file.name;
                     fileSize.textContent = formatFileSize(file.size);
@@ -912,8 +1049,10 @@ if (isset($_GET['id'])) {
             }
 
             function removeFile() {
-                fileInput.value = '';
-                selectedFile.classList.remove('show');
+                if (fileInput) {
+                    fileInput.value = '';
+                    selectedFile.classList.remove('show');
+                }
             }
 
             function formatFileSize(bytes) {
@@ -924,8 +1063,9 @@ if (isset($_GET['id'])) {
                 return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
             }
 
-            // Form validation
-            document.getElementById('submitForm').addEventListener('submit', function(e) {
+            // Form validation - chỉ chạy nếu form tồn tại
+            if (submitForm) {
+                submitForm.addEventListener('submit', function(e) {
                 const noiDung = document.getElementById('noiDung').value.trim();
                 const hasFile = fileInput.files.length > 0;
 
@@ -949,7 +1089,8 @@ if (isset($_GET['id'])) {
                     e.preventDefault();
                     return false;
                 }
-            });
+                });
+            }
         </script>
     </body>
     </html>
@@ -958,6 +1099,9 @@ if (isset($_GET['id'])) {
     exit;
 } elseif (isset($_GET['subject'])) {
     // Show homework list for specific subject
+    // Đặt timezone trước khi so sánh thời gian
+    date_default_timezone_set('Asia/Ho_Chi_Minh');
+    
     $maMonHoc = intval($_GET['subject']);
     $homeworks = $controller->getAllHomeworkForStudent($maHS, $maMonHoc);
     $subjects = $controller->getAllSubjectsForStudent($maHS);
@@ -1225,9 +1369,16 @@ if (isset($_GET['id'])) {
             }
             
             .btn-disabled {
-                background: #e9ecef;
-                color: #6c757d;
-                cursor: not-allowed;
+                background: #e9ecef !important;
+                color: #6c757d !important;
+                cursor: not-allowed !important;
+                opacity: 0.6;
+                pointer-events: none;
+            }
+            
+            .btn-disabled:hover {
+                transform: none !important;
+                box-shadow: none !important;
             }
             
             .empty-state {
@@ -1309,10 +1460,60 @@ if (isset($_GET['id'])) {
             <?php else: ?>
                 <div class="homework-grid">
                     <?php foreach ($homeworks as $hw): 
-                        $deadline = strtotime($hw['thoiGianNop']);
+                        // Đảm bảo timezone đã được set
+                        date_default_timezone_set('Asia/Ho_Chi_Minh');
+                        
+                        // Chuyển đổi thời gian deadline và hiện tại
+                        $deadlineStr = $hw['thoiGianNop'];
+                        $deadline = strtotime($deadlineStr);
                         $now = time();
                         $isLate = $now > $deadline;
-                        $canSubmit = !$isLate || $hw['choPhepNopTre'] == 1;
+                        $hasSubmitted = $hw['daNop'] == 1;
+                        
+                        // Debug: In ra giá trị để kiểm tra
+                        echo "<!-- DEBUG HW: maBaiTap=" . $hw['maBaiTap'] . " -->";
+                        echo "<!-- DEBUG HW: tenBaiTap=" . $hw['tenBaiTap'] . " -->";
+                        echo "<!-- DEBUG HW: maBaiNop=" . ($hw['maBaiNop'] ?? 'NULL') . " -->";
+                        echo "<!-- DEBUG HW: daNop=" . ($hw['daNop'] ?? 'NULL') . " -->";
+                        echo "<!-- DEBUG HW: ngayNop=" . ($hw['ngayNop'] ?? 'NULL') . " -->";
+                        echo "<!-- DEBUG HW: Current maHS from session=" . $maHS . " -->";
+                        echo "<!-- DEBUG HW: thoiGianNop (DB)=" . $deadlineStr . " -->";
+                        echo "<!-- DEBUG HW: deadline timestamp=" . $deadline . " (" . date('d/m/Y H:i:s', $deadline) . ") -->";
+                        echo "<!-- DEBUG HW: now timestamp=" . $now . " (" . date('d/m/Y H:i:s', $now) . ") -->";
+                        echo "<!-- DEBUG HW: time diff (seconds)=" . ($now - $deadline) . " -->";
+                        echo "<!-- DEBUG HW: isLate=" . ($isLate ? 'TRUE' : 'FALSE') . " -->";
+                        echo "<!-- DEBUG HW: choPhepNopTre=" . ($hw['choPhepNopTre'] ?? 'NULL') . " -->";
+                        echo "<!-- DEBUG HW: hasSubmitted=" . ($hasSubmitted ? 'TRUE' : 'FALSE') . " -->";
+                        
+                        // Logic kiểm tra quyền nộp:
+                        // 0. Kiểm tra bài tập có bị khóa không
+                        $isLocked = isset($hw['khoaBai']) && $hw['khoaBai'] == 1;
+                        
+                        if ($isLocked) {
+                            $canSubmit = false;
+                            $lockReason = 'locked';
+                        }
+                        // 1. Nếu chưa quá hạn -> luôn cho phép nộp/nộp lại
+                        else if (!$isLate) {
+                            $canSubmit = true; // Còn hạn -> luôn OK
+                            $lockReason = '';
+                        } 
+                        // 2. Nếu đã quá hạn:
+                        //    - Nếu cho phép nộp trễ -> cho phép nộp/nộp lại
+                        //    - Nếu KHÔNG cho phép nộp trễ -> KHÓA (không cho nộp/nộp lại)
+                        else {
+                            // Đã quá hạn
+                            if (isset($hw['choPhepNopTre']) && ($hw['choPhepNopTre'] == 1 || $hw['choPhepNopTre'] === 1 || $hw['choPhepNopTre'] === '1')) {
+                                $canSubmit = true; // Cho phép nộp trễ -> OK
+                                $lockReason = '';
+                            } else {
+                                $canSubmit = false; // Không cho phép nộp trễ -> KHÓA
+                                $lockReason = 'overdue';
+                            }
+                        }
+                        
+                        echo "<!-- DEBUG HW RESULT: canSubmit=" . ($canSubmit ? 'TRUE' : 'FALSE') . " -->";
+                        echo "<!-- DEBUG HW RESULT: isLocked=" . ($isLocked ? 'TRUE' : 'FALSE') . " -->";
                     ?>
                         <div class="homework-item">
                             <div class="homework-header-card">
@@ -1384,23 +1585,31 @@ if (isset($_GET['id'])) {
 
                                 <div class="homework-actions">
                                     <?php if (!$hw['daNop']): ?>
+                                        <!-- Chưa nộp bài -->
                                         <?php if ($canSubmit): ?>
                                             <a href="index.php?page=submitHomework&id=<?php echo $hw['maBaiTap']; ?>" class="btn-card btn-submit">
                                                 <i class="fas fa-upload"></i> Nộp bài
                                             </a>
                                         <?php else: ?>
-                                            <button class="btn-card btn-disabled" disabled>
-                                                <i class="fas fa-lock"></i> Đã hết hạn
+                                            <button class="btn-card btn-disabled" disabled title="<?php echo $lockReason == 'locked' ? 'Bài tập đã bị khóa' : 'Bài tập đã hết hạn nộp'; ?>">
+                                                <i class="fas fa-lock"></i> <?php echo $lockReason == 'locked' ? 'Đã khóa' : 'Đã hết hạn'; ?>
                                             </button>
                                         <?php endif; ?>
                                     <?php else: ?>
+                                        <!-- Đã nộp bài -->
                                         <a href="index.php?page=submitHomework&id=<?php echo $hw['maBaiTap']; ?>" class="btn-card btn-view">
                                             <i class="fas fa-eye"></i> Xem chi tiết
                                         </a>
                                         <?php if ($canSubmit): ?>
+                                            <!-- Cho phép nộp lại nếu chưa quá hạn hoặc được phép nộp trễ -->
                                             <a href="index.php?page=submitHomework&id=<?php echo $hw['maBaiTap']; ?>" class="btn-card btn-submit">
                                                 <i class="fas fa-redo"></i> Nộp lại
                                             </a>
+                                        <?php else: ?>
+                                            <!-- Đã khóa hoặc đã quá hạn và không cho phép nộp lại -->
+                                            <button class="btn-card btn-disabled" disabled title="<?php echo $lockReason == 'locked' ? 'Bài tập đã bị khóa' : 'Bài tập đã hết hạn nộp'; ?>">
+                                                <i class="fas fa-lock"></i> <?php echo $lockReason == 'locked' ? 'Đã khóa' : 'Đã hết hạn'; ?>
+                                            </button>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
@@ -1417,7 +1626,15 @@ if (isset($_GET['id'])) {
     exit;
 } else {
     // Show subject list
+    // Đặt timezone để đồng bộ với MySQL
+    date_default_timezone_set('Asia/Ho_Chi_Minh');
+    
     $subjects = $controller->getAllSubjectsForStudent($maHS);
+    
+    // Debug: Show what we got
+    echo "<!-- DEBUG: Number of subjects = " . count($subjects) . " -->";
+    echo "<!-- DEBUG: Current time = " . date('Y-m-d H:i:s') . " -->";
+    echo "<!-- DEBUG: Subjects = " . print_r($subjects, true) . " -->";
     ?>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -1543,6 +1760,12 @@ if (isset($_GET['id'])) {
         
         .subject-card.hidden {
             display: none;
+        }
+        
+        /* Thẻ môn học không có bài tập - không thể click */
+        .subject-card-no-homework {
+            cursor: not-allowed;
+            pointer-events: none;
         }
         
         .subject-header {
@@ -1738,13 +1961,12 @@ if (isset($_GET['id'])) {
                             </div>
                         </a>
                     <?php else: ?>
-                        <!-- Thẻ môn học không có bài tập - KHÔNG thể click -->
-                        <div class="subject-card"
+                        <!-- Thẻ môn học không có bài tập - giống style môn có bài tập -->
+                        <div class="subject-card subject-card-no-homework"
                              data-name="<?php echo strtolower(htmlspecialchars($subject['tenMonHoc'])); ?>"
                              data-total="0"
-                             data-overdue="0"
-                             style="opacity: 0.7; cursor: not-allowed;">
-                            <div class="subject-header" style="background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);">
+                             data-overdue="0">
+                            <div class="subject-header">
                                 <div class="subject-icon">
                                     <i class="fas fa-book-open"></i>
                                 </div>
@@ -1754,18 +1976,18 @@ if (isset($_GET['id'])) {
                             <div class="subject-body">
                                 <div class="subject-stats">
                                     <div class="stat-item">
-                                        <span class="stat-number" style="color: #9e9e9e;">0</span>
+                                        <span class="stat-number total">0</span>
                                         <span class="stat-label">Số bài tập</span>
                                     </div>
                                     <div class="stat-item">
-                                        <span class="stat-number" style="color: #9e9e9e;">0</span>
+                                        <span class="stat-number overdue">0</span>
                                         <span class="stat-label">Quá hạn</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="subject-footer" style="background: #f5f5f5;">
-                                <span class="view-homework-btn" style="color: #9e9e9e;">
+                            <div class="subject-footer">
+                                <span class="view-homework-btn">
                                     <i class="fas fa-inbox"></i>
                                     <span>Chưa có bài tập</span>
                                 </span>

@@ -11,7 +11,7 @@ class mHomeworkDetail {
     // Lấy thông tin chi tiết bài tập
     public function getHomeworkDetail($maBaiTap) {
         $sql = "SELECT bt.*, l.tenLop, m.tenMonHoc, gv.hoTen as tenGV,
-                COUNT(DISTINCT bn.maBaiNop) as soLuongNopBai,
+                COUNT(DISTINCT CASE WHEN bn.maHS IS NOT NULL THEN bn.maHS END) as soLuongNopBai,
                 COUNT(DISTINCT hs.maHS) as tongSoHocSinh
                 FROM baitap bt
                 INNER JOIN lophoc l ON bt.maLop = l.maLop
@@ -104,6 +104,14 @@ class mHomeworkDetail {
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_assoc();
+    }
+
+    // Khóa/mở khóa bài tập
+    public function toggleLockHomework($maBaiTap, $khoaBai) {
+        $sql = "UPDATE baitap SET khoaBai = ? WHERE maBaiTap = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $khoaBai, $maBaiTap);
+        return $stmt->execute();
     }
 }
 ?>

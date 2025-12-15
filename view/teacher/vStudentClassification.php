@@ -15,6 +15,15 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
+// Nếu chưa có $data, include controller để xử lý
+if (!isset($data)) {
+    define('INCLUDED_FROM_VIEW', true); // Đánh dấu được gọi từ view
+    ob_start(); // Bắt đầu buffer để tránh controller render view
+    require_once(__DIR__ . '/../../controller/cStudentClassification.php');
+    ob_end_clean(); // Xóa buffer
+    // Controller đã set biến $data, bây giờ view sẽ render
+}
+
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
@@ -984,8 +993,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         const itemsPerPage = 10;
         let totalStudents = 0;
         let allStudents = [];
+        let needsDataRefresh = false; // Cờ đánh dấu cần reload dữ liệu
 
         function switchTab(tab) {
+            console.log(`[switchTab] Switching to ${tab}, needsDataRefresh: ${needsDataRefresh}`);
+            
             currentTab = tab;
             currentPage = 1; // Reset về trang 1 khi chuyển tab
             
@@ -997,11 +1009,26 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             
-            // Load data
-            loadData();
+            // Ẩn/hiện dropdown học kỳ (Danh hiệu tính theo cả năm)
+            const hocKyGroup = document.querySelector('.form-group:has(#hocKy)');
+            if (hocKyGroup) {
+                if (tab === 'title') {
+                    hocKyGroup.style.display = 'none';
+                } else {
+                    hocKyGroup.style.display = 'flex';
+                }
+            }
+            
+            // LUÔN force reload cho tab Danh hiệu để lấy dữ liệu mới nhất
+            const shouldForceReload = needsDataRefresh || (tab === 'title');
+            console.log(`[switchTab] Force reload: ${shouldForceReload}`);
+            
+            // Load data - force reload nếu có thay đổi HOẶC đang chuyển sang tab Danh hiệu
+            loadData(shouldForceReload);
+            needsDataRefresh = false; // Reset cờ sau khi reload
         }
 
-        function loadData() {
+        function loadData(forceReload = false) {
             const maLop = document.getElementById('maLop').value;
             const hocKy = document.getElementById('hocKy').value;
             const namHoc = document.getElementById('namHoc').value;
@@ -1012,7 +1039,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             
             document.getElementById(contentDiv).innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Đang tải dữ liệu...</p></div>';
             
-            fetch(`?action=getData&type=${currentTab}&maLop=${maLop}&hocKy=${hocKy}&namHoc=${encodeURIComponent(namHoc)}`)
+            // Thêm timestamp nếu force reload để bypass cache
+            const timestamp = forceReload ? '&_t=' + new Date().getTime() : '';
+            fetch(`?action=getData&type=${currentTab}&maLop=${maLop}&hocKy=${hocKy}&namHoc=${encodeURIComponent(namHoc)}${timestamp}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -1020,6 +1049,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     return response.json();
                 })
                 .then(data => {
+                    console.log(`[${currentTab}] Data received:`, data);
+                    
                     if (data.error) {
                         document.getElementById(contentDiv).innerHTML = `<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ${data.error}</div>`;
                         console.error('Server error:', data.error);
@@ -1032,6 +1063,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         console.error('Invalid data structure:', data);
                         return;
                     }
+                    
+                    console.log(`[${currentTab}] Students count:`, data.students.length);
                     
                     // Lưu toàn bộ danh sách học sinh
                     allStudents = data.students;
@@ -1131,7 +1164,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <th rowspan="2" style="min-width: 40px; width: 40px;">STT</th>
                                 <th rowspan="2" style="min-width: 150px; width: 180px;">Họ tên</th>
                                 <th colspan="${subjectNames.length}" style="text-align: center;">Điểm trung bình các môn</th>
-                                <th rowspan="2" style="min-width: 60px; width: 70px;">ĐTB HS</th>
+                                <th rowspan="2" style="min-width: 60px; width: 70px;">ĐTB</th>
                                 <th rowspan="2" style="min-width: 80px; width: 100px;">Xếp loại</th>
                             </tr>
                             <tr>
@@ -1157,15 +1190,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <td style="text-align: left;">${student.hoTen}</td>
                 `;
                 
-                // Kiểm tra xem có môn nào thiếu điểm không
-                let hasNullGrade = false;
-                let gradeCount = 0;
-                
-                // Hiển thị điểm các môn theo thứ tự
+                // Hiển thị điểm các môn
                 student.grades.forEach(grade => {
-                    gradeCount++;
-                    if (grade.tbDiem === null || grade.tbDiem === undefined) {
-                        hasNullGrade = true;
+                    if (grade.tbDiem === null || grade.tbDiem === undefined || grade.tbDiem === '') {
                         html += `<td style="color: #999; text-align: center;">-</td>`;
                     } else {
                         html += `<td style="text-align: center;">${parseFloat(grade.tbDiem).toFixed(1)}</td>`;
@@ -1178,16 +1205,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 }
                 
                 // Hiển thị điểm TB và xếp loại
-                let avgDisplay = '-';
+                // Backend chỉ trả về diemTB_HS khi học sinh có đủ điểm tất cả các môn
+                let avgDisplay = '<span style="color: #999;">-</span>';
                 let rankingDisplay = '<span style="color: #999;">-</span>';
                 
-                // Chỉ hiển thị điểm TB và xếp loại khi đủ điểm tất cả các môn
-                if (!hasNullGrade && student.diemTB_HS && student.ranking && student.ranking.ranking) {
+                if (student.diemTB_HS !== null && student.diemTB_HS !== undefined) {
                     avgDisplay = `<strong>${parseFloat(student.diemTB_HS).toFixed(2)}</strong>`;
-                    rankingDisplay = formatRanking(student.ranking.ranking);
-                } else if (hasNullGrade || gradeCount === 0) {
-                    avgDisplay = '<span style="color: #999;">-</span>';
-                    rankingDisplay = '<span style="color: #999; font-style: italic; font-size: 12px;">-</span>';
+                    
+                    if (student.ranking && student.ranking.ranking && student.ranking.ranking !== 'Chưa xếp loại' && student.ranking.ranking !== null) {
+                        rankingDisplay = formatRanking(student.ranking.ranking);
+                    }
                 }
                 
                 html += `
@@ -1273,7 +1300,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <td style="text-align: center;">${student.soLanViPhamNhe}</td>
                         <td style="text-align: center;">${student.soLanViPhamTB}</td>
                         <td style="text-align: center;">${student.soLanViPhamNang}</td>
-                        <td style="text-align: center;">${formatRanking(student.loaiHocLuc)}</td>
+                        <td style="text-align: center;">${student.loaiHocLuc ? formatRanking(student.loaiHocLuc) : '<span style="color: #999;">-</span>'}</td>
                         <td style="text-align: center;">${formatRanking(currentRanking)}</td>
                         <td style="text-align: center;">
                             <div class="select-wrapper" id="wrapper-${student.maHS}">
@@ -1414,9 +1441,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     // Reset changes
                     conductChanges = {};
                     
-                    // Reload data
+                    // Clear cache dữ liệu cũ để buộc reload
+                    allStudents = [];
+                    totalStudents = 0;
+                    
+                    // Đánh dấu cần refresh dữ liệu cho các tab khác
+                    needsDataRefresh = true;
+                    
+                    // Reload data của tab hiện tại với force reload
                     setTimeout(() => {
-                        loadData();
+                        loadData(true); // Force reload với timestamp
                     }, 1000);
                 } else {
                     alertDiv.innerHTML = `<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ${data.message}</div>`;
@@ -1637,12 +1671,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         function displayTitles() {
+            console.log('[displayTitles] Called with allStudents length:', allStudents.length);
+            
             const students = getPaginatedStudents();
             
-            if (allStudents.length === 0) {
-                document.getElementById('titleContent').innerHTML = '<div class="alert alert-error">Chưa có dữ liệu học sinh.</div>';
+            if (!allStudents || allStudents.length === 0) {
+                console.warn('[displayTitles] No students data');
+                document.getElementById('titleContent').innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-info-circle"></i> Chưa có dữ liệu học sinh trong lớp này.
+                    </div>`;
                 return;
             }
+
+            console.log('[displayTitles] Displaying', students.length, 'students');
 
             let html = `
                 <div class="table-container">
@@ -1662,15 +1704,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const startIndex = (currentPage - 1) * itemsPerPage;
             students.forEach((student, index) => {
                 const globalIndex = startIndex + index + 1;
-                const calculatedTitle = student.calculatedTitle?.title || null;
+                
+                // Xử lý dữ liệu null/undefined
+                const hoTen = student.hoTen || 'N/A';
+                const loaiHocLuc = student.loaiHocLuc || null;
+                const hanhKiem = student.hanhKiem || null;
+                const tenDanhHieu = student.tenDanhHieu || null;
                 
                 html += `
                     <tr>
                         <td style="text-align: center;">${globalIndex}</td>
-                        <td style="text-align: left;">${student.hoTen}</td>
-                        <td style="text-align: center;">${formatRanking(student.loaiHocLuc)}</td>
-                        <td style="text-align: center;">${formatRanking(student.hanhKiem)}</td>
-                        <td style="text-align: center;">${formatTitle(calculatedTitle)}</td>
+                        <td style="text-align: left;">${hoTen}</td>
+                        <td style="text-align: center;">${loaiHocLuc ? formatRanking(loaiHocLuc) : '<span style="color: #999;">-</span>'}</td>
+                        <td style="text-align: center;">${hanhKiem ? formatRanking(hanhKiem) : '<span style="color: #999;">-</span>'}</td>
+                        <td style="text-align: center;">${tenDanhHieu ? formatTitle(tenDanhHieu) : '<span style="color: #999;">Chưa xếp</span>'}</td>
                     </tr>
                 `;
             });
@@ -1685,6 +1732,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             html += createPagination();
             
             document.getElementById('titleContent').innerHTML = html;
+            console.log('[displayTitles] Table rendered successfully');
         }
 
         function formatTitle(title) {
@@ -1699,6 +1747,53 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             }
             
             return `<span class="title-badge">${title}</span>`;
+        }
+
+        // Xếp loại danh hiệu tự động
+        function classifyAllTitles() {
+            const maLop = document.getElementById('maLop').value;
+            const hocKy = document.getElementById('hocKy').value;
+            const namHoc = document.getElementById('namHoc').value;
+            
+            if (!confirm('Bạn có chắc chắn muốn xếp loại danh hiệu tự động cho tất cả học sinh?\n\nTiêu chí:\n• Học sinh xuất sắc: Học lực Tốt + Hạnh kiểm Tốt + ít nhất 6 môn ≥ 9.0\n• Học sinh giỏi: Học lực Tốt + Hạnh kiểm Tốt')) {
+                return;
+            }
+            
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = '<div class="alert" style="background: #e3f2fd; border: 1px solid #90caf9; color: #1565c0;"><i class="fas fa-spinner fa-spin"></i> Đang xếp loại danh hiệu...</div>';
+            
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=classifyTitles&maLop=${maLop}&hocKy=${hocKy}&namHoc=${encodeURIComponent(namHoc)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${data.message}</div>`;
+                    
+                    // Đánh dấu cần refresh và reload data
+                    needsDataRefresh = true;
+                    setTimeout(() => {
+                        loadData(true);
+                        alertDiv.innerHTML = '';
+                    }, 1500);
+                } else {
+                    alertDiv.innerHTML = `<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> ${data.message}</div>`;
+                    setTimeout(() => {
+                        alertDiv.innerHTML = '';
+                    }, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-error"><i class="fas fa-times-circle"></i> Lỗi khi xếp loại danh hiệu. Vui lòng thử lại.</div>';
+                setTimeout(() => {
+                    alertDiv.innerHTML = '';
+                }, 5000);
+            });
         }
 
         // ...existing code for other functions...

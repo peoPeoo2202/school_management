@@ -533,8 +533,9 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                     <label>Trạng thái</label>
                     <select id="filterStatus">
                         <option value="">Tất cả</option>
-                        <option value="Choduyet">Chờ duyệt</option>
+                        <option value="Chuaduyet">Chờ duyệt</option>
                         <option value="Daduyet">Đã duyệt</option>
+                        <option value="Dachon">Đã chọn</option>
                         <option value="Tuchoi">Từ chối</option>
                     </select>
                 </div>
@@ -770,7 +771,7 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                                     <button class="btn btn-info btn-sm" onclick="viewDetail(${exam.maDeThi})" title="Xem chi tiết">
                                         👁️
                                     </button>
-                                    ${exam.trangThai === 'Choduyet' ? `
+                                    ${exam.trangThai === 'Chuaduyet' ? `
                                         <button class="btn btn-warning btn-sm" onclick="editExam(${exam.maDeThi})" title="Sửa">
                                             ✏️
                                         </button>
@@ -1088,8 +1089,9 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
         // Utility functions
         function getStatusBadge(status) {
             const badges = {
-                'Choduyet': '<span class="badge badge-pending">Chờ duyệt</span>',
+                'Chuaduyet': '<span class="badge badge-pending">Chờ duyệt</span>',
                 'Daduyet': '<span class="badge badge-approved">Đã duyệt</span>',
+                'Dachon': '<span class="badge badge-info">Đã chọn</span>',
                 'Tuchoi': '<span class="badge badge-rejected">Từ chối</span>'
             };
             return badges[status] || status;

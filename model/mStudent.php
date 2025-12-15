@@ -42,11 +42,13 @@ public function getStudentInfoByAccount($tenDangNhap)
     $result = $stmt->get_result();
     
     if ($result->num_rows === 0) {
+        error_log("DEBUG getStudentInfoByAccount: No student found for tenDangNhap=" . $tenDangNhap);
         $stmt->close();
         return null;
     }
 
     $info = $result->fetch_assoc();
+    error_log("DEBUG getStudentInfoByAccount: tenDangNhap=" . $tenDangNhap . " => maHS=" . $info['maHS'] . ", hoTen=" . $info['hoTen']);
     $stmt->close();
     return $info;
 }
@@ -952,6 +954,92 @@ public function getStudentInfoByAccount($tenDangNhap)
             'limit' => $limit,
             'totalPages' => $totalPages
         ];
+    }
+
+    /**
+     * Lấy xếp loại học lực từ bảng hocluc
+     */
+    public function getHocLuc($maHS, $namHoc)
+    {
+        $sql = "SELECT diemTBHK1, diemTBHK2, diemTBCaNam, loaiHocLuc, soMonDuoi5, nhanXet
+                FROM hocluc
+                WHERE maHS = ? AND namHoc = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+        
+        $stmt->bind_param("is", $maHS, $namHoc);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            $stmt->close();
+            return null;
+        }
+        
+        $data = $result->fetch_assoc();
+        $stmt->close();
+        return $data;
+    }
+
+    /**
+     * Lấy xếp loại hạnh kiểm từ bảng hanhkiem
+     */
+    public function getHanhKiem($maHS, $hocKy, $namHoc)
+    {
+        $sql = "SELECT loaiHK, soBuoiNghiCoPhep, soBuoiNghiKhongPhep, 
+                       soLanViPhamNhe, soLanViPhamTB, soLanViPhamNang, nhanXet
+                FROM hanhkiem
+                WHERE maHS = ? AND hocKy = ? AND namHoc = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+        
+        $stmt->bind_param("iis", $maHS, $hocKy, $namHoc);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            $stmt->close();
+            return null;
+        }
+        
+        $data = $result->fetch_assoc();
+        $stmt->close();
+        return $data;
+    }
+
+    /**
+     * Lấy danh hiệu của học sinh từ bảng hocsinh JOIN danhhieu
+     */
+    public function getDanhHieu($maHS)
+    {
+        $sql = "SELECT dh.maDanhHieu, dh.tenDanhHieu, dh.moTa
+                FROM hocsinh hs
+                LEFT JOIN danhhieu dh ON hs.maDanhHieu = dh.maDanhHieu
+                WHERE hs.maHS = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+        
+        $stmt->bind_param("i", $maHS);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            $stmt->close();
+            return null;
+        }
+        
+        $data = $result->fetch_assoc();
+        $stmt->close();
+        return $data;
     }
 
     public function __destruct()
