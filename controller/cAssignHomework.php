@@ -201,19 +201,30 @@ class cAssignHomework {
             return;
         }
 
+        $maGV = $_SESSION['maGV'];
+        $maLop = $_POST['maLop'];
+        
+        // Tự động lấy môn học mà giáo viên dạy cho lớp này
+        $maMonHoc = $this->model->getTeacherSubjectForClass($maGV, $maLop);
+        
+        if (!$maMonHoc) {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy môn học bạn dạy cho lớp này']);
+            return;
+        }
+
         $data = [
             'tenBaiTap' => trim($_POST['tenBaiTap']),
             'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap']),
             'thoiGianNop' => $_POST['thoiGianNop'],
-            'maLop' => $_POST['maLop'],
-            'maMonHoc' => $_POST['maMonHoc'],
-            'maGV' => $_SESSION['maGV'],
-            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0
+            'maLop' => $maLop,
+            'maMonHoc' => $maMonHoc,
+            'maGV' => $maGV,
+            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0,
+            'anBai' => isset($_POST['anBai']) ? (int)$_POST['anBai'] : 0
         ];
 
         // Validate
-        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || 
-            empty($data['maLop']) || empty($data['maMonHoc'])) {
+        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || empty($data['maLop'])) {
             echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin']);
             return;
         }
@@ -231,10 +242,12 @@ class cAssignHomework {
             }
         }
 
-        if ($this->model->createHomework($data)) {
+        $result = $this->model->createHomework($data);
+        if ($result) {
             echo json_encode(['success' => true, 'message' => 'Giao bài tập thành công']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi giao bài tập']);
+            error_log("Create homework failed for teacher " . $maGV);
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi giao bài tập. Vui lòng kiểm tra xem đã chạy migration SQL chưa.']);
         }
     }
 
@@ -317,18 +330,29 @@ class cAssignHomework {
         }
 
         $maBaiTap = $_POST['maBaiTap'];
+        $maGV = $_SESSION['maGV'];
+        $maLop = $_POST['maLop'];
+        
+        // Tự động lấy môn học mà giáo viên dạy cho lớp này
+        $maMonHoc = $this->model->getTeacherSubjectForClass($maGV, $maLop);
+        
+        if (!$maMonHoc) {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy môn học bạn dạy cho lớp này']);
+            return;
+        }
+        
         $data = [
             'tenBaiTap' => trim($_POST['tenBaiTap']),
             'yeuCauBaiTap' => trim($_POST['yeuCauBaiTap']),
             'thoiGianNop' => $_POST['thoiGianNop'],
-            'maLop' => $_POST['maLop'],
-            'maMonHoc' => $_POST['maMonHoc'],
-            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0
+            'maLop' => $maLop,
+            'maMonHoc' => $maMonHoc,
+            'choPhepNopTre' => isset($_POST['choPhepNopTre']) ? (int)$_POST['choPhepNopTre'] : 0,
+            'anBai' => isset($_POST['anBai']) ? (int)$_POST['anBai'] : 0
         ];
 
         // Validate
-        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || 
-            empty($data['maLop']) || empty($data['maMonHoc'])) {
+        if (empty($data['tenBaiTap']) || empty($data['thoiGianNop']) || empty($data['maLop'])) {
             echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ thông tin']);
             return;
         }
@@ -352,10 +376,12 @@ class cAssignHomework {
             }
         }
 
-        if ($this->model->updateHomework($maBaiTap, $data)) {
+        $result = $this->model->updateHomework($maBaiTap, $data);
+        if ($result) {
             echo json_encode(['success' => true, 'message' => 'Cập nhật bài tập thành công']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi cập nhật']);
+            error_log("Update homework failed for maBaiTap " . $maBaiTap);
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi cập nhật bài tập. Vui lòng kiểm tra xem đã chạy migration SQL chưa.']);
         }
     }
 }

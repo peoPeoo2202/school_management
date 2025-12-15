@@ -46,10 +46,10 @@ class mInsertGrade
     public function getClassesByTeacherAndSubject($maGV, $maMonHoc)
     {
         $sql = "SELECT DISTINCT lh.maLop, lh.tenLop, k.khoiLop, lh.namHoc
-                FROM lichday ld
-                JOIN lophoc lh ON ld.maLop = lh.maLop
+                FROM phancong_giangday pc
+                JOIN lophoc lh ON pc.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                WHERE ld.maGV = ? AND ld.maMonHoc = ?
+                WHERE pc.maGV = ? AND pc.maMonHoc = ?
                 ORDER BY lh.tenLop";
         
         $stmt = $this->conn->prepare($sql);
@@ -126,7 +126,7 @@ class mInsertGrade
     public function checkTeacherPermission($maGV, $maLop, $maMonHoc)
     {
         $sql = "SELECT COUNT(*) as count 
-                FROM lichday 
+                FROM phancong_giangday 
                 WHERE maGV = ? AND maLop = ? AND maMonHoc = ?";
         
         $stmt = $this->conn->prepare($sql);
@@ -154,61 +154,49 @@ class mInsertGrade
      */
     private function calculateAverage($grades)
     {
-        // Kiểm tra xem có ít nhất 1 điểm được nhập không
-        $hasAnyGrade = false;
-        foreach ($grades as $grade) {
-            if ($grade !== null && $grade !== '') {
-                $hasAnyGrade = true;
-                break;
-            }
-        }
-        
-        if (!$hasAnyGrade) {
-            return null;
-        }
-        
-        // Tính điểm đánh giá thường xuyên (trung bình cộng TX1, TX2, TX3, TX4)
-        $txScores = [];
-        if ($grades['diemTX1'] !== null && $grades['diemTX1'] !== '') {
-            $txScores[] = floatval($grades['diemTX1']);
-        }
-        if ($grades['diemTX2'] !== null && $grades['diemTX2'] !== '') {
-            $txScores[] = floatval($grades['diemTX2']);
-        }
-        if ($grades['diemTX3'] !== null && $grades['diemTX3'] !== '') {
-            $txScores[] = floatval($grades['diemTX3']);
-        }
-        if ($grades['diemTX4'] !== null && $grades['diemTX4'] !== '') {
-            $txScores[] = floatval($grades['diemTX4']);
-        }
-        
-        // Tính trung bình thường xuyên
-        $diemTX = count($txScores) > 0 ? array_sum($txScores) / count($txScores) : null;
-        
         // Lấy điểm giữa kỳ và cuối kỳ
         $diemGK = ($grades['diemGiuaKy'] !== null && $grades['diemGiuaKy'] !== '') ? floatval($grades['diemGiuaKy']) : null;
         $diemCK = ($grades['diemCuoiKy'] !== null && $grades['diemCuoiKy'] !== '') ? floatval($grades['diemCuoiKy']) : null;
         
-        // Tính điểm trung bình môn: (ĐGTX × 1 + ĐGK × 2 + ĐCK × 3) / 6
+        // ĐIỀU KIỆN BẮT BUỘC: Phải có điểm GK VÀ CK mới tính được điểm trung bình
+        if ($diemGK === null || $diemCK === null) {
+            return null;
+        }
+        
+        // Tính điểm trung bình môn theo công thức:
+        // ĐTB = (TX1×1 + TX2×1 + TX3×1 + TX4×1 + GK×2 + CK×3) / (số TX có + 2 + 3)
+        // Mỗi điểm TX có hệ số 1, không tính trung bình TX trước
         $sum = 0;
         $totalCoefficient = 0;
         
-        if ($diemTX !== null) {
-            $sum += $diemTX * 1;
+        // Cộng từng điểm TX với hệ số 1
+        if ($grades['diemTX1'] !== null && $grades['diemTX1'] !== '') {
+            $sum += floatval($grades['diemTX1']) * 1;
+            $totalCoefficient += 1;
+        }
+        if ($grades['diemTX2'] !== null && $grades['diemTX2'] !== '') {
+            $sum += floatval($grades['diemTX2']) * 1;
+            $totalCoefficient += 1;
+        }
+        if ($grades['diemTX3'] !== null && $grades['diemTX3'] !== '') {
+            $sum += floatval($grades['diemTX3']) * 1;
+            $totalCoefficient += 1;
+        }
+        if ($grades['diemTX4'] !== null && $grades['diemTX4'] !== '') {
+            $sum += floatval($grades['diemTX4']) * 1;
             $totalCoefficient += 1;
         }
         
-        if ($diemGK !== null) {
-            $sum += $diemGK * 2;
-            $totalCoefficient += 2;
-        }
+        // Cộng điểm GK với hệ số 2
+        $sum += $diemGK * 2;
+        $totalCoefficient += 2;
         
-        if ($diemCK !== null) {
-            $sum += $diemCK * 3;
-            $totalCoefficient += 3;
-        }
+        // Cộng điểm CK với hệ số 3
+        $sum += $diemCK * 3;
+        $totalCoefficient += 3;
         
-        return $totalCoefficient > 0 ? round($sum / $totalCoefficient, 2) : null;
+        // Chia tổng cho tổng hệ số (8 hoặc 9 tùy số điểm TX)
+        return round($sum / $totalCoefficient, 2);
     }
 
     /**
@@ -237,12 +225,19 @@ class mInsertGrade
                 return ['success' => true, 'message' => 'Không có điểm để lưu'];
             }
             
-            // Tính điểm trung bình
-            $tbDiem = $this->calculateAverage($grades);
+            // Tính điểm trung bình CHỈ KHI có đủ điểm GK và CK
+            // Kiểm tra điều kiện bắt buộc: phải có cả điểm giữa kỳ và cuối kỳ
+            $hasGK = isset($grades['diemGiuaKy']) && $grades['diemGiuaKy'] !== null && $grades['diemGiuaKy'] !== '';
+            $hasCK = isset($grades['diemCuoiKy']) && $grades['diemCuoiKy'] !== null && $grades['diemCuoiKy'] !== '';
+            
+            // Chỉ tính điểm trung bình khi có đủ GK VÀ CK
+            $tbDiem = ($hasGK && $hasCK) ? $this->calculateAverage($grades) : null;
             
             // Kiểm tra xem bảng điểm đã tồn tại chưa
+            // Thêm LIMIT 1 để tránh lỗi khi có duplicate records
             $sql = "SELECT maBangDiem FROM bangdiem 
-                    WHERE maHS = ? AND maMonHoc = ? AND hocKy = ? AND namHoc = ?";
+                    WHERE maHS = ? AND maMonHoc = ? AND hocKy = ? AND namHoc = ?
+                    LIMIT 1";
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("iiis", $maHS, $maMonHoc, $hocKy, $namHoc);
             $stmt->execute();
@@ -251,33 +246,72 @@ class mInsertGrade
             $stmt->close();
             
             if ($existing) {
-                // Đã có điểm -> Cập nhật
-                $sql = "UPDATE bangdiem SET 
-                        diemTX1 = ?, 
-                        diemTX2 = ?, 
-                        diemTX3 = ?, 
-                        diemTX4 = ?, 
-                        diemGiuaKy = ?, 
-                        diemCuoiKy = ?,
-                        tbDiem = ?,
-                        nhanXet = ?
-                        WHERE maBangDiem = ?";
+                // Đã có điểm -> Cập nhật CHỈ các cột có giá trị (không NULL)
+                // Xây dựng query động để chỉ update các cột được truyền vào
+                $updateFields = [];
+                $params = [];
+                $types = "";
                 
-                $nhanXet = isset($grades['nhanXet']) ? $grades['nhanXet'] : null;
+                // Kiểm tra từng cột điểm
+                if (isset($grades['diemTX1']) && $grades['diemTX1'] !== null && $grades['diemTX1'] !== '') {
+                    $updateFields[] = "diemTX1 = ?";
+                    $params[] = $grades['diemTX1'];
+                    $types .= "d";
+                }
+                if (isset($grades['diemTX2']) && $grades['diemTX2'] !== null && $grades['diemTX2'] !== '') {
+                    $updateFields[] = "diemTX2 = ?";
+                    $params[] = $grades['diemTX2'];
+                    $types .= "d";
+                }
+                if (isset($grades['diemTX3']) && $grades['diemTX3'] !== null && $grades['diemTX3'] !== '') {
+                    $updateFields[] = "diemTX3 = ?";
+                    $params[] = $grades['diemTX3'];
+                    $types .= "d";
+                }
+                if (isset($grades['diemTX4']) && $grades['diemTX4'] !== null && $grades['diemTX4'] !== '') {
+                    $updateFields[] = "diemTX4 = ?";
+                    $params[] = $grades['diemTX4'];
+                    $types .= "d";
+                }
+                if (isset($grades['diemGiuaKy']) && $grades['diemGiuaKy'] !== null && $grades['diemGiuaKy'] !== '') {
+                    $updateFields[] = "diemGiuaKy = ?";
+                    $params[] = $grades['diemGiuaKy'];
+                    $types .= "d";
+                }
+                if (isset($grades['diemCuoiKy']) && $grades['diemCuoiKy'] !== null && $grades['diemCuoiKy'] !== '') {
+                    $updateFields[] = "diemCuoiKy = ?";
+                    $params[] = $grades['diemCuoiKy'];
+                    $types .= "d";
+                }
+                
+                // Luôn update tbDiem nếu đã tính được (có đủ GK và CK)
+                // Nếu tbDiem = null (không đủ GK/CK) thì KHÔNG update cột tbDiem
+                if ($tbDiem !== null) {
+                    $updateFields[] = "tbDiem = ?";
+                    $params[] = $tbDiem;
+                    $types .= "d";
+                }
+                
+                // Update nhận xét nếu có
+                if (isset($grades['nhanXet']) && $grades['nhanXet'] !== null && $grades['nhanXet'] !== '') {
+                    $updateFields[] = "nhanXet = ?";
+                    $params[] = $grades['nhanXet'];
+                    $types .= "s";
+                }
+                
+                // Nếu không có gì để update, trả về thành công
+                if (empty($updateFields)) {
+                    return ['success' => true, 'message' => 'Không có thay đổi'];
+                }
+                
+                // Thêm maBangDiem vào cuối
+                $params[] = $existing['maBangDiem'];
+                $types .= "i";
+                
+                $sql = "UPDATE bangdiem SET " . implode(", ", $updateFields) . " WHERE maBangDiem = ?";
                 
                 $stmt = $this->conn->prepare($sql);
-                $stmt->bind_param(
-                    "dddddddsi",
-                    $grades['diemTX1'],
-                    $grades['diemTX2'],
-                    $grades['diemTX3'],
-                    $grades['diemTX4'],
-                    $grades['diemGiuaKy'],
-                    $grades['diemCuoiKy'],
-                    $tbDiem,
-                    $nhanXet,
-                    $existing['maBangDiem']
-                );
+                $stmt->bind_param($types, ...$params);
                 
                 if ($stmt->execute()) {
                     $stmt->close();

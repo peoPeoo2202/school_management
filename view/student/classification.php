@@ -26,73 +26,83 @@ $availableYears = $model->getAvailableYears($maHS);
 // Lấy năm học từ request
 $namHoc = $_GET['namHoc'] ?? ($availableYears[0] ?? '2024-2025');
 
-// Lấy xếp loại cả năm (học kỳ 1, 2 và cả năm)
-$classifications = [];
-foreach ([1, 2, 'canam'] as $hocKy) {
-    $grades = [];
-    if ($hocKy === 'canam') {
-        // Tính điểm trung bình cả năm
-        $yearlyGrades = $model->getYearlyGrades($maHS, $namHoc);
-        if (!empty($yearlyGrades)) {
-            $totalScore = 0;
-            $count = 0;
-            foreach ($yearlyGrades as $grade) {
-                if ($grade['hocKy1'] !== null && $grade['hocKy2'] !== null) {
-                    $totalScore += ($grade['hocKy1'] + $grade['hocKy2']) / 2;
-                    $count++;
-                } elseif ($grade['hocKy1'] !== null) {
-                    $totalScore += $grade['hocKy1'];
-                    $count++;
-                } elseif ($grade['hocKy2'] !== null) {
-                    $totalScore += $grade['hocKy2'];
-                    $count++;
-                }
-            }
-            $avgScore = $count > 0 ? $totalScore / $count : 0;
-        } else {
-            $avgScore = 0;
-        }
-    } else {
-        // Tính điểm trung bình học kỳ
-        $grades = $model->getDetailedGrades($maHS, $namHoc, $hocKy);
-        if (!empty($grades)) {
-            $totalScore = array_sum(array_column($grades, 'diemTB'));
-            $avgScore = $totalScore / count($grades);
-        } else {
-            $avgScore = 0;
-        }
-    }
+// Lấy dữ liệu học lực từ bảng hocluc
+$hocLucData = $model->getHocLuc($maHS, $namHoc);
 
-    // Xếp loại học lực
-    if ($avgScore >= 8.0) {
-        $hocLuc = 'Giỏi';
-        $hocLucClass = 'excellent';
-    } elseif ($avgScore >= 6.5) {
-        $hocLuc = 'Khá';
-        $hocLucClass = 'good';
-    } elseif ($avgScore >= 5.0) {
-        $hocLuc = 'Trung bình';
-        $hocLucClass = 'average';
-    } elseif ($avgScore > 0) {
-        $hocLuc = 'Yếu';
-        $hocLucClass = 'weak';
-    } else {
-        $hocLuc = 'Chưa có dữ liệu';
-        $hocLucClass = 'no-data';
-    }
+// Lấy dữ liệu hạnh kiểm từ bảng hanhkiem
+$hanhKiemHK1 = $model->getHanhKiem($maHS, 1, $namHoc);
+$hanhKiemHK2 = $model->getHanhKiem($maHS, 2, $namHoc);
 
-    // Hạnh kiểm (giả định - có thể lấy từ database)
-    $hanhKiem = 'Tốt';
-    $hanhKiemClass = 'good';
+// Lấy danh hiệu từ bảng danhhieu (qua cột maDanhHieu trong bảng hocsinh)
+$danhHieu = $model->getDanhHieu($maHS);
 
-    $classifications[$hocKy] = [
-        'diemTB' => $avgScore > 0 ? number_format($avgScore, 2) : '-',
-        'hocLuc' => $hocLuc,
-        'hocLucClass' => $hocLucClass,
-        'hanhKiem' => $hanhKiem,
-        'hanhKiemClass' => $hanhKiemClass
-    ];
+// Helper function để map loại học lực sang class CSS
+function getHocLucClass($loaiHocLuc) {
+    if (!$loaiHocLuc) return 'no-data';
+    $normalized = strtolower(trim($loaiHocLuc));
+    if (strpos($normalized, 'tot') !== false || strpos($normalized, 'gioi') !== false) return 'excellent';
+    if (strpos($normalized, 'kha') !== false) return 'good';
+    if (strpos($normalized, 'dat') !== false || strpos($normalized, 'trung binh') !== false) return 'average';
+    return 'weak';
 }
+
+// Helper function để map loại hạnh kiểm sang class CSS
+function getHanhKiemClass($loaiHK) {
+    if (!$loaiHK) return 'no-data';
+    $normalized = strtolower(trim($loaiHK));
+    if (strpos($normalized, 'tot') !== false) return 'excellent';
+    if (strpos($normalized, 'kha') !== false) return 'good';
+    if (strpos($normalized, 'dat') !== false) return 'average';
+    return 'weak';
+}
+
+// Chuẩn bị dữ liệu xếp loại cho 3 kỳ (HK1, HK2, Cả năm)
+$classifications = [];
+
+// Học kỳ 1
+$classifications[1] = [
+    'diemTB' => $hocLucData && $hocLucData['diemTBHK1'] ? number_format($hocLucData['diemTBHK1'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => $hanhKiemHK1 && $hanhKiemHK1['loaiHK'] ? $hanhKiemHK1['loaiHK'] : 'Chưa có dữ liệu',
+    'hanhKiemClass' => getHanhKiemClass($hanhKiemHK1['loaiHK'] ?? null)
+];
+
+// Học kỳ 2
+$classifications[2] = [
+    'diemTB' => $hocLucData && $hocLucData['diemTBHK2'] ? number_format($hocLucData['diemTBHK2'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => $hanhKiemHK2 && $hanhKiemHK2['loaiHK'] ? $hanhKiemHK2['loaiHK'] : 'Chưa có dữ liệu',
+    'hanhKiemClass' => getHanhKiemClass($hanhKiemHK2['loaiHK'] ?? null)
+];
+
+// Kiểm tra điều kiện để nhận danh hiệu
+// Nếu có bất kỳ học kỳ nào hạnh kiểm "Chưa đạt" thì KHÔNG được nhận danh hiệu
+$hanhKiem1 = $hanhKiemHK1['loaiHK'] ?? null;
+$hanhKiem2 = $hanhKiemHK2['loaiHK'] ?? null;
+
+$coDuDieuKienDanhHieu = true;
+if ($hanhKiem1 && (stripos($hanhKiem1, 'chua') !== false || stripos($hanhKiem1, 'chưa') !== false)) {
+    $coDuDieuKienDanhHieu = false;
+}
+if ($hanhKiem2 && (stripos($hanhKiem2, 'chua') !== false || stripos($hanhKiem2, 'chưa') !== false)) {
+    $coDuDieuKienDanhHieu = false;
+}
+
+// Cả năm
+$classifications['canam'] = [
+    'diemTB' => $hocLucData && $hocLucData['diemTBCaNam'] ? number_format($hocLucData['diemTBCaNam'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => ($hanhKiemHK1 && $hanhKiemHK2) ? 
+                  ($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt' ? 'Tốt' : 'Khá') : 
+                  'Chưa có dữ liệu',
+    'hanhKiemClass' => ($hanhKiemHK1 && $hanhKiemHK2) ? 
+                       getHanhKiemClass($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt' ? 'Tốt' : 'Khá') : 
+                       'no-data',
+    'danhHieu' => ($danhHieu && $coDuDieuKienDanhHieu) ? $danhHieu['tenDanhHieu'] : null
+];
 ?>
 <div class="classification-header-icon">
     <i class="fas fa-star"></i>
@@ -189,6 +199,14 @@ foreach ([1, 2, 'canam'] as $hocKy) {
                     <?= $classifications['canam']['hanhKiem'] ?>
                 </span>
             </div>
+            <?php if ($classifications['canam']['danhHieu']): ?>
+            <div class="classification-item">
+                <span class="classification-label">Danh hiệu:</span>
+                <span class="classification-value excellent">
+                    <i class="fas fa-trophy"></i> <?= $classifications['canam']['danhHieu'] ?>
+                </span>
+            </div>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>

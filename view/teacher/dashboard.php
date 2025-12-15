@@ -305,7 +305,7 @@ $maGV = $_SESSION['maGV'] ?? null;
                             <i class="fas fa-eye"></i>
                             <span>Phân công coi thi</span>
                         </a>
-                        <a href="<?php echo url('controller/cInsertGrade.php'); ?>" class="quick-link">
+                        <a href="<?php echo url('view/teacher/vInsertGrade.php'); ?>" class="quick-link">
                             <i class="fas fa-edit"></i>
                             <span>Nhập điểm</span>
                         </a>
@@ -313,7 +313,7 @@ $maGV = $_SESSION['maGV'] ?? null;
                             <i class="fas fa-file-upload"></i>
                             <span>Gửi đề thi</span>
                         </a>
-                        <a href="<?php echo url('controller/cAssignHomework.php'); ?>" class="quick-link">
+                        <a href="<?php echo url('view/teacher/vAssignHomework.php'); ?>" class="quick-link">
                             <i class="fas fa-clipboard-list"></i>
                             <span>Giao bài tập</span>
                         </a>
@@ -358,15 +358,15 @@ $maGV = $_SESSION['maGV'] ?? null;
                         </h2>
                     </div>
                     <div class="quick-links">
-                        <a href="../../controller/cListofStudents.php" class="quick-link">
+                        <a href="../../view/teacher/vListofStudents.php" class="quick-link">
                             <i class="fas fa-users"></i>
                             <span>Danh sách học sinh</span>
                         </a>
-                        <a href="../../controller/cClassPerformance.php" class="quick-link">
+                        <a href="../../view/teacher/vClassPerformance.php" class="quick-link">
                             <i class="fas fa-chart-line"></i>
                             <span>Kết quả học tập và rèn luyện lớp</span>
                         </a>
-                        <a href="../../controller/cStudentClassification.php" class="quick-link">
+                        <a href="../../view/teacher/vStudentClassification.php" class="quick-link">
                             <i class="fas fa-star"></i>
                             <span>Xếp loại học sinh</span>
                         </a>

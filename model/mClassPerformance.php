@@ -262,5 +262,51 @@ class ModelClassPerformance {
         
         return $result->fetch_all(MYSQLI_ASSOC);
     }
+    
+    /**
+     * Lấy thống kê nghỉ học của lớp
+     */
+    public function getAbsenceStatistics($maLop, $hocKy, $namHoc) {
+        $sql = "SELECT 
+                    COUNT(DISTINCT nh.maHS) as soHSNghi,
+                    COUNT(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 END) as tongNghiCoPhep,
+                    COUNT(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 END) as tongNghiKhongPhep,
+                    COUNT(nh.maNghiHoc) as tongSoNgayNghi
+                FROM nghihoc nh
+                JOIN hocsinh hs ON nh.maHS = hs.maHS
+                WHERE hs.maLop = ? AND nh.hocKy = ? AND nh.namHoc = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("iis", $maLop, $hocKy, $namHoc);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_assoc();
+    }
+    
+    /**
+     * Lấy danh sách học sinh nghỉ nhiều nhất
+     */
+    public function getTopAbsentStudents($maLop, $hocKy, $namHoc, $limit = 5) {
+        $sql = "SELECT 
+                    hs.hoTen,
+                    COUNT(CASE WHEN nh.loaiNghi = 'cophep' THEN 1 END) as soNghiCoPhep,
+                    COUNT(CASE WHEN nh.loaiNghi = 'khongphep' THEN 1 END) as soNghiKhongPhep,
+                    COUNT(nh.maNghiHoc) as tongNghi
+                FROM nghihoc nh
+                JOIN hocsinh hs ON nh.maHS = hs.maHS
+                WHERE hs.maLop = ? AND nh.hocKy = ? AND nh.namHoc = ?
+                GROUP BY hs.maHS, hs.hoTen
+                HAVING tongNghi > 0
+                ORDER BY tongNghi DESC, soNghiKhongPhep DESC
+                LIMIT ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("iisi", $maLop, $hocKy, $namHoc, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 }
 ?>

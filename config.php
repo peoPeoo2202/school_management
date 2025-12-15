@@ -4,6 +4,14 @@
  * Tự động phát hiện BASE_URL dựa trên vị trí thực tế của project
  */
 
+// Khởi động session nếu chưa có
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// ĐẶT TIMEZONE CHO TOÀN HỆ THỐNG - QUAN TRỌNG!
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 // Lấy thư mục gốc của project (nơi file config.php đang nằm)
 define('ROOT_PATH', __DIR__);
 

@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include_once(__DIR__ . "/../model/mInsertGrade.php");
 include_once(__DIR__ . "/../model/mTeacher.php");
 
@@ -55,20 +57,35 @@ class cInsertGrade
         
         // Biến để lưu dữ liệu khi đã chọn
         $selectedClass = null;
-        $selectedHocKy = $currentSemester['hocKy'];
-        $selectedNamHoc = $currentSemester['namHoc'];
+        // Mặc định: Lấy năm học mới nhất từ database thay vì từ getCurrentSemester()
+        $selectedHocKy = $currentSemester['hocKy']; // Học kỳ vẫn dùng từ tháng hiện tại
+        $selectedNamHoc = !empty($years) ? $years[0] : $currentSemester['namHoc']; // Năm học lấy từ DB
         $className = '';
         $students = [];
         
         // Lấy danh sách lớp của giáo viên dạy môn này
         $classes = $this->model->getClassesByTeacherAndSubject($maGV, $selectedSubject);
         
-        // Lấy học kỳ và năm học từ GET nếu có
+        // Lấy học kỳ và năm học từ GET nếu có (TRƯỚC KHI set GLOBALS)
         if (isset($_GET['hocKy'])) {
             $selectedHocKy = intval($_GET['hocKy']);
         }
         if (isset($_GET['namHoc'])) {
             $selectedNamHoc = $_GET['namHoc'];
+        }
+        
+        // Nếu được gọi từ view, set các biến vào GLOBALS để view có thể truy cập
+        if (defined('INCLUDED_FROM_VIEW')) {
+            $GLOBALS['subjects'] = $subjects;
+            $GLOBALS['selectedSubject'] = $selectedSubject;
+            $GLOBALS['subjectName'] = $subjectName;
+            $GLOBALS['years'] = $years;
+            $GLOBALS['classes'] = $classes;
+            $GLOBALS['selectedClass'] = $selectedClass;
+            $GLOBALS['selectedHocKy'] = $selectedHocKy;
+            $GLOBALS['selectedNamHoc'] = $selectedNamHoc;
+            $GLOBALS['className'] = $className;
+            $GLOBALS['students'] = $students;
         }
         
         // Xử lý khi chọn lớp
@@ -92,10 +109,21 @@ class cInsertGrade
             
             // Lấy danh sách học sinh và điểm
             $students = $this->model->getStudentsWithGrades($selectedClass, $selectedSubject, $selectedHocKy, $selectedNamHoc);
+            
+            // Cập nhật GLOBALS nếu được gọi từ view
+            if (defined('INCLUDED_FROM_VIEW')) {
+                $GLOBALS['selectedClass'] = $selectedClass;
+                $GLOBALS['selectedHocKy'] = $selectedHocKy;
+                $GLOBALS['selectedNamHoc'] = $selectedNamHoc;
+                $GLOBALS['className'] = $className;
+                $GLOBALS['students'] = $students;
+            }
         }
         
-        // Include view
-        include_once(__DIR__ . "/../view/teacher/vInsertGrade.php");
+        // Include view (chỉ khi không được gọi từ view)
+        if (!defined('INCLUDED_FROM_VIEW')) {
+            include_once(__DIR__ . "/../view/teacher/vInsertGrade.php");
+        }
     }
 
     /**
@@ -173,13 +201,18 @@ class cInsertGrade
             $nhanXet = isset($gradeArray['nhanXet']) ? trim($gradeArray['nhanXet']) : '';
             $validatedGrades['nhanXet'] = !empty($nhanXet) ? $nhanXet : null;
             
+            // Kiểm tra có nhận xét không
+            if (!empty($nhanXet)) {
+                $hasAnyGrade = true; // Đánh dấu có thay đổi nếu có nhận xét
+            }
+            
             // Bỏ qua nếu có lỗi
             if ($hasError) {
                 $errorCount++;
                 continue;
             }
             
-            // Bỏ qua nếu không có điểm nào được nhập
+            // Bỏ qua nếu không có điểm hoặc nhận xét nào được nhập
             if (!$hasAnyGrade) {
                 continue;
             }
@@ -197,15 +230,17 @@ class cInsertGrade
         
         // Thông báo kết quả
         if ($successCount > 0) {
-            $_SESSION['success'] = "Đã lưu điểm thành công!";
-        }
-        
-        if ($errorCount > 0) {
+            $_SESSION['success'] = "Đã lưu điểm thành công cho $successCount học sinh!";
+            // Không hiển thị lỗi nếu đã có thành công
+        } elseif ($errorCount > 0) {
+            // Chỉ hiển thị lỗi khi không có gì thành công cả
             $_SESSION['error'] = "Có $errorCount lỗi khi lưu điểm: " . implode(", ", $errors);
+        } else {
+            $_SESSION['error'] = "Không có dữ liệu nào được thay đổi!";
         }
         
-        // Redirect về trang nhập điểm với các tham số đã chọn
-        header("Location: cInsertGrade.php?maLop=$maLop&hocKy=$hocKy&namHoc=$namHoc");
+        // Redirect về view với các tham số đã chọn (dùng relative URL từ browser)
+        header("Location: ../../view/teacher/vInsertGrade.php?maLop=$maLop&hocKy=$hocKy&namHoc=$namHoc");
         exit();
     }
 
@@ -232,23 +267,29 @@ class cInsertGrade
     }
 }
 
-// Xử lý request
-if (isset($_GET['action'])) {
+// Xử lý action=save TRƯỚC (luôn xử lý POST để lưu điểm)
+if (isset($_GET['action']) && $_GET['action'] === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $controller = new cInsertGrade();
-    
-    switch ($_GET['action']) {
-        case 'save':
-            $controller->saveGrades();
-            break;
-        case 'getClasses':
-            $controller->getClassesBySubject();
-            break;
-        default:
-            $controller->showInsertGradePage();
-            break;
+    $controller->saveGrades();
+    exit(); // Dừng sau khi lưu và redirect
+}
+
+// Xử lý request khác (chỉ khi không được gọi từ view)
+if (!defined('INCLUDED_FROM_VIEW')) {
+    if (isset($_GET['action'])) {
+        $controller = new cInsertGrade();
+        
+        switch ($_GET['action']) {
+            case 'getClasses':
+                $controller->getClassesBySubject();
+                break;
+            default:
+                $controller->showInsertGradePage();
+                break;
+        }
+    } else {
+        $controller = new cInsertGrade();
+        $controller->showInsertGradePage();
     }
-} else {
-    $controller = new cInsertGrade();
-    $controller->showInsertGradePage();
 }
 ?>

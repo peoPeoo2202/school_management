@@ -576,18 +576,6 @@ $pageIcon = "fas fa-file-upload";
                         </div>
 
                         <div class="form-group">
-                            <label for="maMonHoc">Môn học <span class="required">*</span></label>
-                            <select id="maMonHoc" name="maMonHoc" required>
-                                <option value="">-- Chọn môn học --</option>
-                                <?php foreach ($subjects as $subject): ?>
-                                    <option value="<?php echo $subject['maMonHoc']; ?>">
-                                        <?php echo htmlspecialchars($subject['tenMonHoc']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
                             <label for="loaiDeThi">Loại đề thi <span class="required">*</span></label>
                             <select id="loaiDeThi" name="loaiDeThi" required>
                                 <option value="de-thi-giua-ky">Đề thi giữa kỳ</option>

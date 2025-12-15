@@ -14,6 +14,10 @@ class mConnect
         }
 
         mysqli_set_charset($conn, "utf8mb4");
+        
+        // ĐẶT TIMEZONE CHO MySQL - QUAN TRỌNG để time() của PHP khớp với DATETIME của MySQL
+        mysqli_query($conn, "SET time_zone = '+07:00'");
+        
         return $conn;
     }
 

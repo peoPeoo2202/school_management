@@ -78,10 +78,11 @@ class mExamApproval
 
             $sql .= " ORDER BY 
                         CASE 
-                            WHEN d.trangThai = 'Choduyet' THEN 1
+                            WHEN d.trangThai = 'Chuaduyet' THEN 1
                             WHEN d.trangThai = 'Daduyet' THEN 2
-                            WHEN d.trangThai = 'Tuchoi' THEN 3
-                            ELSE 4
+                            WHEN d.trangThai = 'Dachon' THEN 3
+                            WHEN d.trangThai = 'Tuchoi' THEN 4
+                            ELSE 5
                         END,
                         d.maDeThi DESC";
 
@@ -430,8 +431,9 @@ class mExamApproval
     {
         $sql = "SELECT 
                     COUNT(*) as total,
-                    SUM(CASE WHEN trangThai = 'Choduyet' THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN trangThai = 'Chuaduyet' THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN trangThai = 'Daduyet' THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN trangThai = 'Dachon' THEN 1 ELSE 0 END) as selected,
                     SUM(CASE WHEN trangThai = 'Tuchoi' THEN 1 ELSE 0 END) as rejected
                 FROM dethi
                 WHERE 1=1";

@@ -21,6 +21,46 @@ class cSubmitHomework {
     }
 
     public function submitHomework($maBaiTap, $maHS, $file, $noiDung) {
+        // Đặt timezone chính xác
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        
+        // Kiểm tra thời hạn và quyền nộp bài TRƯỚC KHI xử lý
+        $homework = $this->model->getHomeworkById($maBaiTap);
+        if (!$homework) {
+            return ['success' => false, 'message' => 'Không tìm thấy bài tập'];
+        }
+
+        // Kiểm tra xem bài tập có bị khóa không
+        if (isset($homework['khoaBai']) && $homework['khoaBai'] == 1) {
+            return ['success' => false, 'message' => 'Bài tập này đã bị khóa. Học sinh không được phép nộp bài!'];
+        }
+        
+        // Kiểm tra đã nộp bài chưa
+        $existingSubmission = $this->model->getSubmissionByStudent($maBaiTap, $maHS);
+        
+        // Kiểm tra đã quá hạn chưa - So sánh DATETIME chính xác
+        $deadline = strtotime($homework['thoiGianNop']);
+        $currentTime = time();
+        $isOverdue = $currentTime > $deadline;
+        
+        // Nếu quá hạn và KHÔNG cho phép nộp trễ
+        if ($isOverdue && $homework['choPhepNopTre'] != 1) {
+            // Nếu đã nộp rồi -> không cho nộp lại
+            if ($existingSubmission) {
+                return [
+                    'success' => false, 
+                    'message' => 'Bài tập đã hết hạn! Bạn đã nộp bài vào lúc ' . date('d/m/Y H:i', strtotime($existingSubmission['ngayNop'])) . ' và không thể nộp lại sau khi quá hạn.'
+                ];
+            }
+            // Nếu chưa nộp -> không cho nộp lần đầu
+            else {
+                return [
+                    'success' => false, 
+                    'message' => 'Bài tập đã hết hạn nộp (Hạn: ' . date('d/m/Y H:i', $deadline) . '). Không được phép nộp trễ!'
+                ];
+            }
+        }
+        
         // Xử lý upload file
         $tenFile = null;
         $duongDan = null;
@@ -44,7 +84,8 @@ class cSubmitHomework {
         $result = $this->model->submitHomework($maBaiTap, $maHS, $tenFile, $duongDan, $noiDung);
 
         if ($result) {
-            return ['success' => true, 'message' => 'Nộp bài thành công'];
+            $statusMessage = $isOverdue ? 'Nộp bài thành công (Nộp trễ)' : 'Nộp bài thành công';
+            return ['success' => true, 'message' => $statusMessage];
         } else {
             return ['success' => false, 'message' => 'Có lỗi khi nộp bài'];
         }

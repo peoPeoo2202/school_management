@@ -15,6 +15,32 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
+// Load dữ liệu từ controller
+require_once(__DIR__ . '/../../controller/cListofStudents.php');
+require_once(__DIR__ . '/../../model/mConnect.php');
+
+$connectModel = new mConnect();
+$connection = $connectModel->mConnect();
+$controller = new ControllerListofStudents($connection);
+
+// Xử lý AJAX request cho chi tiết học sinh
+if (isset($_GET['action']) && $_GET['action'] == 'getDetail' && isset($_GET['maHS'])) {
+    header('Content-Type: application/json');
+    $maHS = intval($_GET['maHS']);
+    $result = $controller->getStudentDetail($maHS);
+    echo json_encode($result);
+    exit();
+}
+
+$maLop = isset($_GET['maLop']) ? $_GET['maLop'] : null;
+$data = $controller->showStudents($maLop);
+
+// Kiểm tra lỗi
+if (isset($data['error'])) {
+    echo "<script>alert('" . $data['error'] . "'); window.location.href='dashboard.php';</script>";
+    exit();
+}
+
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
@@ -147,6 +173,7 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
             border-radius: 8px;
             margin-bottom: 25px;
             border-left: 4px solid #5081BE;
+            text-align: left;
         }
 
         .class-info h3 {
@@ -154,12 +181,14 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
             margin-bottom: 10px;
             font-size: 16px;
             font-weight: 600;
+            text-align: left;
         }
 
         .class-info p {
             margin: 8px 0;
             color: #555;
             font-size: 14px;
+            text-align: left;
         }
 
         .class-info strong {

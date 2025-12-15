@@ -35,11 +35,39 @@ class mAssignHomework {
         return $stmt->get_result();
     }
 
+    // Lấy môn học mà giáo viên dạy cho lớp (tự động xác định)
+    public function getTeacherSubjectForClass($maGV, $maLop) {
+        $sql = "SELECT maMonHoc 
+                FROM phancong_giangday 
+                WHERE maGV = ? AND maLop = ? AND trangThai = 'active' 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $maGV, $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            return $row['maMonHoc'];
+        }
+        
+        return null;
+    }
+
     // Thêm bài tập mới - FIX bind_param
     public function createHomework($data) {
+        // Xác định giá trị anBai
+        $anBai = isset($data['anBai']) ? (int)$data['anBai'] : 0;
+        
+        // Cast các giá trị integer để đảm bảo đúng kiểu
+        $maLop = (int)$data['maLop'];
+        $maMonHoc = (int)$data['maMonHoc'];
+        $maGV = (int)$data['maGV'];
+        $choPhepNopTre = (int)$data['choPhepNopTre'];
+        
         if (isset($data['tenFile']) && isset($data['duongDan'])) {
-            $sql = "INSERT INTO baitap (tenBaiTap, yeuCauBaiTap, thoiGianNop, maLop, maMonHoc, maGV, tenFile, duongDan, choPhepNopTre) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO baitap (tenBaiTap, yeuCauBaiTap, thoiGianNop, maLop, maMonHoc, maGV, tenFile, duongDan, choPhepNopTre, anBai) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
@@ -47,20 +75,21 @@ class mAssignHomework {
                 return false;
             }
             
-            $stmt->bind_param("sssiiissi", 
+            $stmt->bind_param("sssiisssii", 
                 $data['tenBaiTap'],
                 $data['yeuCauBaiTap'],
                 $data['thoiGianNop'],
-                $data['maLop'],
-                $data['maMonHoc'],
-                $data['maGV'],
+                $maLop,
+                $maMonHoc,
+                $maGV,
                 $data['tenFile'],
                 $data['duongDan'],
-                $data['choPhepNopTre']
+                $choPhepNopTre,
+                $anBai
             );
         } else {
-            $sql = "INSERT INTO baitap (tenBaiTap, yeuCauBaiTap, thoiGianNop, maLop, maMonHoc, maGV, choPhepNopTre) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO baitap (tenBaiTap, yeuCauBaiTap, thoiGianNop, maLop, maMonHoc, maGV, choPhepNopTre, anBai) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->conn->prepare($sql);
             if (!$stmt) {
@@ -72,10 +101,11 @@ class mAssignHomework {
                 $data['tenBaiTap'],
                 $data['yeuCauBaiTap'],
                 $data['thoiGianNop'],
-                $data['maLop'],
-                $data['maMonHoc'],
-                $data['maGV'],
-                $data['choPhepNopTre']
+                $maLop,
+                $maMonHoc,
+                $maGV,
+                $choPhepNopTre,
+                $anBai
             );
         }
         
@@ -130,40 +160,51 @@ class mAssignHomework {
 
     // Cập nhật bài tập
     public function updateHomework($maBaiTap, $data) {
+        // Xác định giá trị anBai
+        $anBai = isset($data['anBai']) ? (int)$data['anBai'] : 0;
+        
+        // Cast các giá trị integer
+        $maLop = (int)$data['maLop'];
+        $maMonHoc = (int)$data['maMonHoc'];
+        $choPhepNopTre = (int)$data['choPhepNopTre'];
+        $maBaiTap = (int)$maBaiTap;
+        
         if (isset($data['tenFile']) && isset($data['duongDan'])) {
-            // Cập nhật bao gồm file mới
+            // Cập nhật bao gồm file mới và anBai
             $sql = "UPDATE baitap 
                     SET tenBaiTap = ?, yeuCauBaiTap = ?, thoiGianNop = ?, 
-                        maLop = ?, maMonHoc = ?, tenFile = ?, duongDan = ?, choPhepNopTre = ?
+                        maLop = ?, maMonHoc = ?, tenFile = ?, duongDan = ?, choPhepNopTre = ?, anBai = ?
                     WHERE maBaiTap = ?";
             
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("sssiissii",
+            $stmt->bind_param("sssiissiii",
                 $data['tenBaiTap'],
                 $data['yeuCauBaiTap'],
                 $data['thoiGianNop'],
-                $data['maLop'],
-                $data['maMonHoc'],
+                $maLop,
+                $maMonHoc,
                 $data['tenFile'],
                 $data['duongDan'],
-                $data['choPhepNopTre'],
+                $choPhepNopTre,
+                $anBai,
                 $maBaiTap
             );
         } else {
-            // Cập nhật không thay đổi file - FIX: sửa bind_param từ "sssiii" thành "sssiiii"
+            // Cập nhật không thay đổi file nhưng có anBai
             $sql = "UPDATE baitap 
                     SET tenBaiTap = ?, yeuCauBaiTap = ?, thoiGianNop = ?, 
-                        maLop = ?, maMonHoc = ?, choPhepNopTre = ?
+                        maLop = ?, maMonHoc = ?, choPhepNopTre = ?, anBai = ?
                     WHERE maBaiTap = ?";
             
             $stmt = $this->conn->prepare($sql);
-            $stmt->bind_param("sssiiii",
+            $stmt->bind_param("sssiiiii",
                 $data['tenBaiTap'],
                 $data['yeuCauBaiTap'],
                 $data['thoiGianNop'],
-                $data['maLop'],
-                $data['maMonHoc'],
-                $data['choPhepNopTre'],
+                $maLop,
+                $maMonHoc,
+                $choPhepNopTre,
+                $anBai,
                 $maBaiTap
             );
         }

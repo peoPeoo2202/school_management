@@ -110,6 +110,53 @@ class cHomeworkDetail {
             echo json_encode(['success' => false, 'message' => 'Không tìm thấy bài nộp']);
         }
     }
+
+    // Khóa/mở khóa bài tập (AJAX)
+    public function toggleLock() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        if (!isset($_SESSION['maGV'])) {
+            echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+            return;
+        }
+
+        $maBaiTap = isset($_POST['maBaiTap']) ? intval($_POST['maBaiTap']) : 0;
+        $action = isset($_POST['action']) ? $_POST['action'] : '';
+
+        if ($maBaiTap <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Mã bài tập không hợp lệ']);
+            return;
+        }
+
+        if (!in_array($action, ['lock', 'unlock'])) {
+            echo json_encode(['success' => false, 'message' => 'Hành động không hợp lệ']);
+            return;
+        }
+
+        // Kiểm tra quyền: chỉ giáo viên giao bài mới được khóa/mở
+        $homework = $this->model->getHomeworkDetail($maBaiTap);
+        if (!$homework || $homework['maGV'] != $_SESSION['maGV']) {
+            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền thao tác bài tập này']);
+            return;
+        }
+
+        $khoaBai = ($action === 'lock') ? 1 : 0;
+        $result = $this->model->toggleLockHomework($maBaiTap, $khoaBai);
+        
+        if ($result) {
+            $message = $action === 'lock' 
+                ? 'Đã khóa bài tập. Học sinh không thể nộp bài.' 
+                : 'Đã mở khóa bài tập. Học sinh có thể nộp bài.';
+            echo json_encode(['success' => true, 'message' => $message]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi xử lý']);
+        }
+    }
 }
 
 // Xử lý routing
@@ -125,6 +172,9 @@ switch ($action) {
         break;
     case 'getDetail':
         $controller->getSubmissionDetail();
+        break;
+    case 'toggleLock':
+        $controller->toggleLock();
         break;
     default:
         $controller->index();

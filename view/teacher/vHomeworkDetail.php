@@ -18,6 +18,29 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
+// Xử lý các action AJAX từ controller
+if (isset($_GET['action']) || isset($_POST['action'])) {
+    require_once(__DIR__ . '/../../controller/cHomeworkDetail.php');
+    $controller = new cHomeworkDetail();
+    
+    $action = $_GET['action'] ?? $_POST['action'];
+    
+    switch($action) {
+        case 'getDetail':
+            $controller->getDetail();
+            exit();
+        case 'grade':
+            $controller->gradeSubmission();
+            exit();
+        case 'toggleLock':
+            $controller->toggleLock();
+            exit();
+        default:
+            echo json_encode(['success' => false, 'message' => 'Invalid action']);
+            exit();
+    }
+}
+
 // Lấy thông tin bài tập
 require_once(__DIR__ . '/../../model/mHomeworkDetail.php');
 $model = new mHomeworkDetail();
@@ -25,20 +48,20 @@ $model = new mHomeworkDetail();
 $maBaiTap = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($maBaiTap <= 0) {
-    echo "<script>alert('ID bài tập không hợp lệ'); window.location.href='../../controller/cAssignHomework.php?action=index';</script>";
+    echo "<script>alert('ID bài tập không hợp lệ'); window.location.href='../../view/teacher/vAssignHomework.php';</script>";
     exit();
 }
 
 $homework = $model->getHomeworkDetail($maBaiTap);
 
 if (!$homework) {
-    echo "<script>alert('Không tìm thấy bài tập'); window.location.href='../../controller/cAssignHomework.php?action=index';</script>";
+    echo "<script>alert('Không tìm thấy bài tập'); window.location.href='../../view/teacher/vAssignHomework.php';</script>";
     exit();
 }
 
 // Kiểm tra quyền: chỉ giáo viên giao bài mới được xem
 if (!isset($_SESSION['maGV']) || $homework['maGV'] != $_SESSION['maGV']) {
-    echo "<script>alert('Bạn không có quyền xem bài tập này'); window.location.href='../../controller/cAssignHomework.php?action=index';</script>";
+    echo "<script>alert('Bạn không có quyền xem bài tập này'); window.location.href='../../view/teacher/vAssignHomework.php';</script>";
     exit();
 }
 
@@ -320,6 +343,24 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #5a6268;
         }
 
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
         .file-link {
             display: inline-flex;
             align-items: center;
@@ -515,13 +556,19 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         
         <div class="content-area">
             <div class="content-inner">
-                <a href="<?= url('controller/cAssignHomework.php') ?>" class="back-button">
+                <a href="<?= url('view/teacher/vAssignHomework.php') ?>" class="back-button">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
 
                 <!-- Thông tin bài tập -->
                 <div class="homework-info">
-                    <h2><i class="fas fa-file-alt"></i> <?= htmlspecialchars($homework['tenBaiTap']) ?></h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0;"><i class="fas fa-file-alt"></i> <?= htmlspecialchars($homework['tenBaiTap']) ?></h2>
+                        <button onclick="toggleLockHomework()" class="btn <?= $homework['khoaBai'] == 1 ? 'btn-danger' : 'btn-warning' ?>" id="lockBtn">
+                            <i class="fas fa-<?= $homework['khoaBai'] == 1 ? 'lock' : 'unlock' ?>"></i>
+                            <?= $homework['khoaBai'] == 1 ? 'Mở khóa bài tập' : 'Khóa bài tập' ?>
+                        </button>
+                    </div>
                     <div class="info-grid">
                         <div class="info-item">
                             <label>Lớp:</label>
@@ -663,9 +710,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                 <!-- Danh sách bài nộp -->
                 <div class="submissions-table">
-                    <h3><i class="fas fa-list"></i> Danh sách bài nộp</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3><i class="fas fa-list"></i> Danh sách bài nộp</h3>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label for="statusFilter" style="font-weight: 600; color: #555;">Lọc trạng thái:</label>
+                            <select id="statusFilter" onchange="filterSubmissions()" style="padding: 8px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;">
+                                <option value="all">Tất cả</option>
+                                <option value="Đã nộp" selected>Đã nộp</option>
+                                <option value="Nộp trễ">Nộp trễ</option>
+                                <option value="Chưa nộp">Chưa nộp</option>
+                            </select>
+                        </div>
+                    </div>
                     <?php if($submissions->num_rows > 0): ?>
-                    <table>
+                    <table id="submissionsTable">
                         <thead>
                             <tr>
                                 <th>Học sinh</th>
@@ -677,7 +735,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         </thead>
                         <tbody>
                             <?php while($sub = $submissions->fetch_assoc()): ?>
-                            <tr>
+                            <tr data-status="<?= $sub['trangThaiNop'] ?>">
                                 <td><?= htmlspecialchars($sub['tenHS']) ?></td>
                                 <td><?= $sub['ngayNop'] ? date('d/m/Y H:i', strtotime($sub['ngayNop'])) : '-' ?></td>
                                 <td>
@@ -701,8 +759,50 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 </td>
                             </tr>
                             <?php endwhile; ?>
+                            <?php 
+                            // Lấy danh sách mã HS đã nộp
+                            $submissions->data_seek(0); // Reset con trỏ
+                            $submittedStudents = [];
+                            while($sub = $submissions->fetch_assoc()) {
+                                $submittedStudents[] = $sub['maHS'];
+                            }
+                            
+                            // Hiển thị học sinh chưa nộp
+                            $students->data_seek(0); // Reset con trỏ
+                            while($student = $students->fetch_assoc()): 
+                                if (!in_array($student['maHS'], $submittedStudents)):
+                            ?>
+                            <tr data-status="Chưa nộp">
+                                <td><?= htmlspecialchars($student['hoTen']) ?></td>
+                                <td>-</td>
+                                <td>
+                                    <span class="status-badge pending">
+                                        Chưa nộp
+                                    </span>
+                                </td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <?php 
+                                endif;
+                            endwhile; 
+                            ?>
                         </tbody>
                     </table>
+                    
+                    <!-- Phân trang -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                        <button type="button" id="prevBtn" onclick="changePage(-1)" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-chevron-left"></i> Trước
+                        </button>
+                        <span style="padding: 8px 15px; color: #666; font-weight: 600;">
+                            Trang <span id="currentPage">1</span> / <span id="totalPages">1</span>
+                        </span>
+                        <button type="button" id="nextBtn" onclick="changePage(1)" class="btn btn-secondary btn-sm">
+                            Sau <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    
                     <?php else: ?>
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
@@ -751,6 +851,55 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </div>
 
     <script>
+        // Biến phân trang
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let totalRows = 0;
+        let allRows = [];
+
+        function initPagination() {
+            const table = document.getElementById('submissionsTable');
+            if (!table) return;
+            
+            const tbody = table.getElementsByTagName('tbody')[0];
+            allRows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultRow');
+            totalRows = allRows.length;
+            
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            showPage(1);
+        }
+
+        function showPage(page) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            if (totalPages === 0) page = 1;
+            
+            currentPage = page;
+            
+            // Ẩn tất cả các hàng
+            allRows.forEach(row => row.style.display = 'none');
+            
+            // Hiển thị các hàng cho trang hiện tại
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            
+            for (let i = start; i < end && i < totalRows; i++) {
+                allRows[i].style.display = '';
+            }
+            
+            document.getElementById('currentPage').textContent = page;
+            document.getElementById('prevBtn').disabled = (page === 1);
+            document.getElementById('nextBtn').disabled = (page === totalPages || totalPages === 0);
+        }
+
+        function changePage(delta) {
+            showPage(currentPage + delta);
+        }
+
         function openGradeModal(maBaiNop) {
             console.log('Opening modal for maBaiNop:', maBaiNop); // Debug
             
@@ -787,6 +936,57 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             document.getElementById('gradeModal').classList.remove('show');
         }
 
+        function filterSubmissions() {
+            const filterValue = document.getElementById('statusFilter').value;
+            const table = document.getElementById('submissionsTable');
+            if (!table) return;
+            
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultRow');
+            
+            // Ẩn tất cả các hàng trước
+            rows.forEach(row => row.style.display = 'none');
+            
+            // Lọc các hàng theo trạng thái
+            allRows = rows.filter(row => {
+                const status = row.getAttribute('data-status');
+                return filterValue === 'all' || status === filterValue;
+            });
+            
+            totalRows = allRows.length;
+            
+            // Xóa thông báo "không tìm thấy" nếu có
+            let noResultRow = document.getElementById('noResultRow');
+            if (noResultRow) {
+                noResultRow.remove();
+            }
+            
+            // Hiển thị thông báo nếu không có kết quả
+            if (totalRows === 0) {
+                noResultRow = tbody.insertRow(0);
+                noResultRow.id = 'noResultRow';
+                const cell = noResultRow.insertCell(0);
+                cell.colSpan = 5;
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = '#999';
+                cell.style.fontStyle = 'italic';
+                cell.innerHTML = '<i class="fas fa-search"></i> Không tìm thấy bài nộp với trạng thái này';
+            }
+            
+            // Cập nhật phân trang
+            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            // Hiển thị trang 1 sau khi lọc
+            showPage(1);
+        }
+        
+        // Khởi tạo phân trang khi trang được tải
+        document.addEventListener('DOMContentLoaded', function() {
+            initPagination();
+        });
+
         function submitGrade() {
             const form = document.getElementById('gradeForm');
             if(!form.checkValidity()) {
@@ -819,6 +1019,51 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             });
         }
         
+        function toggleLockHomework() {
+            const lockBtn = document.getElementById('lockBtn');
+            const currentLockState = <?= $homework['khoaBai'] ?>;
+            const action = currentLockState == 1 ? 'unlock' : 'lock';
+            const confirmMsg = currentLockState == 1 
+                ? 'Bạn có chắc muốn mở khóa bài tập này? Học sinh sẽ có thể nộp bài.' 
+                : 'Bạn có chắc muốn khóa bài tập này? Học sinh sẽ không thể nộp bài.';
+            
+            if(!confirm(confirmMsg)) {
+                return;
+            }
+
+            lockBtn.disabled = true;
+            lockBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            const formData = new FormData();
+            formData.append('maBaiTap', <?= $maBaiTap ?>);
+            formData.append('action', action);
+
+            fetch('<?= url("controller/cHomeworkDetail.php?action=toggleLock") ?>', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) {
+                    location.reload();
+                } else {
+                    lockBtn.disabled = false;
+                    lockBtn.innerHTML = action == 'lock' 
+                        ? '<i class="fas fa-unlock"></i> Khóa bài tập' 
+                        : '<i class="fas fa-lock"></i> Mở khóa bài tập';
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Có lỗi xảy ra khi xử lý');
+                lockBtn.disabled = false;
+                lockBtn.innerHTML = action == 'lock' 
+                    ? '<i class="fas fa-unlock"></i> Khóa bài tập' 
+                    : '<i class="fas fa-lock"></i> Mở khóa bài tập';
+            });
+        }
+
         window.onclick = function(event) {
             const modal = document.getElementById('gradeModal');
             if (event.target == modal) {
