@@ -37,9 +37,9 @@ if ($hocKy === 'canam') {
     $grades = $model->getDetailedGrades($maHS, $namHoc, $hocKy);
 }
 ?>
-<div class="grades-header-icon">
+<div class="title-header">
     <i class="fas fa-chart-line"></i>
-    <h2>Kết quả học tập</h2>
+    <h4>Kết quả học tập</h4>
 </div>
 <div class="grades-container">
     <div class="grades-header">

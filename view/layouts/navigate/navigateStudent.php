@@ -15,7 +15,7 @@ $maHS = $_SESSION['maHS'] ?? '';
 ?>
 
 <nav class="student-navbar">
-    <div  class="navbar-header">
+    <div class="navbar-header">
         <h2><i class="fas fa-graduation-cap"></i> Hệ thống HS</h2>
     </div>
 
@@ -28,45 +28,47 @@ $maHS = $_SESSION['maHS'] ?? '';
             <p class="user-role">Học sinh</p>
         </div>
     </div>
+    <div class="nav-content">
+        <ul class="navbar-menu">
+            <!-- Dashboard -->
+            <li>
+                <a href="index.php?page=timeTable" class="menu-item <?php echo (!isset($_GET['page']) || $_GET['page'] == 'timeTable') ? 'active' : ''; ?>">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Thời khóa biểu</span>
+                </a>
+            </li>
 
-    <ul class="navbar-menu">
-        <!-- Dashboard -->
-        <li>
-            <a href="index.php?page=timeTable" class="menu-item <?php echo (!isset($_GET['page']) || $_GET['page'] == 'timeTable') ? 'active' : ''; ?>">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Thời khóa biểu</span>
+            <!-- Kết quả học tập -->
+            <li>
+                <a href="index.php?page=grades" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'grades') ? 'active' : ''; ?>">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Kết quả học tập</span>
+                </a>
+            </li>
+
+            <!-- Xếp loại -->
+            <li>
+                <a href="index.php?page=classification" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'classification') ? 'active' : ''; ?>">
+                    <i class="fas fa-star"></i>
+                    <span>Xếp loại</span>
+                </a>
+            </li>
+
+            <!-- Nộp bài tập -->
+            <li>
+                <a href="index.php?page=submitHomework" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'submitHomework') ? 'active' : ''; ?>">
+                    <i class="fas fa-tasks"></i>
+                    <span>Danh sách bài tập</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="navbar-footer">
+            <a href="../../public/logout.php" class="logout-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
             </a>
-        </li>
-
-        <!-- Kết quả học tập -->
-        <li>
-            <a href="index.php?page=grades" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'grades') ? 'active' : ''; ?>">
-                <i class="fas fa-chart-line"></i>
-                <span>Kết quả học tập</span>
-            </a>
-        </li>
-
-        <!-- Xếp loại -->
-        <li>
-            <a href="index.php?page=classification" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'classification') ? 'active' : ''; ?>">
-                <i class="fas fa-star"></i>
-                <span>Xếp loại</span>
-            </a>
-        </li>
-
-        <!-- Nộp bài tập -->
-        <li>
-            <a href="index.php?page=submitHomework" class="menu-item <?php echo (isset($_GET['page']) && $_GET['page'] == 'submitHomework') ? 'active' : ''; ?>">
-                <i class="fas fa-tasks"></i>
-                <span>Làm bài tập</span>
-            </a>
-        </li> 
-    </ul>
-
-    <div class="navbar-footer">
-        <a href="../../public/logout.php" class="logout-link">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Đăng xuất</span>
-        </a>
+        </div>
     </div>
+
 </nav>
