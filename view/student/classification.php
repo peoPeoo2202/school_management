@@ -104,10 +104,9 @@ $classifications['canam'] = [
     'danhHieu' => ($danhHieu && $coDuDieuKienDanhHieu) ? $danhHieu['tenDanhHieu'] : null
 ];
 ?>
-<div class="classification-header-icon">
+<div class="title-header">
     <i class="fas fa-star"></i>
     <h4>Xếp loại học sinh</h4>
-
 </div>
 <div class="classification-container">
 

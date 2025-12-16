@@ -101,18 +101,10 @@ while ($row = $schedule->fetch_assoc()) {
   }
 }
 ?>
-<div class="timetable-header">
-  <h2>Lịch học của bạn</h2>
-  <!-- <div class="timetable-header-left">
+<div class="title-header">
   <i class="fas fa-calendar-alt"></i>
-  <h4>Thời khóa biểu Lớp: <?= htmlspecialchars($info['tenLop']) ?></h4>
-  <p><?= htmlspecialchars($info['hoTen']) ?></p>
-  </div> -->
-
-  <div class="timetable-header-right">
-    <!-- Remove or keep empty if not needed -->
+  <h4>Lịch học của bạn</h4>
   </div>
-</div>
 <div class="timetable-container">
   <?php
   $buoiNames = ['sang' => 'SÁNG', 'chieu' => 'CHIỀU'];
@@ -148,7 +140,7 @@ while ($row = $schedule->fetch_assoc()) {
             echo "Tiết $tiet<br>";
             if (isset($tietTimes[$buoi][$tiet])) {
               echo "<small class='timetable-time'>" .
-                $tietTimes[$buoi][$tiet]['start'] . " - " .
+                $tietTimes[$buoi][$tiet]['start'] ." - " .
                 $tietTimes[$buoi][$tiet]['end'] . "</small>";
             }
             echo "</td>";
