@@ -288,10 +288,10 @@ class ModelYeuCau {
     private function tinhLaiDiemTrungBinh($maBangDiem) {
         $sql = "UPDATE bangdiem 
                 SET tbDiem = (
-                    COALESCE(diemMieng, 0) + 
-                    COALESCE(diem15Phut1, 0) + 
-                    COALESCE(diem15Phut2, 0) + 
-                    COALESCE(diem1Tiet, 0) * 2 + 
+                    COALESCE(diemTX1, 0) + 
+                    COALESCE(diemTX2, 0) + 
+                    COALESCE(diemTX3, 0) + 
+                    COALESCE(diemTX4, 0) * 2 + 
                     COALESCE(diemGiuaKy, 0) * 2 + 
                     COALESCE(diemCuoiKy, 0) * 3
                 ) / 10
@@ -345,6 +345,244 @@ class ModelYeuCau {
         } catch (Exception $e) {
             error_log("Lỗi thongKeYeuCau: " . $e->getMessage());
             return [];
+        }
+    }
+
+    // ==================== PHẦN DÀNH CHO GIÁO VIÊN ====================
+    
+    /**
+     * Lấy danh sách yêu cầu của giáo viên
+     */
+    public function layDanhSachYeuCauCuaGV($maGV, $loaiYeuCau = null, $trangThai = null) {
+        try {
+            $sql = "SELECT 
+                        yc.maYeuCau,
+                        yc.moTa,
+                        yc.trangThai,
+                        yc.loaiYeuCau,
+                        yc.ngayGui,
+                        yc.ngayXuLy,
+                        yc.minhChung,
+                        bgh.hoTen as nguoiXuLy,
+                        ycnp.ngayBatDauNghi,
+                        ycnp.ngayKetThucNghi,
+                        ycnp.lyDo as lyDoNghiPhep,
+                        ycsd.diemHienTai,
+                        ycsd.diemDeNghiSua,
+                        ycsd.lyDoSuaDiem,
+                        ycsd.maHS,
+                        ycsd.maMonHoc,
+                        ycsd.hocKy,
+                        ycsd.namHoc,
+                        ycsd.loaiDiem,
+                        hs.hoTen as tenHS,
+                        mh.tenMonHoc
+                    FROM yeucau yc
+                    LEFT JOIN yeucaunghiphep ycnp ON yc.maYeuCauNghiPhep = ycnp.maYeuCau
+                    LEFT JOIN yeucausuadiem ycsd ON yc.maYeuCauSuaDiem = ycsd.maYeuCau
+                    LEFT JOIN bgh ON yc.maBGH_XuLy = bgh.maBGH
+                    LEFT JOIN hocsinh hs ON ycsd.maHS = hs.maHS
+                    LEFT JOIN monhoc mh ON ycsd.maMonHoc = mh.maMonHoc
+                    WHERE (ycnp.maGV = ? OR ycsd.maGV = ?)";
+            
+            $params = [$maGV, $maGV];
+            
+            if ($loaiYeuCau && $loaiYeuCau !== 'all') {
+                $sql .= " AND yc.loaiYeuCau = ?";
+                $params[] = $loaiYeuCau;
+            }
+            
+            if ($trangThai && $trangThai !== 'all') {
+                $sql .= " AND yc.trangThai = ?";
+                $params[] = $trangThai;
+            }
+            
+            $sql .= " ORDER BY yc.ngayGui DESC";
+            
+            return $this->executeQuery($sql, $params);
+        } catch (Exception $e) {
+            error_log("Lỗi layDanhSachYeuCauCuaGV: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Gửi yêu cầu sửa điểm
+     */
+    public function guiYeuCauSuaDiem($data) {
+        try {
+            mysqli_begin_transaction($this->connection);
+            
+            // 1. Thêm vào bảng yeucausuadiem
+            $sqlYCSD = "INSERT INTO yeucausuadiem 
+                        (maGV, diemHienTai, diemDeNghiSua, lyDoSuaDiem, minhChung, maBangDiem, maHS, maMonHoc, hocKy, namHoc, loaiDiem) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            if (!$this->executeNonQuery($sqlYCSD, [
+                $data['maGV'],
+                $data['diemHienTai'],
+                $data['diemDeNghiSua'],
+                $data['lyDoSuaDiem'],
+                $data['minhChung'] ?? null,
+                $data['maBangDiem'],
+                $data['maHS'],
+                $data['maMonHoc'],
+                $data['hocKy'],
+                $data['namHoc'],
+                $data['loaiDiem']
+            ])) {
+                throw new Exception("Không thể thêm yêu cầu sửa điểm");
+            }
+            
+            // Lấy maYeuCau vừa insert
+            $maYeuCauSuaDiem = mysqli_insert_id($this->connection);
+            
+            // 2. Thêm vào bảng yeucau (bao gồm cả minhChung để BGH lấy được)
+            $sqlYC = "INSERT INTO yeucau 
+                      (moTa, trangThai, maYeuCauSuaDiem, loaiYeuCau, minhChung) 
+                      VALUES (?, 'Choxuly', ?, 'SuaDiem', ?)";
+            
+            $moTa = "Yêu cầu sửa điểm " . $data['loaiDiem'] . " môn " . $data['tenMonHoc'] . " - HK" . $data['hocKy'] . " năm học " . $data['namHoc'];
+            
+            if (!$this->executeNonQuery($sqlYC, [
+                $moTa,
+                $maYeuCauSuaDiem,
+                $data['minhChung'] ?? null
+            ])) {
+                throw new Exception("Không thể thêm yêu cầu");
+            }
+            
+            mysqli_commit($this->connection);
+            return true;
+        } catch (Exception $e) {
+            mysqli_rollback($this->connection);
+            error_log("Lỗi guiYeuCauSuaDiem: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Gửi yêu cầu nghỉ phép
+     */
+    public function guiYeuCauNghiPhep($data) {
+        try {
+            mysqli_begin_transaction($this->connection);
+            
+            // 1. Thêm vào bảng yeucaunghiphep
+            $sqlYCNP = "INSERT INTO yeucaunghiphep 
+                        (ngayBatDauNghi, ngayKetThucNghi, lyDo, minhChung, maGV) 
+                        VALUES (?, ?, ?, ?, ?)";
+            
+            if (!$this->executeNonQuery($sqlYCNP, [
+                $data['ngayBatDauNghi'],
+                $data['ngayKetThucNghi'],
+                $data['lyDo'],
+                $data['minhChung'] ?? null,
+                $data['maGV']
+            ])) {
+                throw new Exception("Không thể thêm yêu cầu nghỉ phép");
+            }
+            
+            // Lấy maYeuCau vừa insert
+            $maYeuCauNghiPhep = mysqli_insert_id($this->connection);
+            
+            // 2. Thêm vào bảng yeucau (bao gồm cả minhChung để BGH lấy được)
+            $sqlYC = "INSERT INTO yeucau 
+                      (moTa, trangThai, maYeuCauNghiPhep, loaiYeuCau, minhChung) 
+                      VALUES (?, 'Choxuly', ?, 'NghiPhep', ?)";
+            
+            $moTa = "Yêu cầu nghỉ phép từ " . date('d/m/Y', strtotime($data['ngayBatDauNghi'])) . 
+                    " đến " . date('d/m/Y', strtotime($data['ngayKetThucNghi']));
+            
+            if (!$this->executeNonQuery($sqlYC, [
+                $moTa,
+                $maYeuCauNghiPhep,
+                $data['minhChung'] ?? null
+            ])) {
+                throw new Exception("Không thể thêm yêu cầu");
+            }
+            
+            mysqli_commit($this->connection);
+            return true;
+        } catch (Exception $e) {
+            mysqli_rollback($this->connection);
+            error_log("Lỗi guiYeuCauNghiPhep: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Lấy danh sách môn học giáo viên đang giảng dạy
+     */
+    public function layMonHocCuaGV($maGV) {
+        try {
+            // Lấy môn học từ VIEW v_phancong_giangday (kết hợp cả GVBM và GVCN)
+            $sql = "SELECT DISTINCT 
+                        pc.maMonHoc,
+                        mh.tenMonHoc
+                    FROM v_phancong_giangday pc
+                    JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
+                    WHERE pc.maGV = ?
+                    ORDER BY mh.tenMonHoc";
+            
+            return $this->executeQuery($sql, [$maGV]);
+        } catch (Exception $e) {
+            error_log("Lỗi layMonHocCuaGV: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Lấy danh sách học sinh theo môn và lớp
+     */
+    public function layHocSinhTheoMon($maGV, $maMonHoc, $hocKy, $namHoc) {
+        try {
+            // Lấy học sinh từ các lớp mà giáo viên được phân công dạy (cả GVBM và GVCN)
+            $sql = "SELECT DISTINCT 
+                        hs.maHS,
+                        hs.hoTen,
+                        l.tenLop,
+                        bd.maBangDiem
+                    FROM v_phancong_giangday pc
+                    INNER JOIN lophoc l ON pc.maLop = l.maLop
+                    INNER JOIN hocsinh hs ON l.maLop = hs.maLop
+                    LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS 
+                        AND bd.maMonHoc = pc.maMonHoc
+                        AND bd.hocKy = pc.hocKy 
+                        AND bd.namHoc = pc.namHoc
+                    WHERE pc.maGV = ? 
+                        AND pc.maMonHoc = ?
+                        AND pc.hocKy = ?
+                        AND pc.namHoc = ?
+                        AND bd.maBangDiem IS NOT NULL
+                    ORDER BY l.tenLop, hs.hoTen";
+            
+            return $this->executeQuery($sql, [$maGV, $maMonHoc, $hocKy, $namHoc]);
+        } catch (Exception $e) {
+            error_log("Lỗi layHocSinhTheoMon: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Lấy điểm của học sinh theo bảng điểm
+     */
+    public function layDiemHocSinh($maBangDiem) {
+        try {
+            $sql = "SELECT 
+                        bd.*,
+                        hs.hoTen as tenHS,
+                        mh.tenMonHoc
+                    FROM bangdiem bd
+                    JOIN hocsinh hs ON bd.maHS = hs.maHS
+                    JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
+                    WHERE bd.maBangDiem = ?";
+            
+            $result = $this->executeQuery($sql, [$maBangDiem]);
+            return !empty($result) ? $result[0] : null;
+        } catch (Exception $e) {
+            error_log("Lỗi layDiemHocSinh: " . $e->getMessage());
+            return null;
         }
     }
 }

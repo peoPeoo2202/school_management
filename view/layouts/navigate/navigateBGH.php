@@ -147,6 +147,13 @@ if (!isset($_SESSION['login']) || $_SESSION['login'] !== true || $_SESSION['loai
         <div class="nav-divider"></div>
         
         <li>
+            <a href="../../controller/cChonDe.php?action=index">
+                <i class="fas fa-file-alt"></i>
+                <span>Chọn đề thi</span>
+            </a>
+        </li>
+        
+        <li>
             <a href="../../controller/cYeuCau.php?action=danhsach">
                 <i class="fas fa-clipboard-check"></i>
                 <span>Xử lý yêu cầu</span>

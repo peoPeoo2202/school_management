@@ -8,29 +8,35 @@ class mAssignHomework {
         $this->conn = $db->mConnect();
     }
 
-    // Lấy danh sách lớp mà giáo viên đang dạy
+    // Lấy danh sách lớp mà giáo viên đang dạy (từ cả GVBM và GVCN)
     public function getTeacherClasses($maGV) {
         $sql = "SELECT DISTINCT l.maLop, l.tenLop, l.namHoc 
                 FROM lophoc l
-                INNER JOIN phancong_giangday pc ON l.maLop = pc.maLop
-                WHERE pc.maGV = ? AND pc.trangThai = 'active'
+                WHERE l.maLop IN (
+                    SELECT maLop FROM phancong_gvbm WHERE maGV = ? AND trangThai = 'active'
+                    UNION
+                    SELECT maLop FROM phancong_gvcn WHERE maGV = ? AND trangThai = 'active'
+                )
                 ORDER BY l.tenLop";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $maGV);
+        $stmt->bind_param("ii", $maGV, $maGV);
         $stmt->execute();
         return $stmt->get_result();
     }
 
-    // Lấy danh sách môn học mà giáo viên dạy cho lớp
+    // Lấy danh sách môn học mà giáo viên dạy cho lớp (từ cả GVBM và GVCN)
     public function getTeacherSubjects($maGV, $maLop) {
         $sql = "SELECT DISTINCT m.maMonHoc, m.tenMonHoc
                 FROM monhoc m
-                INNER JOIN phancong_giangday pc ON m.maMonHoc = pc.maMonHoc
-                WHERE pc.maGV = ? AND pc.maLop = ? AND pc.trangThai = 'active'";
+                WHERE m.maMonHoc IN (
+                    SELECT maMonHoc FROM phancong_gvbm WHERE maGV = ? AND maLop = ? AND trangThai = 'active'
+                    UNION
+                    SELECT maMonHoc FROM phancong_gvcn WHERE maGV = ? AND maLop = ? AND trangThai = 'active' AND maMonHoc IS NOT NULL
+                )";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ii", $maGV, $maLop);
+        $stmt->bind_param("iiii", $maGV, $maLop, $maGV, $maLop);
         $stmt->execute();
         return $stmt->get_result();
     }

@@ -75,7 +75,7 @@ class mReport {
     }
     
     // Lấy báo cáo kết quả học tập theo môn học (theo phân công giảng dạy)
-    // Mỗi giáo viên chỉ xem được điểm của lớp và môn mà họ được phân công dạy
+    // Mỗi giáo viên chỉ xem được điểm của lớp và môn mà họ được phân công dạy (cả GVBM và GVCN)
     public function getBaoCaoKetQuaHocTap($maGV, $maLop = null, $maMonHoc = null, $hocKy = null, $namHoc = null) {
         $sql = "SELECT 
                     hs.maHS,
@@ -84,10 +84,10 @@ class mReport {
                     mh.tenMonHoc,
                     bd.hocKy,
                     bd.namHoc,
-                    bd.diemMieng,
-                    bd.diem15Phut1,
-                    bd.diem15Phut2,
-                    bd.diem1Tiet,
+                    bd.diemTX1,
+                    bd.diemTX2,
+                    bd.diemTX3,
+                    bd.diemTX4,
                     bd.diemGiuaKy,
                     bd.diemCuoiKy,
                     bd.tbDiem as diemTrungBinh,
@@ -100,7 +100,7 @@ class mReport {
                         WHEN bd.tbDiem IS NOT NULL THEN 'Kém'
                         ELSE 'Chưa có điểm'
                     END as xepLoai
-                FROM phancong_giangday pc
+                FROM v_phancong_giangday pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
@@ -108,7 +108,7 @@ class mReport {
                     AND bd.maMonHoc = pc.maMonHoc 
                     AND bd.hocKy = pc.hocKy 
                     AND bd.namHoc = pc.namHoc
-                WHERE pc.maGV = ? AND pc.trangThai = 'active'";
+                WHERE pc.maGV = ?";
         
         $params = [$maGV];
         
@@ -135,7 +135,7 @@ class mReport {
     }
     
     // Lấy báo cáo chuyên cần dựa vào phân công lớp và bảng nghỉ học
-    // Giáo viên chỉ xem chuyên cần của học sinh trong các lớp được phân công dạy
+    // Giáo viên chỉ xem chuyên cần của học sinh trong các lớp được phân công dạy (cả GVBM và GVCN)
     public function getBaoCaoChuyenCan($maGV, $maLop = null, $hocKy = null, $namHoc = null) {
         // Đặt giá trị mặc định cho năm học nếu không có
         if (!$namHoc) {
@@ -163,7 +163,7 @@ class mReport {
                     GROUP_CONCAT(DISTINCT CASE WHEN nh.loaiNghi = 'cophep' THEN DATE_FORMAT(nh.ngayNghi, '%d/%m/%Y') END ORDER BY nh.ngayNghi SEPARATOR ', ') as danhSachNghiCoPhep,
                     GROUP_CONCAT(DISTINCT CASE WHEN nh.loaiNghi = 'cophep' THEN nh.lyDo END ORDER BY nh.ngayNghi SEPARATOR ', ') as lyDoNghiCoPhep,
                     GROUP_CONCAT(DISTINCT CASE WHEN nh.loaiNghi = 'khongphep' THEN DATE_FORMAT(nh.ngayNghi, '%d/%m/%Y') END ORDER BY nh.ngayNghi SEPARATOR ', ') as danhSachNghiKhongPhep
-                FROM phancong_giangday pc
+                FROM v_phancong_giangday pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 LEFT JOIN nghihoc nh ON nh.maHS = hs.maHS 
@@ -174,7 +174,7 @@ class mReport {
             $sql .= " AND nh.hocKy = ?";
         }
         
-        $sql .= " WHERE pc.maGV = ? AND pc.namHoc = ? AND pc.trangThai = 'active'";
+        $sql .= " WHERE pc.maGV = ? AND pc.namHoc = ?";
         
         $params = [];
         if ($hocKy) {
@@ -240,7 +240,7 @@ class mReport {
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy thống kê điểm môn học (theo phân công giảng dạy)
+    // Lấy thống kê điểm môn học (theo phân công giảng dạy - cả GVBM và GVCN)
     // Dựa vào bảng bangdiem và tính toán thống kê điểm trung bình
     public function getThongKeDiemMonHoc($maGV, $maMonHoc, $hocKy = null, $namHoc = null, $maLop = null) {
         $sql = "SELECT 
@@ -258,7 +258,7 @@ class mReport {
                     COUNT(CASE WHEN bd.tbDiem >= 5.0 AND bd.tbDiem < 6.5 THEN 1 END) as soHSTB,
                     COUNT(CASE WHEN bd.tbDiem >= 3.5 AND bd.tbDiem < 5.0 THEN 1 END) as soHSYeu,
                     COUNT(CASE WHEN bd.tbDiem < 3.5 AND bd.tbDiem IS NOT NULL THEN 1 END) as soHSKem
-                FROM phancong_giangday pc
+                FROM v_phancong_giangday pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
@@ -266,7 +266,7 @@ class mReport {
                     AND bd.maMonHoc = pc.maMonHoc 
                     AND bd.hocKy = pc.hocKy 
                     AND bd.namHoc = pc.namHoc
-                WHERE pc.maGV = ? AND pc.maMonHoc = ? AND pc.trangThai = 'active'";
+                WHERE pc.maGV = ? AND pc.maMonHoc = ?";
         
         $params = [$maGV, $maMonHoc];
         
@@ -289,7 +289,7 @@ class mReport {
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy danh sách học sinh theo môn học (cho thống kê)
+    // Lấy danh sách học sinh theo môn học (cho thống kê - cả GVBM và GVCN)
     // Dựa vào phân công giảng dạy và bảng điểm
     public function getDanhSachHocSinhTheoMon($maGV, $maMonHoc, $hocKy = null, $namHoc = null, $maLop = null) {
         $sql = "SELECT 
@@ -306,20 +306,20 @@ class mReport {
                         WHEN bd.tbDiem IS NOT NULL THEN 'Kém'
                         ELSE 'Chưa có điểm'
                     END as xepLoai,
-                    bd.diemMieng,
-                    bd.diem15Phut1,
-                    bd.diem15Phut2,
-                    bd.diem1Tiet,
+                    bd.diemTX1,
+                    bd.diemTX2,
+                    bd.diemTX3,
+                    bd.diemTX4,
                     bd.diemGiuaKy,
                     bd.diemCuoiKy
-                FROM phancong_giangday pc
+                FROM v_phancong_giangday pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS 
                     AND bd.maMonHoc = pc.maMonHoc 
                     AND bd.hocKy = pc.hocKy 
                     AND bd.namHoc = pc.namHoc
-                WHERE pc.maGV = ? AND pc.maMonHoc = ? AND pc.trangThai = 'active'";
+                WHERE pc.maGV = ? AND pc.maMonHoc = ?";
         
         $params = [$maGV, $maMonHoc];
         
@@ -341,7 +341,7 @@ class mReport {
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy thống kê số liệu học sinh theo điểm môn học
+    // Lấy thống kê số liệu học sinh theo điểm môn học (cả GVBM và GVCN)
     // Dựa vào phân công giảng dạy và bảng điểm
     public function getThongKeSoLieuHocSinh($maGV, $maLop = null, $maMonHoc = null, $hocKy = null, $namHoc = null) {
         // Đặt giá trị mặc định cho năm học nếu không có
@@ -372,7 +372,7 @@ class mReport {
                     ROUND(AVG(bd.tbDiem), 2) as diemTBLop,
                     MAX(bd.tbDiem) as diemCaoNhat,
                     MIN(bd.tbDiem) as diemThapNhat
-                FROM phancong_giangday pc
+                FROM v_phancong_giangday pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
@@ -380,7 +380,7 @@ class mReport {
                     AND bd.maMonHoc = pc.maMonHoc 
                     AND bd.hocKy = pc.hocKy 
                     AND bd.namHoc = pc.namHoc
-                WHERE pc.maGV = ? AND pc.hocKy = ? AND pc.namHoc = ? AND pc.trangThai = 'active'";
+                WHERE pc.maGV = ? AND pc.hocKy = ? AND pc.namHoc = ?";
         
         $params = [$maGV, $hocKy, $namHoc];
         
@@ -400,25 +400,30 @@ class mReport {
         return $this->executeQuery($sql, $params);
     }
     
-    // Lấy danh sách lớp của giáo viên
+    // Lấy danh sách lớp của giáo viên (từ cả GVBM và GVCN)
     public function getDanhSachLopCuaGiaoVien($maGV) {
         $sql = "SELECT DISTINCT lh.maLop, lh.tenLop 
                 FROM lophoc lh 
-                JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
-                    AND pc.maGV = ? 
-                    AND pc.trangThai = 'active'
+                WHERE lh.maLop IN (
+                    SELECT maLop FROM phancong_gvbm WHERE maGV = ? AND trangThai = 'active'
+                    UNION
+                    SELECT maLop FROM phancong_gvcn WHERE maGV = ? AND trangThai = 'active'
+                )
                 ORDER BY lh.tenLop";
-        return $this->executeQuery($sql, [$maGV]);
+        return $this->executeQuery($sql, [$maGV, $maGV]);
     }
     
-    // Lấy danh sách môn học của giáo viên dựa vào phân công giảng dạy
+    // Lấy danh sách môn học của giáo viên dựa vào phân công giảng dạy (cả GVBM và GVCN)
     public function getDanhSachMonHocCuaGiaoVien($maGV) {
         $sql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc 
                 FROM monhoc mh 
-                JOIN phancong_giangday pc ON mh.maMonHoc = pc.maMonHoc 
-                WHERE pc.maGV = ? AND pc.trangThai = 'active'
+                WHERE mh.maMonHoc IN (
+                    SELECT maMonHoc FROM phancong_gvbm WHERE maGV = ? AND trangThai = 'active'
+                    UNION
+                    SELECT maMonHoc FROM phancong_gvcn WHERE maGV = ? AND trangThai = 'active' AND maMonHoc IS NOT NULL
+                )
                 ORDER BY mh.tenMonHoc";
-        return $this->executeQuery($sql, [$maGV]);
+        return $this->executeQuery($sql, [$maGV, $maGV]);
     }
     
     // Lưu báo cáo vào hệ thống

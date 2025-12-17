@@ -22,7 +22,7 @@ class mSubmitExam
     }
 
     /**
-     * Lấy danh sách môn học mà giáo viên đang giảng dạy
+     * Lấy danh sách môn học mà giáo viên đang giảng dạy (cả GVBM và GVCN)
      * @param int $maGV - Mã giáo viên
      * @return array - Danh sách môn học
      */
@@ -30,7 +30,7 @@ class mSubmitExam
     {
         $sql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc 
                 FROM monhoc mh
-                INNER JOIN phancong_giangday pc ON mh.maMonHoc = pc.maMonHoc
+                INNER JOIN v_phancong_giangday pc ON mh.maMonHoc = pc.maMonHoc
                 WHERE pc.maGV = ?
                 ORDER BY mh.tenMonHoc";
         

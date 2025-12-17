@@ -590,10 +590,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                             <th>Lớp</th>
                             <th>Môn học</th>
                             <th>HK</th>
-                            <th>Miệng</th>
-                            <th>15p (1)</th>
-                            <th>15p (2)</th>
-                            <th>1 tiết</th>
+                            <th>TX1</th>
+                            <th>TX2</th>
+                            <th>TX3</th>
+                            <th>TX4</th>
                             <th>Giữa kỳ</th>
                             <th>Cuối kỳ</th>
                             <th>TB</th>
@@ -644,10 +644,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                                 <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
                                 <td style="text-align: left;"><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
                                 <td><?php echo htmlspecialchars($row['hocKy']); ?></td>
-                                <td><?php echo $row['diemMieng'] !== null ? number_format($row['diemMieng'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diem15Phut1'] !== null ? number_format($row['diem15Phut1'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diem15Phut2'] !== null ? number_format($row['diem15Phut2'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diem1Tiet'] !== null ? number_format($row['diem1Tiet'], 1) : '-'; ?></td>
+                                <td><?php echo $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
+                                <td><?php echo $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
+                                <td><?php echo $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
+                                <td><?php echo $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
                                 <td><?php echo $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
                                 <td><?php echo $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
                                 <td class="<?php echo $scoreClass; ?>">

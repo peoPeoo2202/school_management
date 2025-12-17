@@ -343,9 +343,10 @@ class cReport {
             echo '<td>' . htmlspecialchars($row['tenMonHoc']) . '</td>';
             echo '<td>' . $row['hocKy'] . '</td>';
             echo '<td>' . htmlspecialchars($row['namHoc']) . '</td>';
-            echo '<td>' . number_format($row['diemMieng'], 1) . '</td>';
-            echo '<td>' . number_format($row['diem15phut'], 1) . '</td>';
-            echo '<td>' . number_format($row['diem1tiet'], 1) . '</td>';
+            echo '<td>' . number_format($row['diemTX1'], 1) . '</td>';
+            echo '<td>' . number_format($row['diemTX2'], 1) . '</td>';
+            echo '<td>' . number_format($row['diemTX3'], 1) . '</td>';
+            echo '<td>' . number_format($row['diemTX4'], 1) . '</td>';
             echo '<td>' . number_format($row['diemGiuaKy'], 1) . '</td>';
             echo '<td>' . number_format($row['diemCuoiKy'], 1) . '</td>';
             echo '<td>' . number_format($row['diemTrungBinh'], 2) . '</td>';

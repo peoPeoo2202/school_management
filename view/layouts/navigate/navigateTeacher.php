@@ -76,6 +76,35 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
         </li>
 
+        <!-- Gửi yêu cầu (với dropdown) -->
+        <li class="menu-parent">
+            <a href="#" class="menu-item menu-toggle" data-submenu="requests">
+                <i class="fas fa-paper-plane"></i>
+                <span>Gửi yêu cầu</span>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            <ul class="submenu" id="requests-submenu">
+                <li>
+                    <a href="<?php echo url('controller/cTeacherRequest.php?action=grade_correction_form'); ?>" class="submenu-item">
+                        <i class="fas fa-edit"></i>
+                        <span>Yêu cầu sửa điểm</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('controller/cTeacherRequest.php?action=leave_request_form'); ?>" class="submenu-item">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>Xin nghỉ phép</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('controller/cTeacherRequest.php?action=request_list'); ?>" class="submenu-item">
+                        <i class="fas fa-list-alt"></i>
+                        <span>Danh sách yêu cầu</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <!-- Báo cáo & Thống kê (với dropdown) -->
         <li class="menu-parent">
             <a href="#" class="menu-item menu-toggle" data-submenu="reports">

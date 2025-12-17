@@ -500,8 +500,8 @@ if (!isset($_SESSION)) {
                         <div class="info-item" style="margin-top: 15px;">
                             <span class="info-label">Minh chứng</span>
                             <span class="info-value">
-                                <a href="../uploads/reports/<?php echo htmlspecialchars($yeuCau['minhChung']); ?>" 
-                                   target="_blank" class="file-link">
+                                <a href="../controller/download.php?maYeuCau=<?php echo $yeuCau['maYeuCau']; ?>" 
+                                   class="file-link">
                                     📎 <?php echo htmlspecialchars($yeuCau['minhChung']); ?>
                                 </a>
                             </span>

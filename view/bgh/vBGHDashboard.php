@@ -199,7 +199,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 <span class="user-name">
                     <i class="fas fa-user-tie"></i> <?php echo htmlspecialchars($hoTen); ?>
                 </span>
-                <a href="../public/index.php?logout=1" class="logout-btn">
+                <a href="../../public/logout.php" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
                 </a>
             </div>
@@ -220,10 +220,22 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     <p>Xem các báo cáo và thống kê chi tiết về học tập, giảng dạy của nhà trường</p>
                 </a>
 
+                <a href="../../controller/cChonDe.php?action=index" class="quick-link-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>Chọn đề thi</h3>
+                    <p>Chọn và gán các đề thi phù hợp cho các kỳ thi đã được lập sẵn</p>
+                </a>
+
                 <a href="../../controller/cYeuCau.php?action=danhsach" class="quick-link-card">
                     <i class="fas fa-clipboard-check"></i>
                     <h3>Xử lý yêu cầu</h3>
                     <p>Xử lý các yêu cầu nghỉ phép và sửa điểm từ giáo viên</p>
+                </a>
+
+                <a href="vTeachingAssignment.php" class="quick-link-card">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3>Phân công Giảng dạy</h3>
+                    <p>Phân công lớp học, phòng học, giáo viên bộ môn và giáo viên chủ nhiệm</p>
                 </a>
             </div>
         </div>

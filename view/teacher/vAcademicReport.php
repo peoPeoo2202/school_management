@@ -374,10 +374,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <th>Môn học</th>
                                         <th>Học kỳ</th>
                                         <th>Năm học</th>
-                                        <th>Điểm miệng</th>
-                                        <th>Điểm 15p (L1)</th>
-                                        <th>Điểm 15p (L2)</th>
-                                        <th>Điểm 1 tiết</th>
+                                        <th>Điểm TX1</th>
+                                        <th>Điểm TX2</th>
+                                        <th>Điểm TX3</th>
+                                        <th>Điểm TX4</th>
                                         <th>Điểm giữa kỳ</th>
                                         <th>Điểm cuối kỳ</th>
                                         <th>Điểm TB</th>
@@ -418,10 +418,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
                                             <td><?php echo $row['hocKy']; ?></td>
                                             <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
-                                            <td><?php echo isset($row['diemMieng']) && $row['diemMieng'] !== null ? number_format($row['diemMieng'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diem15Phut1']) && $row['diem15Phut1'] !== null ? number_format($row['diem15Phut1'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diem15Phut2']) && $row['diem15Phut2'] !== null ? number_format($row['diem15Phut2'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diem1Tiet']) && $row['diem1Tiet'] !== null ? number_format($row['diem1Tiet'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemTX1']) && $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemTX2']) && $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemTX3']) && $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
+                                            <td><?php echo isset($row['diemTX4']) && $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
                                             <td><?php echo isset($row['diemGiuaKy']) && $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
                                             <td><?php echo isset($row['diemCuoiKy']) && $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
                                             <td><strong><?php echo number_format($diemTB, 2); ?></strong></td>
