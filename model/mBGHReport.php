@@ -95,10 +95,10 @@ class mBGHReport {
                     mh.tenMonHoc,
                     bd.hocKy,
                     bd.namHoc,
-                    bd.diemMieng,
-                    bd.diem15Phut1,
-                    bd.diem15Phut2,
-                    bd.diem1Tiet,
+                    bd.diemTX1,
+                    bd.diemTX2,
+                    bd.diemTX3,
+                    bd.diemTX4,
                     bd.diemGiuaKy,
                     bd.diemCuoiKy,
                     bd.tbDiem as diemTrungBinh,
@@ -113,18 +113,21 @@ class mBGHReport {
                     END as xepLoai,
                     gv.hoTen as tenGiaoVien,
                     gv.toBoMon
-                FROM lophoc lh
-                JOIN hocsinh hs ON hs.maLop = lh.maLop
+                FROM hocsinh hs
+                JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
                 LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS
                 LEFT JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
-                LEFT JOIN phancong_giangday pc ON pc.maLop = lh.maLop 
+                LEFT JOIN (
+                    SELECT DISTINCT maLop, maMonHoc, maGV, hocKy, namHoc
+                    FROM v_phancong_giangday
+                    WHERE trangThai = 'Hoan_thanh'
+                ) pc ON pc.maLop = lh.maLop 
                     AND pc.maMonHoc = bd.maMonHoc 
                     AND pc.hocKy = bd.hocKy 
                     AND pc.namHoc = bd.namHoc
-                    AND pc.trangThai = 'active'
                 LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                WHERE 1=1";
+                WHERE bd.maBangDiem IS NOT NULL";
         
         $params = [];
         
@@ -256,12 +259,11 @@ class mBGHReport {
                     COALESCE(SUM(bd.soTietDay), 0) as soTietDaDay,
                     (kh.tongSoTietKeHoach - COALESCE(SUM(bd.soTietDay), 0)) as soTietConLai,
                     ROUND((COALESCE(SUM(bd.soTietDay), 0) / kh.tongSoTietKeHoach * 100), 2) as tyLeHoanThanh,
-                    COUNT(DISTINCT hs.maHS) as siSo
+                    lh.siSo
                 FROM kehoach_giangday kh
                 JOIN giaovien gv ON kh.maGV = gv.maGV
                 JOIN lophoc lh ON kh.maLop = lh.maLop
                 JOIN monhoc mh ON kh.maMonHoc = mh.maMonHoc
-                LEFT JOIN hocsinh hs ON hs.maLop = lh.maLop
                 LEFT JOIN buoiday_thucte bd ON bd.maGV = kh.maGV 
                     AND bd.maLop = kh.maLop 
                     AND bd.maMonHoc = kh.maMonHoc
@@ -287,7 +289,7 @@ class mBGHReport {
             $params[] = $namHoc;
         }
         
-        $sql .= " GROUP BY gv.maGV, gv.hoTen, gv.toBoMon, lh.tenLop, mh.tenMonHoc, kh.hocKy, kh.namHoc, kh.tongSoTietKeHoach
+        $sql .= " GROUP BY gv.maGV, gv.hoTen, gv.toBoMon, lh.tenLop, mh.tenMonHoc, kh.hocKy, kh.namHoc, kh.tongSoTietKeHoach, lh.siSo
                   ORDER BY gv.hoTen, lh.tenLop";
         
         return $this->executeQuery($sql, $params);

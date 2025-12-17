@@ -2,6 +2,7 @@
 if (!isset($_SESSION)) {
     session_start();
 }
+require_once(__DIR__ . '/../../config.php');
 ?>
 
 <!DOCTYPE html>
@@ -421,6 +422,7 @@ if (!isset($_SESSION)) {
                         <th>Mô tả</th>
                         <th>Ngày gửi</th>
                         <th>Trạng thái</th>
+                        <th>Minh chứng</th>
                         <th>Người xử lý</th>
                         <th>Thao tác</th>
                     </tr>
@@ -452,6 +454,16 @@ if (!isset($_SESSION)) {
                                         <span class="badge badge-rejected">Đã từ chối</span>
                                     <?php endif; ?>
                                 </td>
+                                <td style="text-align: center;">
+                                    <?php if (!empty($yc['minhChung'])): ?>
+                                        <a href="<?php echo CONTROLLER_URL; ?>/download.php?maYeuCau=<?php echo $yc['maYeuCau']; ?>" 
+                                           class="btn-view" style="background: #10b981;" title="Tải xuống">
+                                            📥 Tải về
+                                        </a>
+                                    <?php else: ?>
+                                        <span style="color: #9ca3af;">Không có</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?php echo $yc['nguoiXuLy'] ? htmlspecialchars($yc['nguoiXuLy']) : '-'; ?></td>
                                 <td>
                                     <a href="?action=chitiet&maYeuCau=<?php echo $yc['maYeuCau']; ?>" class="btn-view">
@@ -462,7 +474,7 @@ if (!isset($_SESSION)) {
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="8" class="no-data">
+                            <td colspan="9" class="no-data">
                                 Không có yêu cầu nào
                             </td>
                         </tr>

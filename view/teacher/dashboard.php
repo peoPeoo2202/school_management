@@ -13,6 +13,45 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
+// Xử lý routing cho các chức năng yêu cầu
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+if (in_array($action, ['yeucau', 'danhsachyeucau', 'chitietyeucau', 'xulysuadiem', 'xulynghiphep', 'download'])) {
+    require_once(__DIR__ . '/../../controller/cTeacherRequest.php');
+    $controller = new ControllerTeacherRequest();
+    
+    switch ($action) {
+        case 'yeucau':
+            $type = isset($_GET['type']) ? $_GET['type'] : 'suadiem';
+            if ($type == 'suadiem') {
+                $controller->formSuaDiem();
+            } else if ($type == 'nghiphep') {
+                $controller->formNghiPhep();
+            }
+            exit();
+            
+        case 'danhsachyeucau':
+            $controller->danhSachYeuCau();
+            exit();
+            
+        case 'chitietyeucau':
+            $controller->chiTietYeuCau();
+            exit();
+            
+        case 'xulysuadiem':
+            $controller->xuLyGuiYeuCauSuaDiem();
+            exit();
+            
+        case 'xulynghiphep':
+            $controller->xuLyGuiYeuCauNghiPhep();
+            exit();
+            
+        case 'download':
+            $controller->downloadMinhChung();
+            exit();
+    }
+}
+
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 $tenDangNhap = $_SESSION['tenDangNhap'] ?? '';
@@ -316,6 +355,32 @@ $maGV = $_SESSION['maGV'] ?? null;
                         <a href="<?php echo url('view/teacher/vAssignHomework.php'); ?>" class="quick-link">
                             <i class="fas fa-clipboard-list"></i>
                             <span>Giao bài tập</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Gửi yêu cầu -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+                        </h2>
+                        <a href="dashboard.php?action=danhsachyeucau" class="view-link">
+                            Xem danh sách <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="quick-links">
+                        <a href="dashboard.php?action=yeucau&type=suadiem" class="quick-link">
+                            <i class="fas fa-edit"></i>
+                            <span>Yêu cầu sửa điểm</span>
+                        </a>
+                        <a href="dashboard.php?action=yeucau&type=nghiphep" class="quick-link">
+                            <i class="fas fa-calendar-times"></i>
+                            <span>Yêu cầu nghỉ phép</span>
+                        </a>
+                        <a href="dashboard.php?action=danhsachyeucau" class="quick-link">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Danh sách yêu cầu đã gửi</span>
                         </a>
                     </div>
                 </div>
