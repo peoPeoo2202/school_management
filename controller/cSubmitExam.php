@@ -29,15 +29,18 @@ class cSubmitExam
      */
     public function handleAddExam()
     {
-        session_start();
-        
-        // Kiểm tra đăng nhập
-        if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-            return [
-                'success' => false,
-                'message' => 'Vui lòng đăng nhập!'
-            ];
-        }
+        try {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            // Kiểm tra đăng nhập
+            if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+                return [
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập!'
+                ];
+            }
 
         // Kiểm tra quyền giáo viên
         if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
@@ -90,8 +93,15 @@ class cSubmitExam
             $data['file'] = $_FILES['file'];
         }
 
-        // Gọi model để thêm đề thi
-        return $this->model->addExam($data);
+            // Gọi model để thêm đề thi
+            return $this->model->addExam($data);
+        } catch (Exception $e) {
+            error_log('Error in handleAddExam: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -115,9 +125,12 @@ class cSubmitExam
      */
     public function handleUpdateExam($maDeThi)
     {
-        session_start();
-        
-        // Kiểm tra đăng nhập
+        try {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            // Kiểm tra đăng nhập
         if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
             return [
                 'success' => false,
@@ -176,8 +189,15 @@ class cSubmitExam
             $data['file'] = $_FILES['file'];
         }
 
-        // Gọi model để cập nhật
-        return $this->model->updateExam($maDeThi, $data);
+            // Gọi model để cập nhật
+            return $this->model->updateExam($maDeThi, $data);
+        } catch (Exception $e) {
+            error_log('Error in handleUpdateExam: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -185,9 +205,12 @@ class cSubmitExam
      */
     public function handleDeleteExam($maDeThi)
     {
-        session_start();
-        
-        // Kiểm tra đăng nhập
+        try {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            
+            // Kiểm tra đăng nhập
         if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
             return [
                 'success' => false,
@@ -211,8 +234,15 @@ class cSubmitExam
             ];
         }
 
-        // Gọi model để xóa
-        return $this->model->deleteExam($maDeThi, $maGV);
+            // Gọi model để xóa
+            return $this->model->deleteExam($maDeThi, $maGV);
+        } catch (Exception $e) {
+            error_log('Error in handleDeleteExam: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -220,7 +250,9 @@ class cSubmitExam
      */
     public function handleDownload($maDeThi)
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         
         // Kiểm tra đăng nhập
         if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -279,7 +311,9 @@ class cSubmitExam
      */
     public function handleView($maDeThi)
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         
         // Kiểm tra đăng nhập
         if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -344,51 +378,68 @@ class cSubmitExam
 
 // Xử lý các action từ request - chỉ chạy khi được gọi trực tiếp
 if (basename($_SERVER['PHP_SELF']) === 'cSubmitExam.php' && isset($_GET['action'])) {
+    // Ngăn chặn tất cả output không mong muốn (errors, warnings, notices)
+    ob_start();
+    
+    // Tắt hiển thị lỗi ra màn hình (chỉ log)
+    ini_set('display_errors', '0');
+    error_reporting(E_ALL);
+    
     $controller = new cSubmitExam();
     $action = $_GET['action'];
 
     switch ($action) {
         case 'add':
+            // Clear bất kỳ output buffer nào trước đó
+            ob_clean();
             $result = $controller->handleAddExam();
-            header('Content-Type: application/json');
-            echo json_encode($result);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($result, JSON_UNESCAPED_UNICODE);
             break;
 
         case 'update':
             if (isset($_GET['id'])) {
+                ob_clean();
                 $result = $controller->handleUpdateExam(intval($_GET['id']));
-                header('Content-Type: application/json');
-                echo json_encode($result);
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
             }
             break;
 
         case 'delete':
             if (isset($_GET['id'])) {
+                ob_clean();
                 $result = $controller->handleDeleteExam(intval($_GET['id']));
-                header('Content-Type: application/json');
-                echo json_encode($result);
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
             }
             break;
 
         case 'download':
             if (isset($_GET['id'])) {
+                ob_end_clean(); // Clear buffer trước khi download file
                 $controller->handleDownload(intval($_GET['id']));
             }
             break;
 
         case 'view':
             if (isset($_GET['id'])) {
+                ob_end_clean(); // Clear buffer trước khi view file
                 $controller->handleView(intval($_GET['id']));
             }
             break;
 
         default:
-            header('Content-Type: application/json');
+            ob_clean();
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'success' => false,
                 'message' => 'Action không hợp lệ!'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
     }
+    
+    // Kết thúc output buffering và gửi response
+    ob_end_flush();
     exit;
 }
 ?>

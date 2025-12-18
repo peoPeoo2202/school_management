@@ -103,10 +103,16 @@ class ControllerStudentClassification {
                 // Lấy bảng hạnh kiểm chi tiết
                 $students = $this->model->getStudentConductDetail($maLop, $hocKy, $namHoc);
                 
-                // Tính xếp loại hạnh kiểm cho từng học sinh
+                // Tính xếp loại hạnh kiểm CHỈ KHI học sinh có xếp loại học lực
                 foreach ($students as &$student) {
-                    $ranking = $this->model->calculateConductRanking($student['maHS'], $hocKy, $namHoc);
-                    $student['conductRanking'] = $ranking;
+                    // Chỉ tự động tính hạnh kiểm khi có xếp loại học lực
+                    if ($student['loaiHocLuc'] !== null && $student['loaiHocLuc'] !== '') {
+                        $ranking = $this->model->calculateConductRanking($student['maHS'], $hocKy, $namHoc);
+                        $student['conductRanking'] = $ranking;
+                    } else {
+                        // Nếu chưa có học lực, không tự động tính hạnh kiểm
+                        $student['conductRanking'] = null;
+                    }
                 }
                 
                 return ['students' => $students];

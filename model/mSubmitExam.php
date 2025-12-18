@@ -56,11 +56,16 @@ class mSubmitExam
     public function getTeacherMainSubject($maGV)
     {
         $sql = "SELECT maMonHoc 
-                FROM phancong_giangday 
+                FROM phancong_gvbm 
                 WHERE maGV = ? AND trangThai = 'active' 
                 LIMIT 1";
         
         $stmt = mysqli_prepare($this->conn, $sql);
+        if (!$stmt) {
+            error_log("SQL Error in getTeacherMainSubject: " . mysqli_error($this->conn));
+            return null;
+        }
+        
         mysqli_stmt_bind_param($stmt, "i", $maGV);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);

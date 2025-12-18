@@ -344,17 +344,29 @@ class ModelStudentClassification {
                     COALESCE(hk.soLanViPhamTB, 0) as soLanViPhamTB,
                     COALESCE(hk.soLanViPhamNang, 0) as soLanViPhamNang,
                     hk.loaiHK as hanhKiem,
-                    hl.loaiHocLuc,
+                    (
+                        SELECT 
+                            CASE 
+                                WHEN COUNT(*) < ? THEN NULL
+                                WHEN COUNT(*) = 0 THEN NULL
+                                WHEN AVG(bd.tbDiem) >= 8.0 AND SUM(CASE WHEN bd.tbDiem >= 6.5 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 8.0 THEN 1 ELSE 0 END) >= 6 THEN 'Tốt'
+                                WHEN AVG(bd.tbDiem) >= 6.5 AND SUM(CASE WHEN bd.tbDiem >= 5.0 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 6.5 THEN 1 ELSE 0 END) >= 6 THEN 'Khá'
+                                WHEN AVG(bd.tbDiem) >= 5.0 AND SUM(CASE WHEN bd.tbDiem >= 3.5 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 5.0 THEN 1 ELSE 0 END) >= 6 THEN 'Đạt'
+                                WHEN COUNT(*) >= ? THEN 'Chưa đạt'
+                                ELSE NULL
+                            END
+                        FROM bangdiem bd 
+                        WHERE bd.maHS = hs.maHS AND bd.hocKy = ? AND bd.namHoc = ? AND bd.tbDiem IS NOT NULL
+                    ) as loaiHocLuc,
                     hk.nhanXet,
                     (SELECT COUNT(*) FROM bangdiem bd WHERE bd.maHS = hs.maHS AND bd.hocKy = ? AND bd.namHoc = ? AND bd.tbDiem IS NOT NULL) as soMonCoDiem
                 FROM hocsinh hs
                 LEFT JOIN hanhkiem hk ON hs.maHS = hk.maHS AND hk.hocKy = ? AND hk.namHoc = ?
-                LEFT JOIN hocluc hl ON hs.maHS = hl.maHS AND hl.namHoc = ?
                 WHERE hs.maLop = ?
                 ORDER BY hs.hoTen";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("isissi", $hocKy, $namHoc, $hocKy, $namHoc, $namHoc, $maLop);
+        $stmt->bind_param("iiisisisi", $totalSubjects, $totalSubjects, $hocKy, $namHoc, $hocKy, $namHoc, $hocKy, $namHoc, $maLop);
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -1002,15 +1014,39 @@ class ModelStudentClassification {
         }
         $stmt->close();
         
+        // Đếm tổng số môn học trong khối để biết học sinh cần có đủ bao nhiêu môn
+        $countMonSql = "SELECT COUNT(DISTINCT mh.maMonHoc) as totalSubjects
+                        FROM monhoc mh
+                        JOIN lophoc l ON l.maLop = ?
+                        JOIN khoi k ON l.maKhoi = k.maKhoi";
+        $stmtCount = $this->conn->prepare($countMonSql);
+        $stmtCount->bind_param("i", $maLop);
+        $stmtCount->execute();
+        $resultCount = $stmtCount->get_result();
+        $totalSubjects = $resultCount->fetch_assoc()['totalSubjects'] ?? 10;
+        $stmtCount->close();
+        
         // Bước 2: Với mỗi học sinh, lấy thông tin bổ sung
         foreach ($students as &$student) {
             $maHS = $student['maHS'];
             
-            // Học lực
-            $sql2 = "SELECT loaiHocLuc FROM hocluc WHERE maHS = ? AND namHoc = ? LIMIT 1";
+            // Học lực - Tính theo học kỳ cụ thể từ bảng bangdiem, CHỈ KHI CÓ ĐỦ ĐIỂM
+            $sql2 = "SELECT 
+                        COUNT(*) as soMonCoDiem,
+                        CASE 
+                            WHEN COUNT(*) < ? THEN NULL
+                            WHEN COUNT(*) = 0 THEN NULL
+                            WHEN AVG(bd.tbDiem) >= 8.0 AND SUM(CASE WHEN bd.tbDiem >= 6.5 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 8.0 THEN 1 ELSE 0 END) >= 6 THEN 'Tốt'
+                            WHEN AVG(bd.tbDiem) >= 6.5 AND SUM(CASE WHEN bd.tbDiem >= 5.0 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 6.5 THEN 1 ELSE 0 END) >= 6 THEN 'Khá'
+                            WHEN AVG(bd.tbDiem) >= 5.0 AND SUM(CASE WHEN bd.tbDiem >= 3.5 THEN 1 ELSE 0 END) = COUNT(*) AND SUM(CASE WHEN bd.tbDiem >= 5.0 THEN 1 ELSE 0 END) >= 6 THEN 'Đạt'
+                            WHEN COUNT(*) >= ? THEN 'Chưa đạt'
+                            ELSE NULL
+                        END as loaiHocLuc
+                     FROM bangdiem bd 
+                     WHERE bd.maHS = ? AND bd.hocKy = ? AND bd.namHoc = ? AND bd.tbDiem IS NOT NULL";
             $stmt2 = $this->conn->prepare($sql2);
             if ($stmt2) {
-                $stmt2->bind_param("is", $maHS, $namHoc);
+                $stmt2->bind_param("iiiis", $totalSubjects, $totalSubjects, $maHS, $hocKy, $namHoc);
                 $stmt2->execute();
                 $res2 = $stmt2->get_result();
                 $row2 = $res2->fetch_assoc();
@@ -1018,27 +1054,24 @@ class ModelStudentClassification {
                 $stmt2->close();
             }
             
-            // Hạnh kiểm - Lấy theo HỌC KỲ được chỉ định (không phải học kỳ cao nhất)
-            $sql3 = "SELECT loaiHK FROM hanhkiem 
-                     WHERE maHS = ? AND namHoc = ? AND hocKy = ?
-                     LIMIT 1";
-            $stmt3 = $this->conn->prepare($sql3);
-            if ($stmt3) {
-                $stmt3->bind_param("isi", $maHS, $namHoc, $hocKy);
-                if ($stmt3->execute()) {
-                    $res3 = $stmt3->get_result();
-                    $row3 = $res3->fetch_assoc();
-                    if ($row3) {
-                        $student['hanhKiem'] = $row3['loaiHK'];
-                    } else {
-                        $student['hanhKiem'] = null;
+            // Hạnh kiểm - CHỈ LẤY KHI HỌC SINH ĐÃ CÓ HỌC LỰC
+            $student['hanhKiem'] = null;
+            if ($student['loaiHocLuc'] !== null) {
+                $sql3 = "SELECT loaiHK FROM hanhkiem 
+                         WHERE maHS = ? AND namHoc = ? AND hocKy = ?
+                         LIMIT 1";
+                $stmt3 = $this->conn->prepare($sql3);
+                if ($stmt3) {
+                    $stmt3->bind_param("isi", $maHS, $namHoc, $hocKy);
+                    if ($stmt3->execute()) {
+                        $res3 = $stmt3->get_result();
+                        $row3 = $res3->fetch_assoc();
+                        if ($row3) {
+                            $student['hanhKiem'] = $row3['loaiHK'];
+                        }
                     }
-                } else {
-                    $student['hanhKiem'] = null;
+                    $stmt3->close();
                 }
-                $stmt3->close();
-            } else {
-                $student['hanhKiem'] = null;
             }
             
             // Tính toán danh hiệu DỰA TRÊN học lực và hạnh kiểm HIỆN TẠI

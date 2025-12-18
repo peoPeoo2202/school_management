@@ -35,12 +35,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'getDetail' && isset($_GET['maH
 $maLop = isset($_GET['maLop']) ? $_GET['maLop'] : null;
 $data = $controller->showStudents($maLop);
 
-// Kiểm tra lỗi
-if (isset($data['error'])) {
-    echo "<script>alert('" . $data['error'] . "'); window.location.href='dashboard.php';</script>";
-    exit();
-}
-
 // Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
@@ -576,7 +570,8 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                         </h2>
                     </div>
                     <div class="error-message">
-                        <strong>⚠️ Lỗi:</strong> <?php echo htmlspecialchars($data['error']); ?>
+                        <!-- <strong>⚠️ Lỗi:</strong>  -->
+                        <?php echo htmlspecialchars($data['error']); ?>
                     </div>
                 <?php else: ?>
                     <div class="card-header">

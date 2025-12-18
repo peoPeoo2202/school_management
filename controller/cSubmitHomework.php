@@ -43,22 +43,16 @@ class cSubmitHomework {
         $currentTime = time();
         $isOverdue = $currentTime > $deadline;
         
-        // Nếu quá hạn và KHÔNG cho phép nộp trễ
-        if ($isOverdue && $homework['choPhepNopTre'] != 1) {
-            // Nếu đã nộp rồi -> không cho nộp lại
-            if ($existingSubmission) {
+        // Nếu quá hạn: kiểm tra có cho phép nộp trễ không
+        if ($isOverdue) {
+            // Nếu KHÔNG cho phép nộp trễ -> CHẶN
+            if (!isset($homework['choPhepNopTre']) || $homework['choPhepNopTre'] != 1) {
                 return [
                     'success' => false, 
-                    'message' => 'Bài tập đã hết hạn! Bạn đã nộp bài vào lúc ' . date('d/m/Y H:i', strtotime($existingSubmission['ngayNop'])) . ' và không thể nộp lại sau khi quá hạn.'
+                    'message' => 'Bài tập đã hết hạn nộp (Hạn: ' . date('d/m/Y H:i', $deadline) . '). Bài tập này không cho phép nộp trễ!'
                 ];
             }
-            // Nếu chưa nộp -> không cho nộp lần đầu
-            else {
-                return [
-                    'success' => false, 
-                    'message' => 'Bài tập đã hết hạn nộp (Hạn: ' . date('d/m/Y H:i', $deadline) . '). Không được phép nộp trễ!'
-                ];
-            }
+            // Nếu cho phép nộp trễ -> CHO PHÉP tiếp tục (không return)
         }
         
         // Xử lý upload file

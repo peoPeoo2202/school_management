@@ -43,9 +43,25 @@ class mAssignHomework {
 
     // Lấy môn học mà giáo viên dạy cho lớp (tự động xác định)
     public function getTeacherSubjectForClass($maGV, $maLop) {
+        // Ưu tiên tìm từ phancong_gvbm (giáo viên bộ môn) trước
         $sql = "SELECT maMonHoc 
-                FROM phancong_giangday 
+                FROM phancong_gvbm 
                 WHERE maGV = ? AND maLop = ? AND trangThai = 'active' 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $maGV, $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($row = $result->fetch_assoc()) {
+            return $row['maMonHoc'];
+        }
+        
+        // Nếu không tìm thấy, tìm từ phancong_gvcn (giáo viên chủ nhiệm)
+        $sql = "SELECT maMonHoc 
+                FROM phancong_gvcn 
+                WHERE maGV = ? AND maLop = ? AND trangThai = 'active' AND maMonHoc IS NOT NULL
                 LIMIT 1";
         
         $stmt = $this->conn->prepare($sql);

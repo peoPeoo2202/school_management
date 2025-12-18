@@ -778,7 +778,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <?php if (isset($data['error'])): ?>
                 <div class="card">
                     <div class="alert alert-error">
-                        <strong>⚠️ Lỗi:</strong> <?php echo htmlspecialchars($data['error']); ?>
+                        <!-- <strong>⚠️ Lỗi:</strong>  -->
+                        <?php echo htmlspecialchars($data['error']); ?>
                     </div>
                 </div>
             <?php else: ?>
@@ -803,14 +804,23 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <input type="hidden" id="namHoc" value="<?php echo $data['namHoc']; ?>">
                     </div>
 
-                    <div class="filter-section">
-                        <!-- Chọn học kỳ -->
-                        <div class="form-group">
-                            <label for="hocKy"><i class="fas fa-calendar-alt"></i> Học kỳ đánh giá xếp loại</label>
-                            <select name="hocKy" id="hocKy" class="form-control" onchange="loadData()">
-                                <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                            </select>
+                    <!-- Chọn học kỳ đánh giá -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                        <div style="margin-bottom: 0;">
+                            <label for="hocKy" style="font-size: 16px; color: white; margin-bottom: 12px; display: block; font-weight: 600;">
+                                <i class="fas fa-calendar-check" style="margin-right: 8px;"></i>
+                                Học kỳ đánh giá xếp loại
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 15px; background: white; padding: 12px 15px; border-radius: 8px; width: fit-content;">
+                                <select name="hocKy" id="hocKy" onchange="loadData()" 
+                                    style="border: 2px solid #667eea; border-radius: 6px; padding: 10px 40px 10px 15px; font-size: 15px; font-weight: 600; color: #2c3e50; cursor: pointer; background: white; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;12&quot; height=&quot;12&quot; viewBox=&quot;0 0 12 12&quot;><path fill=&quot;%23667eea&quot; d=&quot;M6 9L1 4h10z&quot;/></svg>'); background-repeat: no-repeat; background-position: right 12px center;">
+                                    <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>📚 Học kỳ 1</option>
+                                    <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>📚 Học kỳ 2</option>
+                                </select>
+                                <span style="font-size: 13px; color: #667eea; font-style: italic;">
+                                    <i class="fas fa-info-circle"></i> Áp dụng cho tất cả các tab
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -1279,9 +1289,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 const globalIndex = startIndex + index + 1;
                 
                 // Lấy giá trị xếp loại: Ưu tiên DB, nếu không có thì lấy từ tính toán tự động
+                // CHỈ HIỂN THỊ XẾP LOẠI TỰ ĐỘNG NẾU HỌC SINH ĐÃ CÓ HỌC LỰC
                 let currentRanking = student.hanhKiem;
                 
-                if (!currentRanking && student.conductRanking && student.conductRanking.ranking) {
+                if (!currentRanking && student.loaiHocLuc && student.conductRanking && student.conductRanking.ranking) {
                     currentRanking = student.conductRanking.ranking;
                 }
                 

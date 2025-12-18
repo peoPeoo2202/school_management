@@ -2,6 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once(__DIR__ . "/../config.php");
 include_once(__DIR__ . "/../model/mInsertGrade.php");
 include_once(__DIR__ . "/../model/mTeacher.php");
 
@@ -44,7 +45,21 @@ class cInsertGrade
         
         if (empty($subjects)) {
             $_SESSION['error'] = "Bạn chưa được phân công dạy môn học nào!";
-            header("Location: dashboard.php");
+            // Nếu được gọi từ view, set biến để hiển thị thông báo
+            if (defined('INCLUDED_FROM_VIEW')) {
+                $GLOBALS['subjects'] = [];
+                $GLOBALS['classes'] = [];
+                $GLOBALS['students'] = [];
+                $GLOBALS['selectedSubject'] = null;
+                $GLOBALS['subjectName'] = '';
+                $GLOBALS['years'] = [];
+                $GLOBALS['selectedClass'] = null;
+                $GLOBALS['selectedHocKy'] = 1;
+                $GLOBALS['selectedNamHoc'] = date('Y');
+                $GLOBALS['className'] = '';
+                return;
+            }
+            header("Location: " . url('view/teacher/dashboard.php'));
             exit();
         }
         
@@ -95,7 +110,7 @@ class cInsertGrade
             // Kiểm tra quyền
             if (!$this->model->checkTeacherPermission($maGV, $selectedClass, $selectedSubject)) {
                 $_SESSION['error'] = "Bạn không có quyền nhập điểm cho lớp này!";
-                header("Location: cInsertGrade.php");
+                header("Location: " . url('view/teacher/vInsertGrade.php'));
                 exit();
             }
             
@@ -134,7 +149,7 @@ class cInsertGrade
         $this->checkTeacherAccess();
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header("Location: index.php?page=insertGrade");
+            header("Location: " . url('view/teacher/vInsertGrade.php'));
             exit();
         }
         
@@ -147,14 +162,14 @@ class cInsertGrade
         // Validate dữ liệu cơ bản
         if (!$maMonHoc || !$maLop || !$namHoc) {
             $_SESSION['error'] = "Dữ liệu không hợp lệ!";
-            header("Location: index.php?page=insertGrade");
+            header("Location: " . url('view/teacher/vInsertGrade.php'));
             exit();
         }
         
         // Kiểm tra quyền
         if (!$this->model->checkTeacherPermission($maGV, $maLop, $maMonHoc)) {
             $_SESSION['error'] = "Bạn không có quyền nhập điểm cho lớp này!";
-            header("Location: index.php?page=insertGrade");
+            header("Location: " . url('view/teacher/vInsertGrade.php'));
             exit();
         }
         
@@ -239,8 +254,8 @@ class cInsertGrade
             $_SESSION['error'] = "Không có dữ liệu nào được thay đổi!";
         }
         
-        // Redirect về view với các tham số đã chọn (dùng relative URL từ browser)
-        header("Location: ../../view/teacher/vInsertGrade.php?maLop=$maLop&hocKy=$hocKy&namHoc=$namHoc");
+        // Redirect về view với các tham số đã chọn
+        header("Location: " . url("view/teacher/vInsertGrade.php?maLop=$maLop&hocKy=$hocKy&namHoc=$namHoc"));
         exit();
     }
 

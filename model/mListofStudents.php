@@ -10,13 +10,18 @@ class ModelListofStudents {
      * Lấy danh sách lớp của giáo viên chủ nhiệm
      */
     public function getClassesByTeacher($maGV) {
-        $sql = "SELECT l.maLop, l.tenLop, l.siSo, l.namHoc, k.khoiLop
-                FROM lophoc l
+        $sql = "SELECT DISTINCT l.maLop, l.tenLop, l.siSo, l.namHoc, k.khoiLop
+                FROM phancong_gvcn pc
+                INNER JOIN lophoc l ON pc.maLop = l.maLop
                 LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
-                WHERE l.maGV = ?
+                WHERE pc.maGV = ? AND pc.trangThai = 'active'
                 ORDER BY l.tenLop";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error in getClassesByTeacher: " . $this->conn->error);
+            return [];
+        }
         $stmt->bind_param("i", $maGV);
         $stmt->execute();
         $result = $stmt->get_result();
