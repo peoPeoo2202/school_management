@@ -44,8 +44,17 @@ class ControllerListofStudents {
         // Lấy thông tin lớp
         $classInfo = $this->model->getClassInfo($maLop);
         
-        // Kiểm tra giáo viên có phải là GVCN của lớp này không
-        if (!$classInfo || $classInfo['maGV'] != $maGV) {
+        // Kiểm tra giáo viên có phải là GVCN của lớp này không (qua bảng phancong_gvcn)
+        $classes = $this->model->getClassesByTeacher($maGV);
+        $hasAccess = false;
+        foreach ($classes as $class) {
+            if ($class['maLop'] == $maLop) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        
+        if (!$classInfo || !$hasAccess) {
             return ['error' => 'Bạn không có quyền xem danh sách học sinh của lớp này'];
         }
         
@@ -96,8 +105,16 @@ class ControllerListofStudents {
         }
         
         // Kiểm tra quyền truy cập (chỉ GVCN của lớp mới được xem)
-        $classInfo = $this->model->getClassInfo($studentInfo['maLop']);
-        if (!$classInfo || $classInfo['maGV'] != $maGV) {
+        $classes = $this->model->getClassesByTeacher($maGV);
+        $hasAccess = false;
+        foreach ($classes as $class) {
+            if ($class['maLop'] == $studentInfo['maLop']) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        
+        if (!$hasAccess) {
             return ['error' => 'Bạn không có quyền xem thông tin học sinh này'];
         }
         

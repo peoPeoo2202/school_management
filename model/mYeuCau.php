@@ -516,13 +516,13 @@ class ModelYeuCau {
      */
     public function layMonHocCuaGV($maGV) {
         try {
-            // Lấy môn học từ VIEW v_phancong_giangday (kết hợp cả GVBM và GVCN)
+            // Lấy môn học từ bảng phancong_gvcn
             $sql = "SELECT DISTINCT 
                         pc.maMonHoc,
                         mh.tenMonHoc
-                    FROM v_phancong_giangday pc
+                    FROM phancong_gvcn pc
                     JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
-                    WHERE pc.maGV = ?
+                    WHERE pc.maGV = ? AND pc.trangThai = 'active'
                     ORDER BY mh.tenMonHoc";
             
             return $this->executeQuery($sql, [$maGV]);
@@ -537,13 +537,13 @@ class ModelYeuCau {
      */
     public function layHocSinhTheoMon($maGV, $maMonHoc, $hocKy, $namHoc) {
         try {
-            // Lấy học sinh từ các lớp mà giáo viên được phân công dạy (cả GVBM và GVCN)
+            // Lấy học sinh từ các lớp mà giáo viên được phân công dạy
             $sql = "SELECT DISTINCT 
                         hs.maHS,
                         hs.hoTen,
                         l.tenLop,
                         bd.maBangDiem
-                    FROM v_phancong_giangday pc
+                    FROM phancong_gvcn pc
                     INNER JOIN lophoc l ON pc.maLop = l.maLop
                     INNER JOIN hocsinh hs ON l.maLop = hs.maLop
                     LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS 
@@ -554,6 +554,7 @@ class ModelYeuCau {
                         AND pc.maMonHoc = ?
                         AND pc.hocKy = ?
                         AND pc.namHoc = ?
+                        AND pc.trangThai = 'active'
                         AND bd.maBangDiem IS NOT NULL
                     ORDER BY l.tenLop, hs.hoTen";
             

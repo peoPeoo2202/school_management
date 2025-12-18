@@ -153,6 +153,33 @@ class mParent
     }
 
     /**
+     * Lấy thông tin phụ huynh theo tên đăng nhập
+     * Lấy maPH từ tenDangNhap (vd: ph8001 -> maPH = 8001)
+     */
+    public function getParentInfoByAccount($tenDangNhap)
+    {
+        // Trích xuất maPH từ tenDangNhap (ph8001 -> 8001)
+        if (preg_match('/^ph(\d+)$/', $tenDangNhap, $matches)) {
+            $maPH = (int)$matches[1];
+            
+            // Query trực tiếp từ bảng phuhuynh theo maPH
+            $sql = "SELECT ph.*, tk.tenDangNhap, tk.trangThaiTaiKhoan 
+                    FROM phuhuynh ph
+                    LEFT JOIN taikhoan tk ON tk.tenDangNhap = ?
+                    WHERE ph.maPH = ?";
+            
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("si", $tenDangNhap, $maPH);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            return $result;
+        }
+        
+        return null;
+    }
+
+    /**
      * Lấy danh sách học sinh của phụ huynh
      */
     public function getStudentsByParent($maPH)
@@ -161,7 +188,8 @@ class mParent
                 FROM hocsinh hs
                 LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi kh ON lh.maKhoi = kh.maKhoi
-                WHERE hs.maPH = ?";
+                WHERE hs.maPH = ?
+                ORDER BY hs.hoTen";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $maPH);

@@ -106,35 +106,30 @@ class mSubmitHomework {
             return []; // Không tìm thấy lớp
         }
         
-        // Lấy TẤT CẢ môn học trong hệ thống và thông tin bài tập của lớp đó
-        // Đếm bài tập dựa trên bảng baitap (không cần phân công giảng dạy)
-        // Logic quá hạn: Tính TẤT CẢ bài đã qua deadline
-        $sql = "SELECT DISTINCT 
+        // Lấy TẤT CẢ môn học và đếm số bài tập cho lớp của học sinh
+        // Hiển thị cả môn chưa có bài tập với số bài tập = 0
+        $sql = "SELECT 
                 m.maMonHoc, 
                 m.tenMonHoc,
-                COALESCE(COUNT(DISTINCT bt.maBaiTap), 0) as tongBaiTap,
-                COALESCE(COUNT(DISTINCT CASE 
-                    WHEN bt.maBaiTap IS NOT NULL 
-                    AND bt.thoiGianNop < NOW()
+                COUNT(DISTINCT bt.maBaiTap) as tongBaiTap,
+                COUNT(DISTINCT CASE 
+                    WHEN bt.thoiGianNop < NOW() 
                     THEN bt.maBaiTap 
-                END), 0) as quaHan,
-                CASE 
-                    WHEN pg.maPhanCong IS NOT NULL THEN 1 
-                    ELSE 0 
-                END as duocPhanCong
+                END) as quaHan
                 FROM monhoc m
-                LEFT JOIN phancong_giangday pg ON pg.maMonHoc = m.maMonHoc 
-                    AND pg.maLop = ? 
-                    AND pg.trangThai = 'active'
                 LEFT JOIN baitap bt ON bt.maMonHoc = m.maMonHoc 
                     AND bt.maLop = ?
                     AND (bt.anBai IS NULL OR bt.anBai = 0)
-                LEFT JOIN bainop bn ON bt.maBaiTap = bn.maBaiTap AND bn.maHS = ?
                 GROUP BY m.maMonHoc, m.tenMonHoc
                 ORDER BY m.tenMonHoc";
         
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iii", $lop, $lop, $maHS);
+        if (!$stmt) {
+            error_log("SQL Error in getSubjectsForStudent: " . $this->conn->error);
+            return [];
+        }
+        
+        $stmt->bind_param("i", $lop);
         $stmt->execute();
         $result = $stmt->get_result();
         

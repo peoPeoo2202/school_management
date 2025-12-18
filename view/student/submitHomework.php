@@ -81,18 +81,17 @@ if (isset($_GET['id'])) {
     // 1. Nếu đã quá hạn
     else if ($isOverdue) {
         echo "<!-- LOGIC: Đã quá hạn -->";
-
-        // 1a. Nếu cho phép nộp trễ -> LUÔN cho phép nộp/nộp lại (dù đã nộp hay chưa)
-        if ($homework['choPhepNopTre'] == 1 || $homework['choPhepNopTre'] === '1' || $homework['choPhepNopTre'] === 1) {
-            echo "<!-- LOGIC: Cho phép nộp trễ -> Cho phép nộp/nộp lại -->";
+        // 1a. Nếu cho phép nộp trễ -> CHO PHÉP nộp
+        if ($homework['choPhepNopTre'] == 1) {
+            echo "<!-- LOGIC: Cho phép nộp trễ -> Cho phép nộp -->";
             $canSubmit = true;
             $submitReason = 'late_allowed';
         }
-        // 1b. Nếu KHÔNG cho phép nộp trễ -> KHÓA hoàn toàn
+        // 1b. Nếu KHÔNG cho phép nộp trễ -> KHÓA
         else {
             echo "<!-- LOGIC: KHÔNG cho phép nộp trễ -> KHÓA -->";
             $canSubmit = false;
-            $submitReason = $submission ? 'already_submitted_overdue' : 'overdue_not_allowed';
+            $submitReason = 'overdue_not_allowed';
         }
     }
     // 2. Nếu chưa quá hạn -> luôn cho phép nộp/nộp lại

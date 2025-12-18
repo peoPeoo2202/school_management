@@ -651,7 +651,8 @@ if ($maLop && $maGV) {
             <?php if (isset($data['error'])): ?>
                 <div class="card">
                     <div class="error-message">
-                        <strong>⚠️ Lỗi:</strong> <?php echo htmlspecialchars($data['error']); ?>
+                        <!-- <strong>⚠️ Lỗi:</strong>  -->
+                        <?php echo htmlspecialchars($data['error']); ?>
                     </div>
                 </div>
             <?php else: ?>

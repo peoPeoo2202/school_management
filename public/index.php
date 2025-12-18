@@ -65,7 +65,7 @@ if (isset($_POST["btnSub"])) {
                 exit();
                 
             case 'phuhuynh':
-                header("Location: ../view/parent/index.php");
+                header("Location: ../view/parents/index.php");
                 exit();
                 
             case 'giaovien':
