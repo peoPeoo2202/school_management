@@ -321,7 +321,14 @@ class cAccountManagement
         }
 
         if (isset($_POST['maNhom'])) {
-            $data['maNhom'] = intval($_POST['maNhom']);
+            $maNhom = $_POST['maNhom'];
+            // Chỉ set maNhom nếu có giá trị hợp lệ
+            if (!empty($maNhom) && is_numeric($maNhom)) {
+                $data['maNhom'] = intval($maNhom);
+            } else {
+                // Nếu empty thì set NULL
+                $data['maNhom'] = null;
+            }
         }
 
         if (isset($_POST['batBuocDoiMatKhau'])) {
