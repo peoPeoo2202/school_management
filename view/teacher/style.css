@@ -1,194 +1,603 @@
-/* CSS Reset - chỉ reset body, không reset tất cả elements */
-html, body {
-	margin: 0 !important;
-	padding: 0 !important;
+/* =========================================================
+   0) RESET + GLOBAL
+   ========================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0px;
+    padding: 0;
 }
-
-/* Toàn trang học sinh */
+html,
 body {
-	font-family: "Segoe UI", sans-serif;
-	background: #f8fafc;
-	color: #222;
+    height: 100%;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8f9fa;
+    overflow: hidden; /* body không scroll */
+}
+/* =========================================================
+   1) NAVIGATE
+   ========================================================= */
+.teacher-navbar {
+    min-width: 250px;
+    background: linear-gradient(180deg, #2d5a8c 0%, #5081be 100%);
+    color: white;
+    padding: 0;
+    position: relative;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
 }
 
-/* HEADER & FOOTER */
-header {
-	background: #005bb5;
-	color: white;
-	padding: 15px;
-	display: flex;
-	align-items: center;
-	font-size: 14px;
-  height:5vh;
-  font-weight: 500;
+.navbar-header {
+    padding: 16px;
+    background: #1a2f42;
+    border-bottom: 2px solid #5081be;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-footer {
-	background: #005bb5;
-	color: white;
-	text-align: center;
-	padding: 10px;
-	font-size: 14px;
+.navbar-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #5081be;
 }
 
-/* CONTAINER */
-.container {
-	display: flex;
-	height: 100vh;
+.navbar-toggle {
+    display: none;
 }
 
-/* SIDEBAR */
-.sidebar-container {
-	background: #fffcfc;
-	border-right: 1px solid #ddd;
-	min-width: 180px;
-	font-size: 14px;
-  font-weight: 500;
+.navbar-user {
+    padding: 8px;
+    border-bottom: 1px solid #1a2f42;
+    background: rgba(80, 129, 190, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.sidebar ul {
-	list-style: none;
-	padding: 10px;
+.user-avatar {
+    font-size: 40px;
+    color: #1a2f42;
 }
 
-.sidebar a {
-	display: block;
-	padding: 10px;
-	text-decoration: none;
-	color: #333;
-	border-radius: 6px;
-	transition: all 0.3s;
-	border-left: 2px solid transparent;
+.user-details {
+    flex: 1;
 }
 
-.sidebar a.active, .sidebar a:hover {
-	background: #e9effd;
-	border-left: 2px solid #005bb5;
+.user-name {
+    margin: 0;
+    font-weight: 500;
+    font-size: 14px;
+    color: white;
 }
 
-/* MAIN CONTENT */
-.main {
-	flex: 1;
-	padding: 20px 30px;
-	overflow-y: auto;
-	background: #fff;
+.user-role {
+    margin: 0;
+    font-size: 12px;
+    color: #95a5a6;
 }
 
-/* TABLES */
-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 15px;
+.navbar-menu {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
-th, td {
-	border: 1px solid #e0e6ef;
-	padding: 10px;
-	text-align: center;
+.navbar-menu > li {
+    margin: 0;
 }
 
-th {
-	background: #2f6bff;
-	color: white;
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #d4dce6;
+    transition: all 0.3s;
+    position: relative;
+    font-size: 16px;
 }
 
-tr:nth-child(even) {
-	background: #f8faff;
+.menu-item i:first-child {
+    min-width: 16px;
+    text-align: center;
 }
 
-/* CARDS (cho phần điểm trung bình / học lực) */
-.summary, .attendance {
-	display: flex;
-	gap: 20px;
-	margin-bottom: 20px;
+.menu-item:hover {
+    background: rgba(80, 129, 190, 0.2);
+    padding-left: 24px;
+    color: white;
 }
+
+.menu-item.active {
+    background: #5081be;
+    color: white;
+    border-left: 2px solid #7ebada;
+    padding-left: 16px;
+}
+
+.menu-toggle {
+    position: relative;
+}
+
+.menu-toggle i:last-child {
+    margin-left: auto;
+    transition: transform 0.3s;
+}
+
+.menu-toggle.open i:last-child {
+    transform: rotate(90deg);
+}
+
+.submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s;
+}
+
+.submenu.open {
+    max-height: 500px;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 16px 8px 32px;
+    text-decoration: none;
+    color: #a8b4c6;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.submenu-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.submenu-item:hover {
+    color: white;
+    padding-left: 42px;
+}
+
+.navbar-footer {
+    padding: 8px;
+    margin-top: auto;
+    border-top: 2px solid #7ebada;
+    background: #1a2f42;
+    font-size: 16px;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cadefa;
+    text-decoration: none;
+    transition: all 0.3s;
+    padding: 8px;
+    border-radius: 8px;
+    border-left: 2px solid transparent;
+}
+
+.logout-link:hover {
+    background: rgba(126, 186, 218, 0.2);
+    color: #e0f2fc;
+    border-left: 3px solid #7ebada;
+}
+
+/* Scrollbar */
+.teacher-navbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Firefox */
+.teacher-navbar {
+    scrollbar-width: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-navbar {
+        width: 250px;
+        margin-left: -250px;
+        transition: margin-left 0.3s;
+    }
+
+    .teacher-navbar.open {
+        margin-left: 0;
+    }
+
+    .navbar-toggle {
+        display: block;
+    }
+}
+/* =========================================================
+   2) CSS COMMON
+   ========================================================= */
+.main-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+.content-area {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 24px 5%;
+    background-color: white;
+}
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 32px;
+}
+/* -----------------------------------------HEADER---------------------------------- */
+
+.header-section {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+}
+.header-left {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+.header-left-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #5081be;
+    font-weight: 600;
+}
+.header-left h2 {
+    color: #5081be;
+    margin: 0;
+    font-size: 24px;
+}
+
+.header-left p {
+    color: #999;
+    font-size: 14px;
+    margin: 0;
+}
+
+.header-right {
+    text-align: right;
+}
+
+.header-right .welcome-text {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    margin-top: 8px;
+}
+
+.header-right .user-name {
+    color: #5081be;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* -----------------------------------------STATUS---------------------------------- */
+.stat-item {
+    text-align: center;
+}
+.stat-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.stat-info p {
+    margin: 0;
+    color: #999;
+    font-size: 12px;
+}
+
+.stat-value {
+    display: block;
+    color: #5081be;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 5px;
+}
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* -----------------------------------------CARD---------------------------------- */
 
 .card {
-	flex: 1;
-	background: #f3f6fa;
-	padding: 15px;
-	border-radius: 8px;
-	text-align: center;
-	border: 1px solid #e0e6ef;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
 }
 
-.card h4 {
-	margin-bottom: 10px;
-	color: #005bb5;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
 }
 
-.small {
-	flex: 0.5;
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* TIME TABLE */
-.schedule table {
-	border-collapse: collapse;
-	width: 100%;
-	background: #fff;
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+.card-title i {
+    color: #5081be;
+    font-size: 18px;
+}
+/* -----------------------------------------FILTER---------------------------------- */
+
+.filter-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+    padding: 16px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    padding-bottom: 24px;
+}
+.filter-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 160px;
+    gap: 15px;
+    align-items: end;
+}
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+.filter-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 8px;
+    text-align: left;
+    padding-left: 2px;
 }
 
-.schedule th, .schedule td {
-	border: 1px solid #ddd;
-	padding: 10px;
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 12px;
+    background: white;
+    outline: none;
+}
+.filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    align-self: stretch;
+    justify-content: flex-end;
+}
+.filter-control {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
-.schedule th {
-	background-color: #2f6bff;
-	color: #fff;
+.filter-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+/* -----------------------------------------BUTTON---------------------------------- */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+}
+.btn-primary {
+    background: #5081be;
+    color: white;
 }
 
-/* GHI CHÚ */
-.note h4 {
-	color: #2f6bff;
-	margin-bottom: 8px;
+.btn-primary:hover {
+    background: #5a6fd8;
 }
 
-.note ul {
-	line-height: 1.6;
-	margin-left: 15px;
+.btn-success {
+    background: #28a745;
+    color: white;
 }
 
-/* SCROLLBAR TINH TẾ */
-::-webkit-scrollbar {
-	width: 8px;
+.btn-success:hover {
+    background: #218838;
+}
+.btn-info {
+    background: #17a2b8;
+    color: white;
 }
 
-::-webkit-scrollbar-thumb {
-	background: #ccc;
-	border-radius: 4px;
+.btn-info:hover {
+    background: #138496;
+}
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+.btn-secondary:hover {
+    background: #5a6268;
+}
+.btn-warning {
+    background: #ffc107;
+    color: #000;
 }
 
-::-webkit-scrollbar-thumb:hover {
-	background: #999;
+.btn-warning:hover {
+    background: #e0a800;
 }
 
-/* SIDEBAR
-.sidebar {
-  width: 220px;
-  background: #f2f3f5;
-  padding: 15px;
-  border-right: 1px solid #ddd;
+.btn-danger {
+    background: #dc3545;
+    color: white;
 }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.btn-danger:hover {
+    background: #c82333;
+}
+.btn-back {
+    background: #95a5a6;
+    color: white;
 }
 
-.sidebar a {
-  display: block;
-  padding: 10px;
-  text-decoration: none;
-  color: #333;
-  border-radius: 6px;
-  transition: all 0.3s;
+.btn-back:hover {
+    background: #7f8c8d;
+}
+.view-link {
+    color: #5081be;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.sidebar a.active,
-.sidebar a:hover {
-  background: #2f6bff;
-  color: #fff;
-} */
+.view-link:hover {
+    color: #2d5a8c;
+    gap: 10px;
+}
+
+/* =========================================================
+   3) DASHBOARD
+   ========================================================= */
+.dashboard-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.info-session {
+    margin-bottom: 32px;
+}
+.card-info {
+    display: flex;
+    gap: 32px;
+}
+.info-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #5081be;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 24px;
+    padding-bottom: 16px;
+}
+.info-box {
+    flex: 1;
+    background: #e7f4ff;
+    padding: 24px;
+    border-radius: 8px;
+    border-left: 4px solid #5081be;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: #5081be;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-box h3 {
+    color: #5081be;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.info-box p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.info-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.info-detail span {
+    display: flex;
+    gap: 8px;
+}
+.info-detail strong {
+    font-size: 15px;
+    font-weight: 500;
+    color: #565656;
+}
+.quick-links {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 400;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.quick-link:hover {
+    background: #e0f2fc;
+    color: #5081be;
+    padding-left: 17px;
+}
+
+.quick-link i {
+    width: 20px;
+    text-align: center;
+    color: #5081be;
+}
+/* =========================================================
+   4) ASSSIGN HOMEWORK
+   ========================================================= */
+.assign-homework-title {
+    gap: 8px;
+}

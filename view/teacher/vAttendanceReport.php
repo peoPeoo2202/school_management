@@ -12,25 +12,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0
-        }
-
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        .container {
-            max-width: 100%;
-        }
 
         .header {
             background: white;
@@ -69,14 +50,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #545b62;
         }
 
-        .filter-section {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
         .filter-title {
             font-size: 18px;
             font-weight: 600;
@@ -86,68 +59,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             align-items: center;
             gap: 10px;
         }
-
-        .filter-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .form-group select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
         .filter-buttons {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
+            
 
         .report-section {
             background: white;

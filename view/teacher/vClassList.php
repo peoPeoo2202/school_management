@@ -49,135 +49,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        .header {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            margin-bottom: 32px;
-            font-size: 14px;
-        }
-
-        .header-left-icon {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #5081BE;
-            font-weight: 600;
-        }
-
-        .header h2 {
-            font-size: 24px;
-            color: #5081BE;
-            margin: 0;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 16px;
-        }
-        .card-header i{
-            color: #5081BE;
-            font-size: 16px;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin: 0;
-            margin-bottom: 8px;
-        }
-
-        .filter-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 8px;
-            padding: 16px;
-            background: #f8f9ff;
-            border-radius: 8px;
-            padding-bottom: 24px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .filter-group label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 8px;
-            text-align: left;
-            padding-left: 2px;
-        }
-
-        .filter-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 12px;
-            background: white;
-        }
-
         .filter-actions {
             display: flex;
             gap: 16px;
             align-items: flex-end;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2d5a8c;
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #d0d0d0;
         }
 
         .table-responsive {
@@ -257,34 +132,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             margin-bottom: 20px;
             opacity: 0.5;
         }
-
-        
-
-        @media (max-width: 768px) {
-            .filter-section {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-row {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            th,
-            td {
-                padding: 10px 8px;
-            }
-        }
     </style>
 </head>
 
@@ -295,7 +142,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         <!-- Main Content -->
         <div class="content-area">
-            <div class="header">
+            <div class="header-section">
                 <div class="header-left-icon">
                     <h2>
                     <i class="fas fa-list"></i>

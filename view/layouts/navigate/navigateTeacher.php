@@ -1,7 +1,6 @@
 <?php
 // Load config
 require_once(__DIR__ . '/../../../config.php');
-
 // Kiểm tra session
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: " . url('public/index.php'));
@@ -12,6 +11,18 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     header("Location: " . url('public/index.php?error=access_denied'));
     exit();
 }
+// Nếu bị mất maNhom thì lấy lại từ DB theo maTaiKhoan
+if (empty($_SESSION['maNhom']) && !empty($_SESSION['maTaiKhoan'])) {
+    require_once(__DIR__ . '/../../../model/mUser.php');
+    $m = new mUser();
+    $u = $m->getUserById((int)$_SESSION['maTaiKhoan']);
+    if (!empty($u) && isset($u['maNhom'])) {
+        $_SESSION['maNhom'] = $u['maNhom'];
+    }
+}
+
+$maNhom = $_SESSION['maNhom'] ?? null;
+echo "<!-- DEBUG maNhom: " . ($_SESSION['maNhom'] ?? 'NULL') . " -->";
 
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 $maGV = $_SESSION['maGV'] ?? '';
@@ -38,11 +49,43 @@ $maGV = $_SESSION['maGV'] ?? '';
     <ul class="navbar-menu">
         <!-- Dashboard -->
         <li>
-            <a href="<?php echo url('view/teacher/dashboard.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
+            <a href="<?php echo url('view/teacher/index.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
         </li>
+
+        <!-- Lớp chủ nhiệm (với dropdown) -->
+        <?php if ($maNhom == 3006): ?>
+            <li class="menu-parent">
+                <a href="#" class="menu-item menu-toggle" data-submenu="requests">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Lớp chủ nhiệm</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                <ul class="submenu" id="requests-submenu">
+                    <li>
+                        <a href="../../view/teacher/vListofStudents.php" class="submenu-item">
+                            <i class="fas fa-users"></i>
+                            <span>Danh sách học sinh</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../../view/teacher/vClassPerformance.php" class="submenu-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Kết quả học tập lớp</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../../view/teacher/vStudentClassification.php" class="submenu-item">
+                            <i class="fas fa-star"></i>
+                            <span>Xếp loại học sinh</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        <?php endif; ?>
+
 
         <!-- Lịch dạy -->
         <li>
@@ -51,32 +94,37 @@ $maGV = $_SESSION['maGV'] ?? '';
                 <span>Lịch dạy</span>
             </a>
         </li>
-
         <!-- Danh sách lớp -->
         <li>
             <a href="<?php echo url('view/teacher/vClassList.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
-                <i class="fas fa-list"></i>
-                <span>Danh sách lớp</span>
+                <i class="fa-solid fa-clipboard-user"></i>
+                    <span>Danh sách lớp</span>
             </a>
         </li>
-
-        <!-- Phân công coi thi -->
+        <!-- Giao bài tập -->
         <li>
-            <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>">
-                <i class="fas fa-eye"></i>
-                <span>Phân công coi thi</span>
+            <a href="<?php echo url('view/teacher/vAssignHomework.php'); ?>" class="menu-item">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Giao bài tập</span>
             </a>
         </li>
-
-        <!-- Phân công chấm điểm -->
+        <!-- Nhập điểm -->
         <li>
-            <a href="<?php echo url('view/teacher/vGradingAssignment.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>">
-                <i class="fas fa-pen-square"></i>
-                <span>Phân công chấm điểm</span>
+            <a href="<?php echo url('view/teacher/vInsertGrade.php'); ?>" class="menu-item">
+                <i class="fas fa-edit"></i>
+                <span>Nhập điểm</span>
+            </a>
+        </li>
+        <!-- Gửi đề thi -->
+        <li>
+            <a href="<?php echo url('view/teacher/vSubmitExam.php'); ?>" class="menu-item">
+                <i class="fas fa-file-upload"></i>
+                <span>Gửi đề thi</span>
             </a>
         </li>
 
-        <!-- Gửi yêu cầu (với dropdown) -->
+
+        <!-- Gửi yêu cầu -->
         <li class="menu-parent">
             <a href="#" class="menu-item menu-toggle" data-submenu="requests">
                 <i class="fas fa-paper-plane"></i>
@@ -85,25 +133,26 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
             <ul class="submenu" id="requests-submenu">
                 <li>
-                    <a href="<?php echo url('controller/cTeacherRequest.php?action=grade_correction_form'); ?>" class="submenu-item">
+                    <a href="index.php?action=yeucau&type=suadiem" class="submenu-item">
                         <i class="fas fa-edit"></i>
                         <span>Yêu cầu sửa điểm</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo url('controller/cTeacherRequest.php?action=leave_request_form'); ?>" class="submenu-item">
+                    <a href="index.php?action=yeucau&type=nghiphep" class="submenu-item">
                         <i class="fas fa-calendar-times"></i>
                         <span>Xin nghỉ phép</span>
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo url('controller/cTeacherRequest.php?action=request_list'); ?>" class="submenu-item">
+                    <a href="index.php?action=danhsachyeucau" class="submenu-item">
                         <i class="fas fa-list-alt"></i>
                         <span>Danh sách yêu cầu</span>
                     </a>
                 </li>
             </ul>
         </li>
+
 
         <!-- Báo cáo & Thống kê (với dropdown) -->
         <li class="menu-parent">
@@ -160,214 +209,6 @@ $maGV = $_SESSION['maGV'] ?? '';
         </a>
     </div>
 </nav>
-
-<style>
-    .teacher-navbar {
-        min-width: 250px;
-        background: linear-gradient(180deg, #2d5a8c 0%, #5081BE 100%);
-        color: white;
-        padding: 0;
-        position: relative;
-        height: 100vh;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-    }
-
-    .navbar-header {
-        padding: 16px;
-        background: #1a2f42;
-        border-bottom: 2px solid #5081BE;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .navbar-header h2 {
-        margin: 0;
-        font-size: 18px;
-        color: #5081BE;
-    }
-
-    .navbar-toggle {
-        display: none;
-    }
-
-    .navbar-user {
-        padding: 8px;
-        border-bottom: 1px solid #1a2f42;
-        background: rgba(80, 129, 190, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .user-avatar {
-        font-size: 40px;
-        color: #1a2f42;
-    }
-
-    .user-details {
-        flex: 1;
-    }
-
-    .user-name {
-        margin: 0;
-        font-weight: 500;
-        font-size: 14px;
-        color: white;
-    }
-
-    .user-role {
-        margin: 0;
-        font-size: 12px;
-        color: #95a5a6;
-    }
-
-    .navbar-menu {
-        list-style: none;
-        padding: 8px 0;
-        margin: 0;
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    .navbar-menu>li {
-        margin: 0;
-    }
-
-    .menu-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        text-decoration: none;
-        color: #d4dce6;
-        transition: all 0.3s;
-        position: relative;
-        font-size: 16px;
-    }
-
-    .menu-item i:first-child {
-        min-width: 16px;
-        text-align: center;
-    }
-
-    .menu-item:hover {
-        background: rgba(80, 129, 190, 0.2);
-        padding-left: 24px;
-        color: white;
-    }
-
-    .menu-item.active {
-        background: #5081BE;
-        color: white;
-        border-left: 2px solid #7EBADA;
-        padding-left: 16px;
-    }
-
-    .menu-toggle {
-        position: relative;
-    }
-
-    .menu-toggle i:last-child {
-        margin-left: auto;
-        transition: transform 0.3s;
-    }
-
-    .menu-toggle.open i:last-child {
-        transform: rotate(90deg);
-    }
-
-    .submenu {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        background: rgba(0, 0, 0, 0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s;
-    }
-
-    .submenu.open {
-        max-height: 500px;
-    }
-
-    .submenu-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 16px 16px 8px 32px;
-        text-decoration: none;
-        color: #a8b4c6;
-        transition: all 0.3s;
-        font-size: 14px;
-    }
-
-    .submenu-item i {
-        width: 16px;
-        text-align: center;
-    }
-
-    .submenu-item:hover {
-        color: white;
-        padding-left: 42px;
-    }
-
-    .navbar-footer {
-        padding: 8px;
-        margin-top: auto;
-        border-top: 2px solid #7EBADA;
-        background: #1a2f42;
-        font-size: 16px;
-    }
-
-    .logout-link {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #CADEFA;
-        text-decoration: none;
-        transition: all 0.3s;
-        padding: 8px;
-        border-radius: 8px;
-        border-left: 2px solid transparent;
-    }
-
-    .logout-link:hover {
-        background: rgba(126, 186, 218, 0.2);
-        color: #E0F2FC;
-        border-left: 3px solid #7EBADA;
-    }
-
-    /* Scrollbar */
-    .teacher-navbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Firefox */
-    .teacher-navbar {
-        scrollbar-width: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .teacher-navbar {
-            width: 250px;
-            margin-left: -250px;
-            transition: margin-left 0.3s;
-        }
-
-        .teacher-navbar.open {
-            margin-left: 0;
-        }
-
-        .navbar-toggle {
-            display: block;
-        }
-    }
-</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -43,17 +43,6 @@ if (!isset($data)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
 
         .header {
             background: white;
@@ -112,64 +101,7 @@ if (!isset($data)) {
             justify-content: space-between;
             align-items: center;
         }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin: 0px;
-            margin-bottom: 24px;
-        }
-        .card-title i {
-            color: #5081BE;
-        }
-
-        .filter-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 25px;
-            padding: 24px;
-            background: #f8f9ff;
-            border-radius: 8px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .filter-group label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            margin-bottom: 8px;
-            text-align: left;
-            padding-left: 2px;
-        }
-
-        .filter-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 12px;
-            background: white;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-        }
+        
 
         .btn-primary {
             background: #5081BE;
@@ -320,42 +252,10 @@ if (!isset($data)) {
             border-radius: 16px;
             padding: 32px;
         }
-        .stat-item {
-            text-align: center;
-        }
+        
 
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #5081BE;
-        }
+        
 
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .exam-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .filter-section {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-row {
-                flex-direction: column;
-                gap: 16px;
-            }
-        }
     </style>
 </head>
 

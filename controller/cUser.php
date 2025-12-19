@@ -1,9 +1,12 @@
 <?php
 include_once("../model/mUser.php");
+
 class cUser
 {
     public function cLogin($name, $pass)
+    
     {
+        
         $p = new mUser();
         // mLogin() tự xử lý cả MD5 và bcrypt, không cần hash trước
         $user = $p->mLogin($name, $pass);
@@ -16,6 +19,8 @@ class cUser
             $_SESSION["maTaiKhoan"] = $user["maTaiKhoan"];
             $_SESSION["hoTen"] = $user["hoTen"];
             $_SESSION["tenDangNhap"] = $user["tenDangNhap"];
+            $_SESSION["maNhom"] = $user["maNhom"];
+
             
             // Nếu là giáo viên, lấy thêm maGV để sử dụng cho chức năng tra cứu giảng dạy
             if ($user["loaiTaiKhoan"] === 'giaovien') {

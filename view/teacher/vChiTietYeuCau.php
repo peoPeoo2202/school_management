@@ -20,18 +20,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết yêu cầu - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
-
         .container {
             max-width: 1000px;
             margin: 20px auto;
@@ -216,29 +206,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .timeline-text {
             font-size: 14px;
             color: #666;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-back {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background: #7f8c8d;
         }
 
         .alert {

@@ -17,10 +17,10 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
 if (isset($_GET['action']) || isset($_POST['action'])) {
     require_once(__DIR__ . '/../../controller/cAssignHomework.php');
     $controller = new cAssignHomework();
-    
+
     $action = $_GET['action'] ?? $_POST['action'];
-    
-    switch($action) {
+
+    switch ($action) {
         case 'create':
             $controller->create();
             exit();
@@ -55,88 +55,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giao Bài Tập - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo url('assets/css/style.css'); ?>">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            overflow: hidden;
-        }
-
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            background: #f0f2f5;
-        }
-
-        .content-inner {
-            flex: 1;
-            padding: 24px 32px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .content-inner::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .content-inner::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .content-inner::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .content-inner::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        .page-header {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 24px;
-        }
-
-        .page-header h2 {
-            color: #5081BE;
-            margin: 0 0 8px 0;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .page-header p {
-            color: #6c757d;
-            margin: 0;
-            font-size: 14px;
-        }
-
         .action-buttons {
             margin-bottom: 20px;
             display: flex;
@@ -144,54 +71,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             flex-wrap: wrap;
         }
 
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3d6a9e;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(80, 129, 190, 0.3);
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-info:hover {
-            background: #138496;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
         .filter-card {
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 24px;
         }
 
@@ -200,33 +84,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             grid-template-columns: 1fr;
             max-width: 400px;
             gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .form-select {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .form-select:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
         }
 
         .homework-grid {
@@ -313,24 +170,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .btn-sm {
             padding: 6px 12px;
             font-size: 13px;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #000;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
         }
 
         .empty-state {
@@ -649,40 +488,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #f8f9fa;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #555;
-        }
-
-        .btn-secondary:hover {
-            background: #bdbdbd;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #5081BE 0%, #3d6a9e 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(80, 129, 190, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(80, 129, 190, 0.4);
-        }
-
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -731,8 +536,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideDown {
@@ -740,6 +550,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 transform: translateY(-50px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -766,6 +577,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
     </style>
 </head>
+
 <body>
     <div class="main-wrapper">
         <!-- Sidebar Navigation -->
@@ -773,129 +585,133 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         <!-- Main Content Area -->
         <div class="content-area">
-            <div class="content-inner">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <h2><i class="fas fa-clipboard-list"></i> Giao Bài Tập</h2>
-                    <p>Quản lý và giao bài tập cho học sinh</p>
+            <div class="header-section ">
+                <div class="header-left assign-homework-title">
+                    <div class="header-left-icon">
+                        <h2><i class="fas fa-clipboard-list"></i></h2>
+                        <h2> Giao Bài Tập</h2>
+                    </div>
+                    <div>
+                        <p>Quản lý và giao bài tập cho học sinh</p>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="openAddModal()">
-                        <i class="fas fa-plus-circle"></i> Giao Bài Tập Mới
-                    </button>
-                </div>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus-circle"></i> Giao Bài Tập Mới
+                </button>
+            </div>
 
-                <!-- Filter Card -->
-                <div class="filter-card">
-                    <form method="GET" action="" id="filterForm">
-                        <div class="filter-row">
-                            <div class="form-group">
-                                <label class="form-label">Lọc theo lớp</label>
-                                <select name="maLop" id="filterClass" class="form-select" onchange="document.getElementById('filterForm').submit();">
-                                    <option value="">-- Tất cả lớp --</option>
-                                    <?php 
-                                    $classes->data_seek(0);
-                                    while($class = $classes->fetch_assoc()): ?>
-                                        <option value="<?= $class['maLop'] ?>" 
-                                            <?= (isset($_GET['maLop']) && $_GET['maLop'] == $class['maLop']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($class['tenLop']) ?>
-                                        </option>
-                                    <?php endwhile; ?>
-                                </select>
+            <!-- Filter Card -->
+            <div class="filter-card">
+                <form method="GET" action="" id="filterForm">
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label class="form-label">Lọc theo lớp</label>
+                            <select name="maLop" id="filterClass" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                                <option value="">-- Tất cả lớp --</option>
+                                <?php
+                                $classes->data_seek(0);
+                                while ($class = $classes->fetch_assoc()): ?>
+                                    <option value="<?= $class['maLop'] ?>"
+                                        <?= (isset($_GET['maLop']) && $_GET['maLop'] == $class['maLop']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($class['tenLop']) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Homework Grid -->
+            <?php if ($homeworks->num_rows > 0): ?>
+                <?php
+                // Lưu tất cả bài tập vào mảng
+                $allHomeworks = [];
+                while ($hw = $homeworks->fetch_assoc()) {
+                    $allHomeworks[] = $hw;
+                }
+                $totalHomeworks = count($allHomeworks);
+                ?>
+                <div class="homework-grid" id="homeworkGrid">
+                    <?php foreach ($allHomeworks as $hw): ?>
+                        <div class="homework-card" data-homework-item style="display: none;">
+                            <div class="card-header">
+                                <h3><?= htmlspecialchars($hw['tenBaiTap']) ?></h3>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Lớp:</strong> <?= htmlspecialchars($hw['tenLop']) ?></p>
+                                <p><strong>Môn học:</strong> <?= htmlspecialchars($hw['tenMonHoc']) ?></p>
+                                <p><strong>Yêu cầu:</strong> <?= htmlspecialchars($hw['yeuCauBaiTap'] ?: 'Không có') ?></p>
+                                <p><strong>Hạn nộp:</strong> <?= date('d/m/Y H:i', strtotime($hw['thoiGianNop'])) ?></p>
+                                <p><strong>Nộp trễ:</strong>
+                                    <?php if (isset($hw['choPhepNopTre']) && $hw['choPhepNopTre'] == 1): ?>
+                                        <span style="color: #28a745; font-weight: 600;">
+                                            <i class="fas fa-check-circle"></i> Cho phép
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: #dc3545; font-weight: 600;">
+                                            <i class="fas fa-times-circle"></i> Không cho phép
+                                        </span>
+                                    <?php endif; ?>
+                                </p>
+                                <p><strong>Trạng thái:</strong>
+                                    <?php if (isset($hw['anBai']) && $hw['anBai'] == 1): ?>
+                                        <span style="color: #ff9800; font-weight: 600;">
+                                            <i class="fas fa-eye-slash"></i> Đang ẩn
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: #28a745; font-weight: 600;">
+                                            <i class="fas fa-eye"></i> Hiển thị
+                                        </span>
+                                    <?php endif; ?>
+                                </p>
+                                <p>
+                                    <strong>Đã nộp:</strong>
+                                    <span class="status-badge <?= ($hw['soLuongNopBai'] > 0) ? 'completed' : 'pending' ?>">
+                                        <?= $hw['soLuongNopBai'] ?? 0 ?> bài
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="<?= url('view/teacher/vHomeworkDetail.php?id=' . $hw['maBaiTap']) ?>"
+                                    class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                                <button class="btn btn-sm btn-warning" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
                             </div>
                         </div>
-                    </form>
+                    <?php endforeach; ?>
                 </div>
 
-                <!-- Homework Grid -->
-                <?php if($homeworks->num_rows > 0): ?>
-                    <?php
-                    // Lưu tất cả bài tập vào mảng
-                    $allHomeworks = [];
-                    while($hw = $homeworks->fetch_assoc()) {
-                        $allHomeworks[] = $hw;
-                    }
-                    $totalHomeworks = count($allHomeworks);
-                    ?>
-                    <div class="homework-grid" id="homeworkGrid">
-                        <?php foreach($allHomeworks as $hw): ?>
-                            <div class="homework-card" data-homework-item style="display: none;">
-                                <div class="card-header">
-                                    <h3><?= htmlspecialchars($hw['tenBaiTap']) ?></h3>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Lớp:</strong> <?= htmlspecialchars($hw['tenLop']) ?></p>
-                                    <p><strong>Môn học:</strong> <?= htmlspecialchars($hw['tenMonHoc']) ?></p>
-                                    <p><strong>Yêu cầu:</strong> <?= htmlspecialchars($hw['yeuCauBaiTap'] ?: 'Không có') ?></p>
-                                    <p><strong>Hạn nộp:</strong> <?= date('d/m/Y H:i', strtotime($hw['thoiGianNop'])) ?></p>
-                                    <p><strong>Nộp trễ:</strong> 
-                                        <?php if(isset($hw['choPhepNopTre']) && $hw['choPhepNopTre'] == 1): ?>
-                                            <span style="color: #28a745; font-weight: 600;">
-                                                <i class="fas fa-check-circle"></i> Cho phép
-                                            </span>
-                                        <?php else: ?>
-                                            <span style="color: #dc3545; font-weight: 600;">
-                                                <i class="fas fa-times-circle"></i> Không cho phép
-                                            </span>
-                                        <?php endif; ?>
-                                    </p>
-                                    <p><strong>Trạng thái:</strong> 
-                                        <?php if(isset($hw['anBai']) && $hw['anBai'] == 1): ?>
-                                            <span style="color: #ff9800; font-weight: 600;">
-                                                <i class="fas fa-eye-slash"></i> Đang ẩn
-                                            </span>
-                                        <?php else: ?>
-                                            <span style="color: #28a745; font-weight: 600;">
-                                                <i class="fas fa-eye"></i> Hiển thị
-                                            </span>
-                                        <?php endif; ?>
-                                    </p>
-                                    <p>
-                                        <strong>Đã nộp:</strong> 
-                                        <span class="status-badge <?= ($hw['soLuongNopBai'] > 0) ? 'completed' : 'pending' ?>">
-                                            <?= $hw['soLuongNopBai'] ?? 0 ?> bài
-                                        </span>
-                                    </p>
-                                </div>
-                                <div class="card-footer">
-                                    <a href="<?= url('view/teacher/vHomeworkDetail.php?id=' . $hw['maBaiTap']) ?>" 
-                                       class="btn btn-sm btn-info">
-                                        <i class="fas fa-eye"></i> Chi tiết
-                                    </a>
-                                    <button class="btn btn-sm btn-warning" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
-                                        <i class="fas fa-edit"></i> Sửa
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
-                                        <i class="fas fa-trash"></i> Xóa
-                                    </button>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    
-                    <!-- Pagination: Luôn render, JavaScript sẽ quyết định hiển/ẩn -->
-                    <div id="paginationContainer" style="margin-top: 30px; display: flex; justify-content: center; align-items: center; gap: 10px;">
-                        <!-- Pagination buttons will be generated by JavaScript -->
-                    </div>
-                    
-                    <script>
-                        // Dữ liệu từ PHP
-                        const totalHomeworksFromPHP = <?php echo $totalHomeworks; ?>;
-                        console.log('Total homeworks from PHP:', totalHomeworksFromPHP);
-                    </script>
-                <?php else: ?>
-                    <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <h3>Chưa có bài tập nào</h3>
-                        <p>Hãy bắt đầu bằng cách giao bài tập mới cho học sinh</p>
-                        <button class="btn btn-primary" onclick="openAddModal()">
-                            <i class="fas fa-plus-circle"></i> Giao Bài Tập Đầu Tiên
-                        </button>
-                    </div>
-                <?php endif; ?>
-            </div>
+                <!-- Pagination: Luôn render, JavaScript sẽ quyết định hiển/ẩn -->
+                <div id="paginationContainer" style="margin-top: 30px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <!-- Pagination buttons will be generated by JavaScript -->
+                </div>
+
+                <script>
+                    // Dữ liệu từ PHP
+                    const totalHomeworksFromPHP = <?php echo $totalHomeworks; ?>;
+                    console.log('Total homeworks from PHP:', totalHomeworksFromPHP);
+                </script>
+            <?php else: ?>
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Chưa có bài tập nào</h3>
+                    <p>Hãy bắt đầu bằng cách giao bài tập mới cho học sinh</p>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus-circle"></i> Giao Bài Tập Đầu Tiên
+                    </button>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -915,24 +731,24 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <label class="form-label">Tên bài tập<span>*</span></label>
                         <input type="text" name="tenBaiTap" class="form-control" placeholder="Nhập tên bài tập..." required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Lớp<span>*</span></label>
                         <select name="maLop" id="addClass" class="form-select" required>
                             <option value="">-- Chọn lớp --</option>
-                            <?php 
+                            <?php
                             $classes->data_seek(0);
-                            while($class = $classes->fetch_assoc()): ?>
+                            while ($class = $classes->fetch_assoc()): ?>
                                 <option value="<?= $class['maLop'] ?>"><?= htmlspecialchars($class['tenLop']) ?></option>
                             <?php endwhile; ?>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Yêu cầu bài tập</label>
                         <textarea name="yeuCauBaiTap" class="form-control" rows="4" placeholder="Mô tả chi tiết yêu cầu bài tập..."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Chọn file hoặc kéo thả vào đây</label>
                         <div class="file-upload-wrapper" id="fileUploadWrapper">
@@ -957,7 +773,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Thời gian nộp<span>*</span></label>
                         <input type="datetime-local" name="thoiGianNop" class="form-control" required>
@@ -1008,36 +824,36 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <div class="modal-body">
                 <form id="editHomeworkForm" enctype="multipart/form-data">
                     <input type="hidden" name="maBaiTap" id="editMaBaiTap">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Tên bài tập<span>*</span></label>
                         <input type="text" name="tenBaiTap" id="editTenBaiTap" class="form-control" placeholder="Nhập tên bài tập..." required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Lớp<span>*</span></label>
                         <select name="maLop" id="editLop" class="form-select" required>
                             <option value="">-- Chọn lớp --</option>
-                            <?php 
+                            <?php
                             $classes->data_seek(0);
-                            while($class = $classes->fetch_assoc()): ?>
+                            while ($class = $classes->fetch_assoc()): ?>
                                 <option value="<?= $class['maLop'] ?>"><?= htmlspecialchars($class['tenLop']) ?></option>
                             <?php endwhile; ?>
                         </select>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Yêu cầu bài tập</label>
                         <textarea name="yeuCauBaiTap" id="editYeuCau" class="form-control" rows="4" placeholder="Mô tả chi tiết yêu cầu bài tập..."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">File hiện tại</label>
                         <div id="currentFile" style="display: none; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 10px;">
                             <i class="fas fa-file" style="color: #4caf50;"></i>
                             <span id="currentFileName" style="color: #2e7d32; font-weight: 600; margin-left: 8px;"></span>
                         </div>
-                        
+
                         <label class="form-label">Thay đổi file (tùy chọn)</label>
                         <div class="file-upload-wrapper" id="editFileUploadWrapper">
                             <div class="file-upload-icon">
@@ -1061,7 +877,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Thời gian nộp<span>*</span></label>
                         <input type="datetime-local" name="thoiGianNop" id="editThoiGianNop" class="form-control" required>
@@ -1157,14 +973,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         fileUploadWrapper.addEventListener('drop', (e) => {
             e.preventDefault();
             fileUploadWrapper.classList.remove('drag-over');
-            
+
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 const file = files[0];
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 fileInput.files = dataTransfer.files;
-                
+
                 handleFile(file);
             }
         });
@@ -1222,14 +1038,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         editFileUploadWrapper.addEventListener('drop', (e) => {
             e.preventDefault();
             editFileUploadWrapper.classList.remove('drag-over');
-            
+
             const files = e.dataTransfer.files;
             if (files.length > 0) {
                 const file = files[0];
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(file);
                 editFileInput.files = dataTransfer.files;
-                
+
                 handleEditFile(file);
             }
         });
@@ -1267,8 +1083,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         // Submit homework
         function submitHomework() {
             const form = document.getElementById('addHomeworkForm');
-            
-            if(!form.checkValidity()) {
+
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
@@ -1276,112 +1092,116 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
             const originalText = submitBtn.innerHTML;
-            
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-            
+
             fetch('<?php echo url("controller/cAssignHomework.php?action=create"); ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    closeAddModal();
-                    location.reload();
-                } else {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        closeAddModal();
+                        location.reload();
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi khi giao bài tập');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi khi giao bài tập');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            });
+                });
         }
 
         // Delete homework
         function deleteHomework(maBaiTap) {
-            if(!confirm('Bạn có chắc chắn muốn xóa bài tập này?')) return;
+            if (!confirm('Bạn có chắc chắn muốn xóa bài tập này?')) return;
 
             fetch('<?php echo url("controller/cAssignHomework.php?action=delete"); ?>', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'maBaiTap=' + maBaiTap
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    location.reload();
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi xảy ra khi xóa bài tập');
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'maBaiTap=' + maBaiTap
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi xảy ra khi xóa bài tập');
+                });
         }
 
         // Edit homework - CẢI TIẾN
         function editHomework(maBaiTap) {
             fetch('<?php echo url("controller/cAssignHomework.php?action=getDetail"); ?>', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'maBaiTap=' + maBaiTap
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    const hw = data.homework;
-                    
-                    // Fill form data
-                    document.getElementById('editMaBaiTap').value = hw.maBaiTap;
-                    document.getElementById('editTenBaiTap').value = hw.tenBaiTap;
-                    document.getElementById('editYeuCau').value = hw.yeuCauBaiTap || '';
-                    document.getElementById('editLop').value = hw.maLop;
-                    
-                    // Convert datetime to local format
-                    const date = new Date(hw.thoiGianNop);
-                    const localDatetime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-                        .toISOString()
-                        .slice(0, 16);
-                    document.getElementById('editThoiGianNop').value = localDatetime;
-                    
-                    // Set checkbox
-                    document.getElementById('editChoPhepNopTre').checked = hw.choPhepNopTre == 1;
-                    document.getElementById('editAnBai').checked = hw.anBai == 1;
-                    
-                    // Reset file input và ẩn file selected
-                    document.getElementById('editFileBaiTap').value = '';
-                    document.getElementById('editFileSelected').classList.remove('show');
-                    
-                    // Show current file if exists
-                    if(hw.tenFile) {
-                        document.getElementById('currentFile').style.display = 'block';
-                        document.getElementById('currentFileName').textContent = hw.tenFile;
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'maBaiTap=' + maBaiTap
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const hw = data.homework;
+
+                        // Fill form data
+                        document.getElementById('editMaBaiTap').value = hw.maBaiTap;
+                        document.getElementById('editTenBaiTap').value = hw.tenBaiTap;
+                        document.getElementById('editYeuCau').value = hw.yeuCauBaiTap || '';
+                        document.getElementById('editLop').value = hw.maLop;
+
+                        // Convert datetime to local format
+                        const date = new Date(hw.thoiGianNop);
+                        const localDatetime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                            .toISOString()
+                            .slice(0, 16);
+                        document.getElementById('editThoiGianNop').value = localDatetime;
+
+                        // Set checkbox
+                        document.getElementById('editChoPhepNopTre').checked = hw.choPhepNopTre == 1;
+                        document.getElementById('editAnBai').checked = hw.anBai == 1;
+
+                        // Reset file input và ẩn file selected
+                        document.getElementById('editFileBaiTap').value = '';
+                        document.getElementById('editFileSelected').classList.remove('show');
+
+                        // Show current file if exists
+                        if (hw.tenFile) {
+                            document.getElementById('currentFile').style.display = 'block';
+                            document.getElementById('currentFileName').textContent = hw.tenFile;
+                        } else {
+                            document.getElementById('currentFile').style.display = 'none';
+                        }
+
+                        openEditModal();
                     } else {
-                        document.getElementById('currentFile').style.display = 'none';
+                        alert('Không thể tải thông tin bài tập');
                     }
-                    
-                    openEditModal();
-                } else {
-                    alert('Không thể tải thông tin bài tập');
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi xảy ra');
-            });
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi xảy ra');
+                });
         }
 
         // Update homework
         function updateHomework() {
             const form = document.getElementById('editHomeworkForm');
-            
-            if(!form.checkValidity()) {
+
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
@@ -1389,31 +1209,31 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const formData = new FormData(form);
             const updateBtn = document.getElementById('updateBtn');
             const originalText = updateBtn.innerHTML;
-            
+
             updateBtn.disabled = true;
             updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...';
-            
+
             fetch('<?php echo url("controller/cAssignHomework.php?action=update"); ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    closeEditModal();
-                    location.reload();
-                } else {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        closeEditModal();
+                        location.reload();
+                    } else {
+                        updateBtn.disabled = false;
+                        updateBtn.innerHTML = originalText;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi khi cập nhật bài tập');
                     updateBtn.disabled = false;
                     updateBtn.innerHTML = originalText;
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi khi cập nhật bài tập');
-                updateBtn.disabled = false;
-                updateBtn.innerHTML = originalText;
-            });
+                });
         }
 
         // ========== PAGINATION ==========
@@ -1425,9 +1245,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const homeworkCards = document.querySelectorAll('[data-homework-item]');
             const totalItems = homeworkCards.length;
             totalPages = Math.ceil(totalItems / itemsPerPage);
-            
+
             console.log('Init pagination - Total items:', totalItems, 'Total pages:', totalPages);
-            
+
             if (totalItems > 0) {
                 displayPage(1);
                 renderPagination();
@@ -1440,9 +1260,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const homeworkCards = document.querySelectorAll('[data-homework-item]');
             const startIndex = (page - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            
+
             console.log(`Displaying page ${page}: showing items ${startIndex + 1} to ${Math.min(endIndex, homeworkCards.length)}`);
-            
+
             homeworkCards.forEach((card, index) => {
                 if (index >= startIndex && index < endIndex) {
                     card.style.display = 'block';
@@ -1454,7 +1274,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     card.style.opacity = '0';
                 }
             });
-            
+
             currentPage = page;
             renderPagination();
         }
@@ -1465,32 +1285,35 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 // Cuộn lên đầu trang
                 const grid = document.querySelector('.homework-grid');
                 if (grid) {
-                    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    grid.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
             }
         }
 
         function renderPagination() {
             const container = document.getElementById('paginationContainer');
-            
+
             if (!container) {
                 console.error('Pagination container not found!');
                 return;
             }
-            
+
             console.log('Rendering pagination - Total pages:', totalPages, 'Current page:', currentPage);
-            
+
             // Chỉ ẩn khi không có items, vẫn hiển thị khi có 1 trang để user thấy
             if (totalPages === 0) {
                 container.style.display = 'none';
                 console.log('No items, hiding pagination');
                 return;
             }
-            
+
             // Nếu chỉ có 1 trang, vẫn hiển thị pagination để rõ ràng
             container.style.display = 'flex';
             let html = '';
-            
+
             // Nút "Trước"
             const prevDisabled = currentPage === 1;
             html += `
@@ -1510,12 +1333,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <i class="fas fa-chevron-left"></i> Trước
                 </button>
             `;
-            
+
             // Hiển thị các nút số trang (tối đa 5 nút)
             for (let i = 1; i <= Math.min(totalPages, 5); i++) {
                 html += createPageButton(i);
             }
-            
+
             // Nút "Sau"
             const nextDisabled = currentPage === totalPages;
             html += `
@@ -1535,7 +1358,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     Sau <i class="fas fa-chevron-right"></i>
                 </button>
             `;
-            
+
             container.innerHTML = html;
         }
 
@@ -1576,7 +1399,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 }
             }, 100);
         });
-        
+
         // Backup: khởi tạo ngay nếu DOM đã sẵn sàng
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             setTimeout(function() {
@@ -1591,15 +1414,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         window.onclick = function(event) {
             const addModal = document.getElementById('addHomeworkModal');
             const editModal = document.getElementById('editHomeworkModal');
-            
+
             if (event.target == addModal) {
                 closeAddModal();
             }
-            
+
             if (event.target == editModal) {
                 closeEditModal();
             }
         }
     </script>
 </body>
+
 </html>
