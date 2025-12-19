@@ -41,7 +41,7 @@ if ($hocKy === 'canam') {
     <i class="fas fa-chart-line"></i>
     <h4>Kết quả học tập</h4>
 </div>
-<div class="grades-container">
+<div class="container">
     <div class="grades-header">
         <form method="GET" action="" class="filter-form">
             <input type="hidden" name="page" value="grades">
@@ -75,9 +75,6 @@ if ($hocKy === 'canam') {
                     <?php endforeach; ?>
                 </select>
             </div>
-
-
-            <button type="submit">Xem điểm</button>
         </form>
     </div>
 
