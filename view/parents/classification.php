@@ -1,24 +1,23 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+// File này được include từ index.php, session đã được khởi tạo
 include_once("../../model/mStudent.php");
 
-if (!isset($_SESSION['login']) || $_SESSION['loaiTaiKhoan'] != 'hocsinh') {
-    echo "<p class='error-message'>Bạn chưa đăng nhập.</p>";
+// Kiểm tra maHS từ session (đã được set bởi index.php)
+if (!isset($_SESSION['maHS']) || !$_SESSION['maHS']) {
+    echo "<p class='error-message'>Không có thông tin học sinh.</p>";
     exit;
 }
 
 $model = new mStudent();
-$info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+$maHS = $_SESSION['maHS'];
+
+// Lấy thông tin học sinh theo maHS
+$info = $model->getStudentById($maHS);
 
 if (!$info) {
     echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
     exit;
 }
-
-$maHS = $info['maHS'];
 
 // Lấy danh sách năm học
 $availableYears = $model->getAvailableYears($maHS);
@@ -26,72 +25,8 @@ $availableYears = $model->getAvailableYears($maHS);
 // Lấy năm học từ request
 $namHoc = $_GET['namHoc'] ?? ($availableYears[0] ?? '2024-2025');
 
-// Lấy kết nối database
-$conn = $model->conn ?? (new mConnect())->mConnect();
-
-// Đếm tổng số môn học trong khối của học sinh
-function getTotalSubjects($conn, $maHS) {
-    $sql = "SELECT COUNT(DISTINCT mh.maMonHoc) as totalSubjects
-            FROM monhoc mh
-            JOIN lophoc l ON l.maLop = (SELECT maLop FROM hocsinh WHERE maHS = ?)
-            JOIN khoi k ON l.maKhoi = k.maKhoi";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $maHS);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return $result['totalSubjects'] ?? 10;
-}
-
-// Tính điểm trung bình và học lực từ bảng bangdiem cho từng học kỳ
-// CHỈ XẾP LOẠI KHI HỌC SINH CÓ ĐỦ ĐIỂM TẤT CẢ CÁC MÔN
-function calculateHocLucFromBangDiem($conn, $maHS, $hocKy, $namHoc, $totalSubjects) {
-    $sql = "SELECT 
-                COUNT(*) as soMon,
-                AVG(tbDiem) as diemTB,
-                SUM(CASE WHEN tbDiem >= 8.0 THEN 1 ELSE 0 END) as monTren8,
-                SUM(CASE WHEN tbDiem >= 6.5 THEN 1 ELSE 0 END) as monTren65,
-                SUM(CASE WHEN tbDiem >= 5.0 THEN 1 ELSE 0 END) as monTren5,
-                SUM(CASE WHEN tbDiem >= 3.5 THEN 1 ELSE 0 END) as monTren35
-            FROM bangdiem 
-            WHERE maHS = ? AND hocKy = ? AND namHoc = ? AND tbDiem IS NOT NULL";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iis", $maHS, $hocKy, $namHoc);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    
-    if (!$result || $result['soMon'] == 0) {
-        return ['diemTB' => null, 'loaiHocLuc' => null];
-    }
-    
-    // KIỂM TRA: Chỉ xếp loại khi có đủ điểm tất cả các môn
-    if ($result['soMon'] < $totalSubjects) {
-        return ['diemTB' => null, 'loaiHocLuc' => null];
-    }
-    
-    $diemTB = $result['diemTB'];
-    $soMon = $result['soMon'];
-    
-    // Xếp loại theo tiêu chí
-    $loaiHocLuc = 'Chưa đạt';
-    if ($result['monTren35'] == $soMon && $result['monTren65'] == $soMon && $result['monTren8'] >= 6) {
-        $loaiHocLuc = 'Tốt';
-    } elseif ($result['monTren35'] == $soMon && $result['monTren5'] == $soMon && $result['monTren65'] >= 6) {
-        $loaiHocLuc = 'Khá';
-    } elseif ($result['monTren35'] == $soMon && $result['monTren5'] >= 6) {
-        $loaiHocLuc = 'Đạt';
-    }
-    
-    return ['diemTB' => $diemTB, 'loaiHocLuc' => $loaiHocLuc];
-}
-
-$totalSubjects = getTotalSubjects($conn, $maHS);
-
-// Tính học lực cho từng học kỳ
-$hocLucHK1 = calculateHocLucFromBangDiem($conn, $maHS, 1, $namHoc, $totalSubjects);
-$hocLucHK2 = calculateHocLucFromBangDiem($conn, $maHS, 2, $namHoc, $totalSubjects);
+// Lấy dữ liệu học lực từ bảng hocluc
+$hocLucData = $model->getHocLuc($maHS, $namHoc);
 
 // Lấy dữ liệu hạnh kiểm từ bảng hanhkiem
 $hanhKiemHK1 = $model->getHanhKiem($maHS, 1, $namHoc);
@@ -123,22 +58,22 @@ function getHanhKiemClass($loaiHK) {
 // Chuẩn bị dữ liệu xếp loại cho 3 kỳ (HK1, HK2, Cả năm)
 $classifications = [];
 
-// Học kỳ 1 - CHỈ HIỂN THỊ HẠNH KIỂM KHI CÓ HỌC LỰC
+// Học kỳ 1
 $classifications[1] = [
-    'diemTB' => $hocLucHK1['diemTB'] ? number_format($hocLucHK1['diemTB'], 2) : '-',
-    'hocLuc' => $hocLucHK1['loaiHocLuc'] ?? 'Chưa có dữ liệu',
-    'hocLucClass' => getHocLucClass($hocLucHK1['loaiHocLuc'] ?? null),
-    'hanhKiem' => ($hocLucHK1['loaiHocLuc'] && $hanhKiemHK1 && $hanhKiemHK1['loaiHK']) ? $hanhKiemHK1['loaiHK'] : 'Chưa có dữ liệu',
-    'hanhKiemClass' => ($hocLucHK1['loaiHocLuc'] && $hanhKiemHK1) ? getHanhKiemClass($hanhKiemHK1['loaiHK'] ?? null) : 'no-data'
+    'diemTB' => $hocLucData && $hocLucData['diemTBHK1'] ? number_format($hocLucData['diemTBHK1'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => $hanhKiemHK1 && $hanhKiemHK1['loaiHK'] ? $hanhKiemHK1['loaiHK'] : 'Chưa có dữ liệu',
+    'hanhKiemClass' => getHanhKiemClass($hanhKiemHK1['loaiHK'] ?? null)
 ];
 
-// Học kỳ 2 - CHỈ HIỂN THỊ HẠNH KIỂM KHI CÓ HỌC LỰC
+// Học kỳ 2
 $classifications[2] = [
-    'diemTB' => $hocLucHK2['diemTB'] ? number_format($hocLucHK2['diemTB'], 2) : '-',
-    'hocLuc' => $hocLucHK2['loaiHocLuc'] ?? 'Chưa có dữ liệu',
-    'hocLucClass' => getHocLucClass($hocLucHK2['loaiHocLuc'] ?? null),
-    'hanhKiem' => ($hocLucHK2['loaiHocLuc'] && $hanhKiemHK2 && $hanhKiemHK2['loaiHK']) ? $hanhKiemHK2['loaiHK'] : 'Chưa có dữ liệu',
-    'hanhKiemClass' => ($hocLucHK2['loaiHocLuc'] && $hanhKiemHK2) ? getHanhKiemClass($hanhKiemHK2['loaiHK'] ?? null) : 'no-data'
+    'diemTB' => $hocLucData && $hocLucData['diemTBHK2'] ? number_format($hocLucData['diemTBHK2'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => $hanhKiemHK2 && $hanhKiemHK2['loaiHK'] ? $hanhKiemHK2['loaiHK'] : 'Chưa có dữ liệu',
+    'hanhKiemClass' => getHanhKiemClass($hanhKiemHK2['loaiHK'] ?? null)
 ];
 
 // Kiểm tra điều kiện để nhận danh hiệu
@@ -154,52 +89,25 @@ if ($hanhKiem2 && (stripos($hanhKiem2, 'chua') !== false || stripos($hanhKiem2, 
     $coDuDieuKienDanhHieu = false;
 }
 
-// Cả năm - Tính trung bình cả 2 học kỳ
-$diemTBCaNam = null;
-$loaiHocLucCaNam = null;
-if ($hocLucHK1['diemTB'] && $hocLucHK2['diemTB']) {
-    $diemTBCaNam = ($hocLucHK1['diemTB'] + $hocLucHK2['diemTB']) / 2;
-    
-    // Xếp loại cả năm dựa trên điểm TB cả năm và xếp loại từng kỳ
-    if ($diemTBCaNam >= 8.0 && ($hocLucHK1['loaiHocLuc'] == 'Tốt' || $hocLucHK2['loaiHocLuc'] == 'Tốt')) {
-        $loaiHocLucCaNam = 'Tốt';
-    } elseif ($diemTBCaNam >= 6.5 && ($hocLucHK1['loaiHocLuc'] == 'Khá' || $hocLucHK2['loaiHocLuc'] == 'Khá')) {
-        $loaiHocLucCaNam = 'Khá';
-    } elseif ($diemTBCaNam >= 5.0) {
-        $loaiHocLucCaNam = 'Đạt';
-    } else {
-        $loaiHocLucCaNam = 'Chưa đạt';
-    }
-} elseif ($hocLucHK1['diemTB']) {
-    $diemTBCaNam = $hocLucHK1['diemTB'];
-    $loaiHocLucCaNam = $hocLucHK1['loaiHocLuc'];
-} elseif ($hocLucHK2['diemTB']) {
-    $diemTBCaNam = $hocLucHK2['diemTB'];
-    $loaiHocLucCaNam = $hocLucHK2['loaiHocLuc'];
-}
-
-// CẢ NĂM - CHỈ TÍNH KHI CẢ 2 HỌC KỲ ĐỀU CÓ HỌC LỰC
-$hanhKiemCaNam = 'Chưa có dữ liệu';
-$hanhKiemCaNamClass = 'no-data';
-if ($loaiHocLucCaNam && $loaiHocLucCaNam !== 'Chưa có dữ liệu' && $hanhKiemHK1 && $hanhKiemHK2) {
-    $hanhKiemCaNam = ($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt') ? 'Tốt' : 'Khá';
-    $hanhKiemCaNamClass = getHanhKiemClass($hanhKiemCaNam);
-}
-
+// Cả năm
 $classifications['canam'] = [
-    'diemTB' => $diemTBCaNam ? number_format($diemTBCaNam, 2) : '-',
-    'hocLuc' => $loaiHocLucCaNam ?? 'Chưa có dữ liệu',
-    'hocLucClass' => getHocLucClass($loaiHocLucCaNam),
-    'hanhKiem' => $hanhKiemCaNam,
-    'hanhKiemClass' => $hanhKiemCaNamClass,
-    'danhHieu' => ($loaiHocLucCaNam && $loaiHocLucCaNam !== 'Chưa có dữ liệu' && $danhHieu && $coDuDieuKienDanhHieu) ? $danhHieu['tenDanhHieu'] : null
+    'diemTB' => $hocLucData && $hocLucData['diemTBCaNam'] ? number_format($hocLucData['diemTBCaNam'], 2) : '-',
+    'hocLuc' => $hocLucData && $hocLucData['loaiHocLuc'] ? $hocLucData['loaiHocLuc'] : 'Chưa có dữ liệu',
+    'hocLucClass' => getHocLucClass($hocLucData['loaiHocLuc'] ?? null),
+    'hanhKiem' => ($hanhKiemHK1 && $hanhKiemHK2) ? 
+                  ($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt' ? 'Tốt' : 'Khá') : 
+                  'Chưa có dữ liệu',
+    'hanhKiemClass' => ($hanhKiemHK1 && $hanhKiemHK2) ? 
+                       getHanhKiemClass($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt' ? 'Tốt' : 'Khá') : 
+                       'no-data',
+    'danhHieu' => ($danhHieu && $coDuDieuKienDanhHieu) ? $danhHieu['tenDanhHieu'] : null
 ];
 ?>
 <div class="title-header">
     <i class="fas fa-star"></i>
     <h4>Xếp loại học sinh</h4>
 </div>
-<div class="container">
+<div class="classification-container">
 
     <div class="classification-header">
 
@@ -216,6 +124,7 @@ $classifications['canam'] = [
                 <?php endforeach; ?>
             </select>
 
+            <button type="submit">Xem xếp loại</button>
         </form>
     </div>
 
@@ -224,7 +133,7 @@ $classifications['canam'] = [
             <p>Chưa có dữ liệu xếp loại cho năm học <?= $namHoc ?></p>
         </div>
     <?php else: ?>
-        <div class="common-grid classification-grid">
+        <div class="classification-grid">
             <!-- Học kỳ 1 -->
             <div class="classification-card">
                 <h3>Học kỳ 1</h3>

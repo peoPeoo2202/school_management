@@ -151,7 +151,12 @@ class mSubmitHomework
 
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("iii", $lop, $lop, $maHS);
+        if (!$stmt) {
+            error_log("SQL Error in getSubjectsForStudent: " . $this->conn->error);
+            return [];
+        }
+        
+        $stmt->bind_param("i", $lop);
         $stmt->execute();
         $result = $stmt->get_result();
 

@@ -19,12 +19,16 @@ class mInsertGrade
     public function getSubjectsByTeacher($maGV)
     {
         $sql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc 
-                FROM lichday ld
-                JOIN monhoc mh ON ld.maMonHoc = mh.maMonHoc
-                WHERE ld.maGV = ?
+                FROM phancong_gvbm pc
+                JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
+                WHERE pc.maGV = ?
                 ORDER BY mh.tenMonHoc";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error in getSubjectsByTeacher: " . $this->conn->error);
+            return [];
+        }
         $stmt->bind_param("i", $maGV);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -46,13 +50,17 @@ class mInsertGrade
     public function getClassesByTeacherAndSubject($maGV, $maMonHoc)
     {
         $sql = "SELECT DISTINCT lh.maLop, lh.tenLop, k.khoiLop, lh.namHoc
-                FROM phancong_giangday pc
+                FROM phancong_gvbm pc
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
                 WHERE pc.maGV = ? AND pc.maMonHoc = ?
                 ORDER BY lh.tenLop";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error in getClassesByTeacherAndSubject: " . $this->conn->error);
+            return [];
+        }
         $stmt->bind_param("ii", $maGV, $maMonHoc);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -104,6 +112,10 @@ class mInsertGrade
                 ORDER BY hs.hoTen";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error in getStudentsWithGrades: " . $this->conn->error);
+            return [];
+        }
         $stmt->bind_param("iisi", $maMonHoc, $hocKy, $namHoc, $maLop);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -126,10 +138,14 @@ class mInsertGrade
     public function checkTeacherPermission($maGV, $maLop, $maMonHoc)
     {
         $sql = "SELECT COUNT(*) as count 
-                FROM phancong_giangday 
+                FROM phancong_gvbm 
                 WHERE maGV = ? AND maLop = ? AND maMonHoc = ?";
         
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error in checkTeacherPermission: " . $this->conn->error);
+            return false;
+        }
         $stmt->bind_param("iii", $maGV, $maLop, $maMonHoc);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
@@ -239,6 +255,9 @@ class mInsertGrade
                     WHERE maHS = ? AND maMonHoc = ? AND hocKy = ? AND namHoc = ?
                     LIMIT 1";
             $stmt = $this->conn->prepare($sql);
+            if (!$stmt) {
+                return ['success' => false, 'message' => 'Lỗi SQL: ' . $this->conn->error];
+            }
             $stmt->bind_param("iiis", $maHS, $maMonHoc, $hocKy, $namHoc);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -246,72 +265,74 @@ class mInsertGrade
             $stmt->close();
             
             if ($existing) {
-                // Đã có điểm -> Cập nhật CHỈ các cột có giá trị (không NULL)
-                // Xây dựng query động để chỉ update các cột được truyền vào
-                $updateFields = [];
-                $params = [];
-                $types = "";
+                // Đã có điểm -> Đọc lại toàn bộ điểm hiện có từ database
+                $sqlSelect = "SELECT diemTX1, diemTX2, diemTX3, diemTX4, diemGiuaKy, diemCuoiKy, nhanXet 
+                              FROM bangdiem WHERE maBangDiem = ?";
+                $stmtSelect = $this->conn->prepare($sqlSelect);
+                if (!$stmtSelect) {
+                    return ['success' => false, 'message' => 'Lỗi SQL SELECT: ' . $this->conn->error];
+                }
+                $stmtSelect->bind_param("i", $existing['maBangDiem']);
+                $stmtSelect->execute();
+                $currentGrades = $stmtSelect->get_result()->fetch_assoc();
+                $stmtSelect->close();
                 
-                // Kiểm tra từng cột điểm
-                if (isset($grades['diemTX1']) && $grades['diemTX1'] !== null && $grades['diemTX1'] !== '') {
-                    $updateFields[] = "diemTX1 = ?";
-                    $params[] = $grades['diemTX1'];
-                    $types .= "d";
-                }
-                if (isset($grades['diemTX2']) && $grades['diemTX2'] !== null && $grades['diemTX2'] !== '') {
-                    $updateFields[] = "diemTX2 = ?";
-                    $params[] = $grades['diemTX2'];
-                    $types .= "d";
-                }
-                if (isset($grades['diemTX3']) && $grades['diemTX3'] !== null && $grades['diemTX3'] !== '') {
-                    $updateFields[] = "diemTX3 = ?";
-                    $params[] = $grades['diemTX3'];
-                    $types .= "d";
-                }
-                if (isset($grades['diemTX4']) && $grades['diemTX4'] !== null && $grades['diemTX4'] !== '') {
-                    $updateFields[] = "diemTX4 = ?";
-                    $params[] = $grades['diemTX4'];
-                    $types .= "d";
-                }
-                if (isset($grades['diemGiuaKy']) && $grades['diemGiuaKy'] !== null && $grades['diemGiuaKy'] !== '') {
-                    $updateFields[] = "diemGiuaKy = ?";
-                    $params[] = $grades['diemGiuaKy'];
-                    $types .= "d";
-                }
-                if (isset($grades['diemCuoiKy']) && $grades['diemCuoiKy'] !== null && $grades['diemCuoiKy'] !== '') {
-                    $updateFields[] = "diemCuoiKy = ?";
-                    $params[] = $grades['diemCuoiKy'];
-                    $types .= "d";
-                }
+                // Merge điểm mới với điểm cũ (ưu tiên điểm mới nếu có)
+                $tx1 = isset($grades['diemTX1']) && $grades['diemTX1'] !== null && $grades['diemTX1'] !== '' 
+                       ? $grades['diemTX1'] : $currentGrades['diemTX1'];
+                $tx2 = isset($grades['diemTX2']) && $grades['diemTX2'] !== null && $grades['diemTX2'] !== '' 
+                       ? $grades['diemTX2'] : $currentGrades['diemTX2'];
+                $tx3 = isset($grades['diemTX3']) && $grades['diemTX3'] !== null && $grades['diemTX3'] !== '' 
+                       ? $grades['diemTX3'] : $currentGrades['diemTX3'];
+                $tx4 = isset($grades['diemTX4']) && $grades['diemTX4'] !== null && $grades['diemTX4'] !== '' 
+                       ? $grades['diemTX4'] : $currentGrades['diemTX4'];
+                $gk = isset($grades['diemGiuaKy']) && $grades['diemGiuaKy'] !== null && $grades['diemGiuaKy'] !== '' 
+                      ? $grades['diemGiuaKy'] : $currentGrades['diemGiuaKy'];
+                $ck = isset($grades['diemCuoiKy']) && $grades['diemCuoiKy'] !== null && $grades['diemCuoiKy'] !== '' 
+                      ? $grades['diemCuoiKy'] : $currentGrades['diemCuoiKy'];
+                $nhanXet = isset($grades['nhanXet']) && $grades['nhanXet'] !== null && $grades['nhanXet'] !== '' 
+                           ? $grades['nhanXet'] : $currentGrades['nhanXet'];
                 
-                // Luôn update tbDiem nếu đã tính được (có đủ GK và CK)
-                // Nếu tbDiem = null (không đủ GK/CK) thì KHÔNG update cột tbDiem
-                if ($tbDiem !== null) {
-                    $updateFields[] = "tbDiem = ?";
-                    $params[] = $tbDiem;
-                    $types .= "d";
-                }
+                // Tính lại điểm trung bình dựa trên dữ liệu đầy đủ (cả cũ + mới)
+                $mergedGrades = [
+                    'diemTX1' => $tx1,
+                    'diemTX2' => $tx2,
+                    'diemTX3' => $tx3,
+                    'diemTX4' => $tx4,
+                    'diemGiuaKy' => $gk,
+                    'diemCuoiKy' => $ck
+                ];
+                $tbDiemNew = $this->calculateAverage($mergedGrades);
                 
-                // Update nhận xét nếu có
-                if (isset($grades['nhanXet']) && $grades['nhanXet'] !== null && $grades['nhanXet'] !== '') {
-                    $updateFields[] = "nhanXet = ?";
-                    $params[] = $grades['nhanXet'];
-                    $types .= "s";
-                }
-                
-                // Nếu không có gì để update, trả về thành công
-                if (empty($updateFields)) {
-                    return ['success' => true, 'message' => 'Không có thay đổi'];
-                }
-                
-                // Thêm maBangDiem vào cuối
-                $params[] = $existing['maBangDiem'];
-                $types .= "i";
-                
-                $sql = "UPDATE bangdiem SET " . implode(", ", $updateFields) . " WHERE maBangDiem = ?";
+                // UPDATE tất cả các cột với giá trị đã merge
+                $sql = "UPDATE bangdiem SET 
+                        diemTX1 = ?,
+                        diemTX2 = ?,
+                        diemTX3 = ?,
+                        diemTX4 = ?,
+                        diemGiuaKy = ?,
+                        diemCuoiKy = ?,
+                        tbDiem = ?,
+                        nhanXet = ?
+                        WHERE maBangDiem = ?";
                 
                 $stmt = $this->conn->prepare($sql);
-                $stmt->bind_param($types, ...$params);
+                if (!$stmt) {
+                    return ['success' => false, 'message' => 'Lỗi SQL UPDATE: ' . $this->conn->error];
+                }
+                
+                $stmt->bind_param(
+                    "dddddddsi",
+                    $tx1,
+                    $tx2,
+                    $tx3,
+                    $tx4,
+                    $gk,
+                    $ck,
+                    $tbDiemNew,
+                    $nhanXet,
+                    $existing['maBangDiem']
+                );
                 
                 if ($stmt->execute()) {
                     $stmt->close();
@@ -331,6 +352,9 @@ class mInsertGrade
                 $nhanXet = isset($grades['nhanXet']) ? $grades['nhanXet'] : null;
                 
                 $stmt = $this->conn->prepare($sql);
+                if (!$stmt) {
+                    return ['success' => false, 'message' => 'Lỗi SQL INSERT: ' . $this->conn->error];
+                }
                 $stmt->bind_param(
                     "iiisddddddds",
                     $maHS,
