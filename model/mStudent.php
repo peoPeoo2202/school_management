@@ -4,7 +4,7 @@ include_once("mAccount.php");
 
 class mStudent
 {
-    private $conn;
+    public $conn;
     private $mAccount;
 
     public function __construct()

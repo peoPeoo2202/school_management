@@ -104,8 +104,9 @@ while ($row = $schedule->fetch_assoc()) {
 <div class="title-header">
   <i class="fas fa-calendar-alt"></i>
   <h4>Lịch học của bạn</h4>
-  </div>
-<div class="timetable-container">
+</div>
+<div class="container">
+  <div class="timetable-title"><h2>Thời khóa biểu</h2></div>
   <?php
   $buoiNames = ['sang' => 'SÁNG', 'chieu' => 'CHIỀU'];
 
@@ -140,7 +141,7 @@ while ($row = $schedule->fetch_assoc()) {
             echo "Tiết $tiet<br>";
             if (isset($tietTimes[$buoi][$tiet])) {
               echo "<small class='timetable-time'>" .
-                $tietTimes[$buoi][$tiet]['start'] ." - " .
+                $tietTimes[$buoi][$tiet]['start'] . " - " .
                 $tietTimes[$buoi][$tiet]['end'] . "</small>";
             }
             echo "</td>";

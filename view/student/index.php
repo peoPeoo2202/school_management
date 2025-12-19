@@ -28,64 +28,6 @@ $_SESSION['hoTen'] = $info['hoTen'];
     <title>Trang chủ học sinh</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Fix layout - prevent content from being hidden behind navbar */
-        .main-wrapper {
-            display: flex;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .student-navbar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-            background: #2c3e50;
-        }
-        
-        .content-area {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            min-height: 100vh;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        
-        /* Responsive design for mobile */
-        @media (max-width: 768px) {
-            .student-navbar {
-                transform: translateX(-250px);
-                transition: transform 0.3s ease;
-            }
-            
-            .student-navbar.active {
-                transform: translateX(0);
-            }
-            
-            .content-area {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .navbar-toggle {
-                position: fixed;
-                top: 10px;
-                left: 10px;
-                z-index: 1001;
-                background: #2c3e50;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 5px;
-                cursor: pointer;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="main-wrapper">
@@ -93,20 +35,20 @@ $_SESSION['hoTen'] = $info['hoTen'];
         <?php include(__DIR__ . '/../layouts/navigate/navigateStudent.php'); ?>
 
         <!-- Main Content -->
-        <div class="content-area">
-            <?php
-                $page = $_GET['page'] ?? 'timeTable';
-                if($page == 'grades'){
-                    include_once('grades.php');
-                }elseif($page == 'classification'){
-                    include_once('classification.php');
-                }elseif($page == 'submitHomework'){
-                    include_once('submitHomework.php');
-                }else{
-                    include_once('timeTable.php');
-                }
-            ?>
-        </div>
+            <div class="content-area">
+                <?php
+                    $page = $_GET['page'] ?? 'timeTable';
+                    if($page == 'grades'){
+                        include_once('grades.php');
+                    }elseif($page == 'classification'){
+                        include_once('classification.php');
+                    }elseif($page == 'submitHomework'){
+                        include_once('../student/homework/index.php');
+                    }else{
+                        include_once('timeTable.php');
+                    }
+                ?>
+            </div>
     </div>
 
     <script>

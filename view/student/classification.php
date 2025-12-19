@@ -199,7 +199,7 @@ $classifications['canam'] = [
     <i class="fas fa-star"></i>
     <h4>Xếp loại học sinh</h4>
 </div>
-<div class="classification-container">
+<div class="container">
 
     <div class="classification-header">
 
@@ -216,7 +216,6 @@ $classifications['canam'] = [
                 <?php endforeach; ?>
             </select>
 
-            <button type="submit">Xem xếp loại</button>
         </form>
     </div>
 
@@ -225,7 +224,7 @@ $classifications['canam'] = [
             <p>Chưa có dữ liệu xếp loại cho năm học <?= $namHoc ?></p>
         </div>
     <?php else: ?>
-        <div class="classification-grid">
+        <div class="common-grid classification-grid">
             <!-- Học kỳ 1 -->
             <div class="classification-card">
                 <h3>Học kỳ 1</h3>
