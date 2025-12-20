@@ -68,7 +68,7 @@ while ($row = $schedule->fetch_assoc()) {
   $thu = $dayOfWeek;
 
   // Bỏ qua Chủ nhật (1) và Thứ 7 (7)
-  if ($thu < 2 || $thu > 6) {
+  if ($thu < 2 || $thu > 7) {
     continue;
   }
 
@@ -105,69 +105,106 @@ while ($row = $schedule->fetch_assoc()) {
   <i class="fas fa-calendar-alt"></i>
   <h4>Lịch học của bạn</h4>
 </div>
-<div class="container">
-  <div class="timetable-title"><h2>Thời khóa biểu</h2></div>
-  <?php
-  $buoiNames = ['sang' => 'SÁNG', 'chieu' => 'CHIỀU'];
+<!-- ====== CONTAINER BUỔI SÁNG ====== -->
+<div class="timetable-body">
+  <div class="container">
+    <div class="timetable-title">
+      <h2 class="section-title"><i class="fas fa-sun"></i> BUỔI SÁNG ( 07:00 - 11:30 )</h2>
+    </div>
 
-  foreach (['sang', 'chieu'] as $buoi):
-  ?>
-
+    <?php $buoi = 'sang'; ?>
     <div class="timetable-section">
-      <!-- <h4 class="timetable-section-title">
-        <?= $buoiNames[$buoi] ?>
-      </h4> -->
       <table class="timetable-table">
         <thead>
           <tr>
-            <th class="buoi-column">Buổi</th>
             <th class="tiet-column">Tiết</th>
             <th>Thứ 2</th>
             <th>Thứ 3</th>
             <th>Thứ 4</th>
             <th>Thứ 5</th>
             <th>Thứ 6</th>
+            <th>Thứ 7</th>
           </tr>
         </thead>
         <tbody>
-          <?php
-          for ($tiet = 1; $tiet <= 5; $tiet++) {
-            echo "<tr>";
-            if ($tiet === 1) {
-              echo "<td class='buoi-cell' rowspan='5'>" . $buoiNames[$buoi] . "</td>";
-            }
-            // Cột tiết học với thời gian
-            echo "<td class='tiet-cell'>";
-            echo "Tiết $tiet<br>";
-            if (isset($tietTimes[$buoi][$tiet])) {
-              echo "<small class='timetable-time'>" .
-                $tietTimes[$buoi][$tiet]['start'] . " - " .
-                $tietTimes[$buoi][$tiet]['end'] . "</small>";
-            }
-            echo "</td>";
+          <?php for ($tiet = 1; $tiet <= 5; $tiet++): ?>
+            <tr>
+              <td class="tiet-cell">
+                <?php echo "Tiết $tiet"; ?><br>
+                <?php if (isset($tietTimes[$buoi][$tiet])): ?>
+                  <small class="timetable-time">
+                    <?php echo $tietTimes[$buoi][$tiet]['start'] . " - " . $tietTimes[$buoi][$tiet]['end']; ?>
+                  </small>
+                <?php endif; ?>
+              </td>
 
-            for ($thu = 2; $thu <= 6; $thu++) {
-              if (isset($timetable[$buoi][$tiet][$thu])) {
-                $data = $timetable[$buoi][$tiet][$thu];
-                echo "<td>";
-                echo "<span class='timetable-subject'>" .
-                  htmlspecialchars($data['monHoc']) . "</span>";
-                if (!empty($data['giaoVien'])) {
-                  echo "<span class='timetable-teacher'> " .
-                    htmlspecialchars($data['giaoVien']) . "</span>";
-                }
-                echo "</td>";
-              } else {
-                echo "<td class='empty-cell'>-</td>";
-              }
-            }
-
-            echo "</tr>";
-          }
-          ?>
+              <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                <?php if (isset($timetable[$buoi][$tiet][$thu])): $cell = $timetable[$buoi][$tiet][$thu]; ?>
+                  <td>
+                    <span class="timetable-subject"><?php echo htmlspecialchars($cell['monHoc']); ?></span>
+                    <?php if (!empty($cell['giaoVien'])): ?>
+                      <span class="timetable-teacher"><?php echo htmlspecialchars($cell['giaoVien']); ?></span>
+                    <?php endif; ?>
+                  </td>
+                <?php else: ?>
+                  <td class="empty-cell">-</td>
+                <?php endif; ?>
+              <?php endfor; ?>
+            </tr>
+          <?php endfor; ?>
         </tbody>
       </table>
     </div>
+  </div>
 
-  <?php endforeach; ?>
+  <div class="container">
+    <div class="timetable-title">
+      <h2 class="section-title"><i class="fas fa-cloud-sun"></i> BUỔI CHIỀU ( 12:00 - 16:30 )</h2>
+    </div>
+
+    <?php $buoi = 'chieu'; ?>
+    <div class="timetable-section">
+      <table class="timetable-table">
+        <thead>
+          <tr>
+            <th class="tiet-column">Tiết</th>
+            <th>Thứ 2</th>
+            <th>Thứ 3</th>
+            <th>Thứ 4</th>
+            <th>Thứ 5</th>
+            <th>Thứ 6</th>
+            <th>Thứ 7</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php for ($tiet = 1; $tiet <= 5; $tiet++): ?>
+            <tr>
+              <td class="tiet-cell">
+                <?php echo "Tiết $tiet"; ?><br>
+                <?php if (isset($tietTimes[$buoi][$tiet])): ?>
+                  <small class="timetable-time">
+                    <?php echo $tietTimes[$buoi][$tiet]['start'] . " - " . $tietTimes[$buoi][$tiet]['end']; ?>
+                  </small>
+                <?php endif; ?>
+              </td>
+
+              <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                <?php if (isset($timetable[$buoi][$tiet][$thu])): $cell = $timetable[$buoi][$tiet][$thu]; ?>
+                  <td>
+                    <span class="timetable-subject"><?php echo htmlspecialchars($cell['monHoc']); ?></span>
+                    <?php if (!empty($cell['giaoVien'])): ?>
+                      <span class="timetable-teacher"><?php echo htmlspecialchars($cell['giaoVien']); ?></span>
+                    <?php endif; ?>
+                  </td>
+                <?php else: ?>
+                  <td class="empty-cell">-</td>
+                <?php endif; ?>
+              <?php endfor; ?>
+            </tr>
+          <?php endfor; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>

@@ -66,35 +66,6 @@ $maGV = $_SESSION['maGV'] ?? null;
     <title>Dashboard - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        @media (max-width: 768px) {
-            .main-wrapper {
-                flex-direction: column;
-            }
-
-            .content-area {
-                margin-left: 0;
-                padding: 15px;
-            }
-
-            /* .header-section {
-                flex-direction: column;
-                text-align: center;
-            } */
-
-            .header-right {
-                text-align: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>

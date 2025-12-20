@@ -490,7 +490,6 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    border-radius: 8px;
     overflow: hidden;
 }
 
@@ -545,8 +544,8 @@ table tbody td:first-child small {
     margin-bottom: 24px;
 }
 .timetable-title h2 {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
     color: #2f5fa7;
 }
 
@@ -557,6 +556,11 @@ table tbody td:first-child small {
     height: 1px;
     background: #cbcedd;
     border-radius: 2px;
+}
+.timetable-body{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 .timetable-section {
     margin-bottom: 24px;

@@ -1,6 +1,7 @@
 <?php
 $subjects = $controller->getAllSubjectsForStudent($maHS);
 ?>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 
@@ -146,85 +147,67 @@ $subjects = $controller->getAllSubjectsForStudent($maHS);
         return str;
     }
 
-    const searchInput = document.getElementById('searchInput');
-    const noResults = document.getElementById('noResults');
-    const gridContainer = document.querySelector('.subject-grid-container');
-    const subjectCards = document.querySelectorAll('.subject-card');
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const subjectGrid = document.getElementById('subjectGrid');
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+        const gridContainer = document.querySelector('.subject-grid-container');
+        const subjectGrid = document.getElementById('subjectGrid');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const subjectCards = document.querySelectorAll('.subject-card');
 
-    function updateResultState() {
-        let visibleCount = 0;
+        // Nếu trang này không có các phần tử filter/search thì thoát luôn
+        if (!searchInput || !noResults || !gridContainer || !subjectGrid || subjectCards.length === 0) return;
 
-        subjectCards.forEach(card => {
-            if (card.style.display !== 'none') {
-                visibleCount++;
+        function filterSubjects(searchTerm, filter) {
+            let visibleCount = 0;
+
+            subjectCards.forEach(card => {
+                const name = card.dataset.name || '';
+                const nameNormalized = removeVietnameseTones(name);
+                const total = parseInt(card.dataset.total || '0');
+                const overdue = parseInt(card.dataset.overdue || '0');
+
+                const matchesSearch = searchTerm === '' ||
+                    name.includes(searchTerm) ||
+                    nameNormalized.includes(searchTerm);
+
+                let matchesFilter = true;
+                if (filter === 'have-homework') matchesFilter = total > 0;
+                else if (filter === 'overdue') matchesFilter = overdue > 0;
+
+                if (matchesSearch && matchesFilter) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                subjectGrid.style.display = 'none';
+                noResults.style.display = 'block';
+            } else {
+                subjectGrid.style.display = 'grid';
+                noResults.style.display = 'none';
             }
-        });
-
-        if (visibleCount === 0) {
-            gridContainer.style.display = 'none';
-            noResults.style.display = 'block';
-        } else {
-            gridContainer.style.display = 'block';
-            noResults.style.display = 'none';
         }
-    }
-    let currentFilter = 'all';
 
-    searchInput.addEventListener('input', function() {
-        const keyword = this.value.toLowerCase();
+        let currentFilter = 'all';
 
-        subjectCards.forEach(card => {
-            const name = card.dataset.name;
-            card.style.display = name.includes(keyword) ? 'flex' : 'none';
-        });
-
-        updateResultState();
-    });
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            currentFilter = this.dataset.filter;
-            const searchTerm = removeVietnameseTones(searchInput.value.toLowerCase());
+        searchInput.addEventListener('input', function() {
+            const searchTerm = removeVietnameseTones(this.value.toLowerCase());
             filterSubjects(searchTerm, currentFilter);
         });
-    });
 
-    function filterSubjects(searchTerm, filter) {
-        let visibleCount = 0;
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
 
-        subjectCards.forEach(card => {
-            const name = card.dataset.name;
-            const nameNormalized = removeVietnameseTones(name);
-            const total = parseInt(card.dataset.total);
-            const overdue = parseInt(card.dataset.overdue);
-
-            const matchesSearch = searchTerm === '' ||
-                name.includes(searchTerm) ||
-                nameNormalized.includes(searchTerm);
-
-            let matchesFilter = true;
-            if (filter === 'have-homework') matchesFilter = total > 0;
-            else if (filter === 'overdue') matchesFilter = overdue > 0;
-
-            if (matchesSearch && matchesFilter) {
-                card.classList.remove('hidden');
-                visibleCount++;
-            } else {
-                card.classList.add('hidden');
-            }
+                currentFilter = this.dataset.filter || 'all';
+                const searchTerm = removeVietnameseTones(searchInput.value.toLowerCase());
+                filterSubjects(searchTerm, currentFilter);
+            });
         });
-
-        if (visibleCount === 0) {
-            subjectGrid.style.display = 'none';
-            noResults.style.display = 'block';
-        } else {
-            subjectGrid.style.display = 'grid';
-            noResults.style.display = 'none';
-        }
-    }
+    });
 </script>
