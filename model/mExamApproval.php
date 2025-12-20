@@ -36,6 +36,20 @@ class mExamApproval
     public function getExamsByDepartment($maTTBM = null, $trangThai = null)
     {
         try {
+            // Lấy toBoMon của TTBM
+            $toBoMon = null;
+            if ($maTTBM !== null) {
+                $sqlToBM = "SELECT gv.toBoMon FROM ttbm t INNER JOIN giaovien gv ON t.maGV = gv.maGV WHERE t.maTTBM = ?";
+                $stmtToBM = $this->connection->prepare($sqlToBM);
+                $stmtToBM->bind_param("i", $maTTBM);
+                $stmtToBM->execute();
+                $resultToBM = $stmtToBM->get_result();
+                if ($rowToBM = $resultToBM->fetch_assoc()) {
+                    $toBoMon = $rowToBM['toBoMon'];
+                }
+                $stmtToBM->close();
+            }
+
             $sql = "SELECT 
                         d.maDeThi,
                         d.tenDeThi,
@@ -44,30 +58,33 @@ class mExamApproval
                         d.hocKy,
                         d.namHoc,
                         d.trangThai,
-                        d.maBGH,
-                        d.maTTBM,
-                        t.maGV,
-                        gv.hoTen as tenGV,
+                        d.maGV,
+                        gv.hoTen as tenGVNop,
                         gv.toBoMon,
+                        gv.email as emailGV,
+                        d.tenFile,
+                        d.duongDan,
+                        d.moTa,
+                        d.loaiDeThi,
+                        d.maKyThi,
+                        k.tenKyThi,
                         DATE_FORMAT(d.ngayTao, '%d/%m/%Y %H:%i') as ngayTao,
                         DATE_FORMAT(d.ngayDuyet, '%d/%m/%Y %H:%i') as ngayDuyet,
-                        d.lyDoTuChoi,
-                        d.noiDungDeThi,
-                        d.thoiGianLamBai,
-                        d.loaiDeThi
+                        d.lyDoDuyet
                     FROM dethi d
                     INNER JOIN monhoc m ON d.maMonHoc = m.maMonHoc
-                    LEFT JOIN ttbm t ON d.maTTBM = t.maTTBM
-                    LEFT JOIN giaovien gv ON t.maGV = gv.maGV
-                    WHERE 1=1";
+                    LEFT JOIN giaovien gv ON d.maGV = gv.maGV
+                    LEFT JOIN kythi k ON d.maKyThi = k.maKyThi
+                    WHERE d.maGV IS NOT NULL";
 
             $params = [];
             $types = "";
 
-            if ($maTTBM !== null) {
-                $sql .= " AND d.maTTBM = ?";
-                $params[] = $maTTBM;
-                $types .= "i";
+            // Lọc theo tổ bộ môn của TTBM
+            if ($toBoMon !== null) {
+                $sql .= " AND gv.toBoMon = ?";
+                $params[] = $toBoMon;
+                $types .= "s";
             }
 
             if ($trangThai !== null && $trangThai !== '') {
@@ -135,21 +152,23 @@ class mExamApproval
                     d.hocKy,
                     d.namHoc,
                     d.trangThai,
-                    d.maBGH,
-                    d.maTTBM,
-                    t.maGV,
-                    gv.hoTen as tenGV,
+                    d.maGV,
+                    gv.hoTen as tenGVNop,
                     gv.toBoMon,
+                    gv.email as emailGV,
+                    d.tenFile,
+                    d.duongDan,
+                    d.moTa,
+                    d.loaiDeThi,
+                    d.maKyThi,
+                    k.tenKyThi,
                     DATE_FORMAT(d.ngayTao, '%d/%m/%Y %H:%i') as ngayTao,
                     DATE_FORMAT(d.ngayDuyet, '%d/%m/%Y %H:%i') as ngayDuyet,
-                    d.lyDoTuChoi,
-                    d.noiDungDeThi,
-                    d.thoiGianLamBai,
-                    d.loaiDeThi
+                    d.lyDoDuyet
                 FROM dethi d
                 INNER JOIN monhoc m ON d.maMonHoc = m.maMonHoc
-                LEFT JOIN ttbm t ON d.maTTBM = t.maTTBM
-                LEFT JOIN giaovien gv ON t.maGV = gv.maGV
+                LEFT JOIN giaovien gv ON d.maGV = gv.maGV
+                LEFT JOIN kythi k ON d.maKyThi = k.maKyThi
                 WHERE d.maDeThi = ?";
 
         $stmt = $this->connection->prepare($sql);
@@ -250,34 +269,26 @@ class mExamApproval
      * Duyệt đề thi
      * 
      * @param int $maDeThi Mã đề thi
-     * @param int $maBGH Mã BGH duyệt (nếu có)
+     * @param int $maTTBM Mã TTBM duyệt
      * @return bool Kết quả
      */
-    public function approveExam($maDeThi, $maBGH = null)
+    public function approveExam($maDeThi, $maTTBM = null)
     {
         $sql = "UPDATE dethi SET 
                     trangThai = 'Daduyet',
+                    maTTBM = ?,
                     ngayDuyet = NOW(),
-                    lyDoTuChoi = NULL";
-        
-        if ($maBGH !== null) {
-            $sql .= ", maBGH = ?";
-        }
-        
-        $sql .= " WHERE maDeThi = ? AND trangThai = 'Choduyet'";
+                    lyDoDuyet = NULL
+                WHERE maDeThi = ? AND trangThai = 'Chuaduyet'";
 
         $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param("ii", $maTTBM, $maDeThi);
         
-        if ($maBGH !== null) {
-            $stmt->bind_param("ii", $maBGH, $maDeThi);
-        } else {
-            $stmt->bind_param("i", $maDeThi);
-        }
-
         $result = $stmt->execute();
+        $affected = $stmt->affected_rows;
         $stmt->close();
 
-        return $result;
+        return $affected > 0;
     }
 
     /**
@@ -285,34 +296,53 @@ class mExamApproval
      * 
      * @param int $maDeThi Mã đề thi
      * @param string $lyDo Lý do từ chối
-     * @param int $maBGH Mã BGH từ chối (nếu có)
+     * @param int $maTTBM Mã TTBM từ chối
      * @return bool Kết quả
      */
-    public function rejectExam($maDeThi, $lyDo, $maBGH = null)
+    public function rejectExam($maDeThi, $lyDo, $maTTBM = null)
     {
         $sql = "UPDATE dethi SET 
                     trangThai = 'Tuchoi',
-                    lyDoTuChoi = ?,
-                    ngayDuyet = NOW()";
-        
-        if ($maBGH !== null) {
-            $sql .= ", maBGH = ?";
-        }
-        
-        $sql .= " WHERE maDeThi = ? AND trangThai = 'Choduyet'";
+                    maTTBM = ?,
+                    lyDoDuyet = ?,
+                    ngayDuyet = NOW()
+                WHERE maDeThi = ? AND trangThai = 'Chuaduyet'";
 
         $stmt = $this->connection->prepare($sql);
-        
-        if ($maBGH !== null) {
-            $stmt->bind_param("sii", $lyDo, $maBGH, $maDeThi);
-        } else {
-            $stmt->bind_param("si", $lyDo, $maDeThi);
-        }
+        $stmt->bind_param("isi", $maTTBM, $lyDo, $maDeThi);
 
         $result = $stmt->execute();
+        $affected = $stmt->affected_rows;
         $stmt->close();
 
-        return $result;
+        return $affected > 0;
+    }
+
+    /**
+     * Gửi thông báo cho giáo viên
+     * @param int $maGV Mã giáo viên
+     * @param string $tieuDe Tiêu đề
+     * @param string $noiDung Nội dung
+     * @return bool
+     */
+    public function sendNotificationToTeacher($maGV, $tieuDe, $noiDung)
+    {
+        // Lấy maTaiKhoan của giáo viên
+        $sql = "SELECT maTaiKhoan FROM giaovien WHERE maGV = ?";
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param("i", $maGV);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $gv = $result->fetch_assoc();
+        $stmt->close();
+        
+        if (!$gv || !$gv['maTaiKhoan']) {
+            return false;
+        }
+        
+        // Tạm thời log thông báo (nếu bảng thongbao chưa có đủ cấu trúc)
+        error_log("Notification to GV $maGV: $tieuDe - $noiDung");
+        return true;
     }
 
     /**

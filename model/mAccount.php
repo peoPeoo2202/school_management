@@ -20,7 +20,7 @@ class mAccount
      * @param string $tenDangNhap - Tên đăng nhập (username)
      * @param string $matKhau - Mật khẩu (sẽ được hash bằng password_hash)
      * @param string $hoTen - Họ tên đầy đủ
-     * @param string $loaiTaiKhoan - Loại: 'hocsinh','giaovien','phuhuynh','bangiamhieu','quantrivien'
+     * @param string $loaiTaiKhoan - Loại: 'quantrivien','hocsinh','giaovien','phuhuynh','bangiamhieu','ttbm'
      * @param int $maNhom - Mã nhóm người dùng (quyền hạn)
      * @return int|false - Trả về maTaiKhoan vừa tạo hoặc false nếu lỗi
      */

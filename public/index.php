@@ -56,7 +56,6 @@ if (isset($_POST["btnSub"])) {
         // điều hướng đến trang tương ứng
         switch ($_SESSION["loaiTaiKhoan"]) {
             case 'quantrivien':
-            case 'admin':
                 header("Location: ../view/admin/index.php");
                 exit();
                 

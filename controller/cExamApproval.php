@@ -136,8 +136,8 @@ class cExamApproval
         $exam = $this->mExam->getExamById($maDeThi);
 
         if ($exam) {
-            // Kiểm tra quyền truy cập
-            if ($exam['maTTBM'] != $this->ttbmInfo['maTTBM']) {
+            // Kiểm tra quyền truy cập: GV nộp đề phải cùng tổ bộ môn
+            if ($exam['toBoMon'] != $this->ttbmInfo['toBoMon']) {
                 $this->jsonResponse(['success' => false, 'message' => 'Không có quyền xem đề thi này'], 403);
                 return;
             }
@@ -263,22 +263,28 @@ class cExamApproval
             return;
         }
 
-        // Kiểm tra quyền
+        // Kiểm tra quyền - GV nộp đề phải cùng tổ bộ môn
         $exam = $this->mExam->getExamById($maDeThi);
-        if (!$exam || $exam['maTTBM'] != $this->ttbmInfo['maTTBM']) {
+        if (!$exam || $exam['toBoMon'] != $this->ttbmInfo['toBoMon']) {
             $this->jsonResponse(['success' => false, 'message' => 'Không có quyền duyệt đề thi này'], 403);
             return;
         }
 
-        if ($exam['trangThai'] !== 'Choduyet') {
+        if ($exam['trangThai'] !== 'Chuaduyet') {
             $this->jsonResponse(['success' => false, 'message' => 'Đề thi không ở trạng thái chờ duyệt'], 400);
             return;
         }
 
         // Duyệt đề thi
-        $result = $this->mExam->approveExam($maDeThi);
+        $result = $this->mExam->approveExam($maDeThi, $this->ttbmInfo['maTTBM']);
 
         if ($result) {
+            // Gửi thông báo cho GV nộp đề
+            if ($exam['maGV']) {
+                $noiDung = "Đề thi '{$exam['tenDeThi']}' của bạn đã được duyệt bởi Tổ trưởng bộ môn.";
+                $this->mExam->sendNotificationToTeacher($exam['maGV'], 'Đề thi đã được duyệt', $noiDung);
+            }
+            
             $this->jsonResponse(['success' => true, 'message' => 'Duyệt đề thi thành công']);
         } else {
             $this->jsonResponse(['success' => false, 'message' => 'Không thể duyệt đề thi'], 500);
@@ -311,22 +317,28 @@ class cExamApproval
             return;
         }
 
-        // Kiểm tra quyền
+        // Kiểm tra quyền - GV nộp đề phải cùng tổ bộ môn
         $exam = $this->mExam->getExamById($maDeThi);
-        if (!$exam || $exam['maTTBM'] != $this->ttbmInfo['maTTBM']) {
+        if (!$exam || $exam['toBoMon'] != $this->ttbmInfo['toBoMon']) {
             $this->jsonResponse(['success' => false, 'message' => 'Không có quyền từ chối đề thi này'], 403);
             return;
         }
 
-        if ($exam['trangThai'] !== 'Choduyet') {
+        if ($exam['trangThai'] !== 'Chuaduyet') {
             $this->jsonResponse(['success' => false, 'message' => 'Đề thi không ở trạng thái chờ duyệt'], 400);
             return;
         }
 
         // Từ chối đề thi
-        $result = $this->mExam->rejectExam($maDeThi, $lyDo);
+        $result = $this->mExam->rejectExam($maDeThi, $lyDo, $this->ttbmInfo['maTTBM']);
 
         if ($result) {
+            // Gửi thông báo cho GV nộp đề
+            if ($exam['maGV']) {
+                $noiDung = "Đề thi '{$exam['tenDeThi']}' của bạn đã bị từ chối.\nLý do: {$lyDo}\nVui lòng chỉnh sửa và nộp lại.";
+                $this->mExam->sendNotificationToTeacher($exam['maGV'], 'Đề thi bị từ chối', $noiDung);
+            }
+            
             $this->jsonResponse(['success' => true, 'message' => 'Từ chối đề thi thành công']);
         } else {
             $this->jsonResponse(['success' => false, 'message' => 'Không thể từ chối đề thi'], 500);

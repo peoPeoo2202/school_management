@@ -180,6 +180,15 @@ $ttbmInfo = $mGrading->getTTBMInfo($_SESSION['maTaiKhoan']);
             padding: 25px;
             border-radius: 10px;
             text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
         .stat-box .number {
@@ -191,6 +200,28 @@ $ttbmInfo = $mGrading->getTTBMInfo($_SESSION['maTaiKhoan']);
         .stat-box .label {
             font-size: 14px;
             opacity: 0.9;
+        }
+
+        .stat-box .view-detail {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+
+        .stat-box.pending {
+            background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+        }
+
+        .stat-box.progress {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .stat-box.completed {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .stat-box.teachers {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
         }
     </style>
 </head>
@@ -208,103 +239,17 @@ $ttbmInfo = $mGrading->getTTBMInfo($_SESSION['maTaiKhoan']);
         </div>
 
         <div class="dashboard-grid">
-            <a href="vGradingAssignment.php" class="dashboard-card card-grading">
-                <div class="icon">📝</div>
-                <h3>Phân công chấm thi</h3>
-                <p>Quản lý phân công chấm thi, chấm điểm cho giáo viên trong tổ bộ môn.</p>
+            <a href="vExamAssignment.php" class="dashboard-card card-grading">
+                <div class="icon">📋</div>
+                <h3>Phân công kỳ thi</h3>
+                <p>Phân công coi thi và chấm điểm cho giáo viên theo kỳ thi.</p>
             </a>
 
             <a href="vExamApproval.php" class="dashboard-card card-exam">
-                <div class="icon">📋</div>
+                <div class="icon">✅</div>
                 <h3>Duyệt đề thi</h3>
                 <p>Quản lý và duyệt đề thi của tổ bộ môn. Phê duyệt hoặc từ chối đề thi.</p>
             </a>
-        </div>
-
-        <div class="stats-section">
-            <h2>📊 Thống kê Tổng quan</h2>
-            <div class="stats-grid">
-                <?php
-                // Đếm số phân công theo tổ bộ môn
-                include_once("../../model/mConnect.php");
-                $db = new mConnect();
-                $conn = $db->mConnect();
-
-                $toBoMon = $ttbmInfo['toBoMon'];
-                
-                // Tổng phân công
-                $sql = "SELECT COUNT(*) as total 
-                        FROM phancongchamdiem pc
-                        LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                        WHERE gv.toBoMon = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $toBoMon);
-                $stmt->execute();
-                $total = $stmt->get_result()->fetch_assoc()['total'];
-
-                // Phân công pending
-                $sql = "SELECT COUNT(*) as pending 
-                        FROM phancongchamdiem pc
-                        LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                        WHERE gv.toBoMon = ? AND pc.trangThai = 'pending'";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $toBoMon);
-                $stmt->execute();
-                $pending = $stmt->get_result()->fetch_assoc()['pending'];
-
-                // Phân công in_progress
-                $sql = "SELECT COUNT(*) as progress 
-                        FROM phancongchamdiem pc
-                        LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                        WHERE gv.toBoMon = ? AND pc.trangThai = 'in_progress'";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $toBoMon);
-                $stmt->execute();
-                $progress = $stmt->get_result()->fetch_assoc()['progress'];
-
-                // Phân công completed
-                $sql = "SELECT COUNT(*) as completed 
-                        FROM phancongchamdiem pc
-                        LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                        WHERE gv.toBoMon = ? AND pc.trangThai = 'completed'";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $toBoMon);
-                $stmt->execute();
-                $completed = $stmt->get_result()->fetch_assoc()['completed'];
-
-                // Số giáo viên trong tổ
-                $sql = "SELECT COUNT(*) as teachers FROM giaovien WHERE toBoMon = ?";
-                $stmt = $conn->prepare($sql);
-                $stmt->bind_param("s", $toBoMon);
-                $stmt->execute();
-                $teachers = $stmt->get_result()->fetch_assoc()['teachers'];
-                ?>
-
-                <div class="stat-box">
-                    <div class="number"><?php echo $total; ?></div>
-                    <div class="label">Tổng phân công</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="number"><?php echo $pending; ?></div>
-                    <div class="label">Chưa bắt đầu</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="number"><?php echo $progress; ?></div>
-                    <div class="label">Đang chấm</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="number"><?php echo $completed; ?></div>
-                    <div class="label">Hoàn thành</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="number"><?php echo $teachers; ?></div>
-                    <div class="label">Giáo viên trong tổ</div>
-                </div>
-            </div>
         </div>
     </div>
 </body>
