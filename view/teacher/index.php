@@ -77,7 +77,7 @@ $maGV = $_SESSION['maGV'] ?? null;
         <div class="content-area">
             <!-- Header -->
             <div class="header-section">
-                <div class="header-left dashboard-header-left">
+                <div class="header-left">
                     <h2><i class="fas fa-home"></i> Dashboard</h2>
                     <p>Chào mừng bạn trở lại</p>
                 </div>

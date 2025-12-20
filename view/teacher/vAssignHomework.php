@@ -64,476 +64,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="<?php echo url('assets/css/style.css'); ?>">
     <link rel="stylesheet" href="style.css">
     <style>
-        .action-buttons {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        /* assign-homework-modal Styles */
 
-        .filter-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 24px;
-        }
 
-        .filter-row {
-            display: grid;
-            grid-template-columns: 1fr;
-            max-width: 400px;
-            gap: 15px;
-        }
 
-        .homework-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
 
-        .homework-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            transition: all 0.3s;
-        }
 
-        .homework-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
 
-        .card-header {
-            background: linear-gradient(135deg, #5081BE 0%, #3d6a9e 100%);
-            color: white;
-            padding: 16px 20px;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .card-body p {
-            margin: 0 0 12px 0;
-            font-size: 14px;
-            color: #666;
-            display: flex;
-            gap: 8px;
-            align-items: flex-start;
-        }
-
-        .card-body p:last-child {
-            margin-bottom: 0;
-        }
-
-        .card-body p strong {
-            color: #333;
-            min-width: 80px;
-            flex-shrink: 0;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-badge.pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-badge.completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .card-footer {
-            padding: 16px 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .empty-state {
-            background: white;
-            padding: 60px 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .empty-state p {
-            color: #999;
-            margin-bottom: 24px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-dialog {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 650px;
-            max-height: 90vh;
-            overflow: hidden;
-            animation: slideDown 0.3s;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-header {
-            padding: 24px 28px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(135deg, #5081BE 0%, #3d6a9e 100%);
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-title i {
-            font-size: 22px;
-        }
-
-        .btn-close {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: white;
-            padding: 0;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-
-        .btn-close:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 28px;
-            max-height: calc(90vh - 160px);
-            overflow-y: auto;
-        }
-
-        .modal-body::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .modal-body::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .modal-body::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 4px rgba(80, 129, 190, 0.1);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.3s;
-            background: white;
-            cursor: pointer;
-        }
-
-        .form-select:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 4px rgba(80, 129, 190, 0.1);
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-            font-family: inherit;
-        }
-
-        .mb-3 {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 14px;
-            display: block;
-        }
-
-        .form-label span {
-            color: #dc3545;
-            margin-left: 3px;
-        }
 
         /* Custom File Upload */
-        .file-upload-wrapper {
-            position: relative;
-            border: 2px dashed #c0c0c0;
-            border-radius: 12px;
-            padding: 30px 20px;
-            text-align: center;
-            background: #f8f9fa;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .file-upload-wrapper:hover {
-            border-color: #5081BE;
-            background: #f0f5fa;
-        }
-
-        .file-upload-wrapper.drag-over {
-            border-color: #5081BE;
-            background: #e8f0ff;
-        }
-
-        .file-upload-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .file-upload-icon::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: inherit;
-            border-radius: inherit;
-            opacity: 0.3;
-            filter: blur(10px);
-        }
-
-        .file-upload-icon i {
-            font-size: 36px;
-            color: white;
-            position: relative;
-            z-index: 1;
-        }
-
-        .file-upload-text {
-            margin-bottom: 8px;
-        }
-
-        .file-upload-text h4 {
-            color: #333;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 5px 0;
-        }
-
-        .file-upload-text p {
-            color: #666;
-            font-size: 13px;
-            margin: 0;
-        }
-
-        .file-upload-input {
-            display: none;
-        }
-
-        .file-upload-hint {
-            font-size: 12px;
-            color: #999;
-            margin-top: 10px;
-        }
-
-        .file-selected {
-            margin-top: 15px;
-            padding: 12px 15px;
-            background: #e8f5e9;
-            border: 1px solid #81c784;
-            border-radius: 8px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .file-selected.show {
-            display: flex;
-        }
-
-        .file-selected i {
-            color: #4caf50;
-            font-size: 20px;
-        }
-
-        .file-info {
-            flex: 1;
-        }
-
-        .file-info .file-name {
-            color: #2e7d32;
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 3px;
-        }
-
-        .file-info .file-size {
-            color: #66bb6a;
-            font-size: 12px;
-        }
-
-        .remove-file {
-            background: #ffebee;
-            border: none;
-            color: #f44336;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .remove-file:hover {
-            background: #f44336;
-            color: white;
-        }
-
-        .modal-footer {
-            padding: 20px 28px;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            background: #f8f9fa;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Checkbox Style */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .checkbox-wrapper:hover {
-            background: #e8f0ff;
-            border-color: #5081BE;
-        }
-
-        .checkbox-wrapper input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #5081BE;
-        }
-
-        .checkbox-wrapper label {
-            cursor: pointer;
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-            margin: 0;
-            user-select: none;
-        }
-
-        .checkbox-wrapper .checkbox-hint {
-            color: #666;
-            font-size: 12px;
-            font-weight: normal;
-            margin-left: 5px;
-        }
+        
 
         @keyframes fadeIn {
             from {
@@ -554,25 +94,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             to {
                 transform: translateY(0);
                 opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .content-inner {
-                padding: 16px;
-            }
-
-            .homework-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-row {
-                max-width: 100%;
-            }
-
-            .modal-dialog {
-                width: 95%;
-                margin: 10px;
             }
         }
     </style>
@@ -597,20 +118,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="openAddModal()">
-                    <i class="fas fa-plus-circle"></i> Giao Bài Tập Mới
-                </button>
-            </div>
-
-            <!-- Filter Card -->
-            <div class="filter-card">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-list-ul"></i> Danh sách bài tập</h2>
+                </div>
                 <form method="GET" action="" id="filterForm">
-                    <div class="filter-row">
-                        <div class="form-group">
-                            <label class="form-label">Lọc theo lớp</label>
-                            <select name="maLop" id="filterClass" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                    <div class="filter-section ">
+                        <div class="filter-group">
+                            <label>Lọc theo lớp</label>
+                            <select name="maLop" id="filterClass" onchange="document.getElementById('filterForm').submit();">
                                 <option value="">-- Tất cả lớp --</option>
                                 <?php
                                 $classes->data_seek(0);
@@ -622,69 +138,108 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                    </div>
-                </form>
-            </div>
+                        <div class="filter-group">
+                            <label>Lọc theo khối</label>
+                            <select name="maKhoi" id="filterGrade" onchange="document.getElementById('filterForm').submit();">
+                                <option value="">-- Khối --</option>
+                                <?php
+                                $classes->data_seek(0);
+                                while ($class = $classes->fetch_assoc()): ?>
+                                    <option value="<?= $class['maLop'] ?>"
+                                        <?= (isset($_GET['maLop']) && $_GET['maLop'] == $class['maLop']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($class['tenLop']) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        </div>
 
-            <!-- Homework Grid -->
-            <?php if ($homeworks->num_rows > 0): ?>
+                        <div class="filter-actions-button assign-homework-action">
+                            <button type="button" class="btn btn-primary" onclick="openAddModal()">
+                                <i class="fas fa-plus-circle"></i> Giao Bài Tập Mới
+                            </button>
+                        </div>
+                    </div>
+                </form><?php if ($homeworks->num_rows > 0): ?>
+            </div>
+            <div class="card-body">
+
                 <?php
-                // Lưu tất cả bài tập vào mảng
-                $allHomeworks = [];
-                while ($hw = $homeworks->fetch_assoc()) {
-                    $allHomeworks[] = $hw;
-                }
-                $totalHomeworks = count($allHomeworks);
+                            // Lưu tất cả bài tập vào mảng
+                            $allHomeworks = [];
+                            while ($hw = $homeworks->fetch_assoc()) {
+                                $allHomeworks[] = $hw;
+                            }
+                            $totalHomeworks = count($allHomeworks);
                 ?>
-                <div class="homework-grid" id="homeworkGrid">
+                <div class="content-grid grid-homework" id="homeworkGrid">
                     <?php foreach ($allHomeworks as $hw): ?>
-                        <div class="homework-card" data-homework-item style="display: none;">
-                            <div class="card-header">
+                        <div class="assign-homework-card" data-homework-item>
+                            <div class="assign-homework-card-header">
                                 <h3><?= htmlspecialchars($hw['tenBaiTap']) ?></h3>
                             </div>
-                            <div class="card-body">
-                                <p><strong>Lớp:</strong> <?= htmlspecialchars($hw['tenLop']) ?></p>
-                                <p><strong>Môn học:</strong> <?= htmlspecialchars($hw['tenMonHoc']) ?></p>
-                                <p><strong>Yêu cầu:</strong> <?= htmlspecialchars($hw['yeuCauBaiTap'] ?: 'Không có') ?></p>
-                                <p><strong>Hạn nộp:</strong> <?= date('d/m/Y H:i', strtotime($hw['thoiGianNop'])) ?></p>
-                                <p><strong>Nộp trễ:</strong>
-                                    <?php if (isset($hw['choPhepNopTre']) && $hw['choPhepNopTre'] == 1): ?>
-                                        <span style="color: #28a745; font-weight: 600;">
-                                            <i class="fas fa-check-circle"></i> Cho phép
-                                        </span>
-                                    <?php else: ?>
-                                        <span style="color: #dc3545; font-weight: 600;">
-                                            <i class="fas fa-times-circle"></i> Không cho phép
-                                        </span>
-                                    <?php endif; ?>
-                                </p>
-                                <p><strong>Trạng thái:</strong>
-                                    <?php if (isset($hw['anBai']) && $hw['anBai'] == 1): ?>
-                                        <span style="color: #ff9800; font-weight: 600;">
-                                            <i class="fas fa-eye-slash"></i> Đang ẩn
-                                        </span>
-                                    <?php else: ?>
-                                        <span style="color: #28a745; font-weight: 600;">
-                                            <i class="fas fa-eye"></i> Hiển thị
-                                        </span>
-                                    <?php endif; ?>
-                                </p>
-                                <p>
+                            <div class="assign-homework-card-body">
+                                <span>
+                                    <strong>Lớp:</strong>
+                                    <p> <?= htmlspecialchars($hw['tenLop']) ?></p>
+                                </span>
+                                <span>
+                                    <strong>Môn học:</strong>
+                                    <p> <?= htmlspecialchars($hw['tenMonHoc']) ?></p>
+                                </span>
+                                <span class="requirement">
+                                    <strong>Yêu cầu:</strong>
+                                    <p> <?= htmlspecialchars($hw['yeuCauBaiTap'] ?: 'Không có') ?></p>
+                                </span>
+                                <span>
+                                    <strong>Hạn nộp:</strong>
+                                    <p><?= date('d/m/Y H:i', strtotime($hw['thoiGianNop'])) ?></p>
+                                </span>
+                                <span>
+                                    <strong>Nộp trễ:</strong>
+                                    <p>
+                                        <?php if (isset($hw['choPhepNopTre']) && $hw['choPhepNopTre'] == 1): ?>
+                                            <span style="color: #28a745; font-weight: 600;">
+                                                <i class="fas fa-check-circle"></i> Cho phép
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: #dc3545; font-weight: 600;">
+                                                <i class="fas fa-times-circle"></i> Không cho phép
+                                            </span>
+                                        <?php endif; ?>
+                                    </p>
+                                </span>
+                                <span>
+                                    <strong>Trạng thái:</strong>
+                                    <p>
+                                        <?php if (isset($hw['anBai']) && $hw['anBai'] == 1): ?>
+                                            <span style="color: #ff9800; font-weight: 600;">
+                                                <i class="fas fa-eye-slash"></i> Đang ẩn
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: #28a745; font-weight: 600;">
+                                                <i class="fas fa-eye"></i> Hiển thị
+                                            </span>
+                                        <?php endif; ?>
+                                    </p>
+                                </span>
+                                <span>
                                     <strong>Đã nộp:</strong>
-                                    <span class="status-badge <?= ($hw['soLuongNopBai'] > 0) ? 'completed' : 'pending' ?>">
-                                        <?= $hw['soLuongNopBai'] ?? 0 ?> bài
-                                    </span>
-                                </p>
+                                    <p>
+                                        <span class="status-assign-homework-badge <?= ($hw['soLuongNopBai'] > 0) ? 'completed' : 'pending' ?>">
+                                            <?= $hw['soLuongNopBai'] ?? 0 ?> bài
+                                        </span>
+                                    </p>
+                                </span>
                             </div>
-                            <div class="card-footer">
+                            <div class="assign-homework-card-footer">
                                 <a href="<?= url('view/teacher/vHomeworkDetail.php?id=' . $hw['maBaiTap']) ?>"
-                                    class="btn btn-sm btn-info">
+                                    class="btn btn-assign-homework-info">
                                     <i class="fas fa-eye"></i> Chi tiết
                                 </a>
-                                <button class="btn btn-sm btn-warning" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
+                                <button class="btn btn-assign-homework-edit" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-edit"></i> Sửa
                                 </button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
+                                <button class="btn btn-assign-homework-delete" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </div>
@@ -712,20 +267,22 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </button>
                 </div>
             <?php endif; ?>
+            </div>
+
         </div>
     </div>
 
-    <!-- Modal Thêm Bài Tập -->
-    <div class="modal" id="addHomeworkModal">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h5 class="modal-title">
+    <!-- assign-homework-modal Thêm Bài Tập -->
+    <div class="assign-homework-modal" id="add-assign-homework">
+        <div class="assign-homework-modal-dialog">
+            <div class="assign-homework-modal-header">
+                <h5 class="assign-homework-modal-title">
                     <i class="fas fa-plus-circle"></i>
                     Giao Bài Tập Mới
                 </h5>
-                <button type="button" class="btn-close" onclick="closeAddModal()">&times;</button>
+                <button type="button" class="btn-close-modal-assign-homework" onclick="closeAddModal()"><i class="fa-solid fa-x"></i></button>
             </div>
-            <div class="modal-body">
+            <div class="assign-homework-modal-body">
                 <form id="addHomeworkForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label">Tên bài tập<span>*</span></label>
@@ -800,7 +357,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="assign-homework-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeAddModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>
@@ -811,17 +368,17 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         </div>
     </div>
 
-    <!-- Modal Sửa Bài Tập -->
-    <div class="modal" id="editHomeworkModal">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h5 class="modal-title">
+    <!-- assign-homework-modal Sửa Bài Tập -->
+    <div class="assign-homework-modal" id="edit-assign-homework">
+        <div class="assign-homework-modal-dialog">
+            <div class="assign-homework-modal-header">
+                <h5 class="assign-homework-modal-title">
                     <i class="fas fa-edit"></i>
                     Sửa Bài Tập
                 </h5>
-                <button type="button" class="btn-close" onclick="closeEditModal()">&times;</button>
+                <button type="button" class="btn-close-modal-assign-homework" onclick="closeEditModal()">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="assign-homework-modal-body">
                 <form id="editHomeworkForm" enctype="multipart/form-data">
                     <input type="hidden" name="maBaiTap" id="editMaBaiTap">
 
@@ -846,6 +403,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <label class="form-label">Yêu cầu bài tập</label>
                         <textarea name="yeuCauBaiTap" id="editYeuCau" class="form-control" rows="4" placeholder="Mô tả chi tiết yêu cầu bài tập..."></textarea>
                     </div>
+                    <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
+                    <label for="editChoPhepNopTre">
+                        Cho phép học sinh nộp trễ
+                        <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
+                    </label>
 
                     <div class="mb-3">
                         <label class="form-label">File hiện tại</label>
@@ -877,21 +439,18 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </button>
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Thời gian nộp<span>*</span></label>
-                        <input type="datetime-local" name="thoiGianNop" id="editThoiGianNop" class="form-control" required>
+                    <div class="form-group">
+                        <label>thời gian nộp <span style="color: red;">*</span></label>
+                        <input type="datetime-local" id="editThoiGianNop" name="thoiGianNop" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
+                        <label for="editChoPhepNopTre">
+                            Cho phép học sinh nộp trễ
+                            <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
+                        </label>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="checkbox-wrapper">
-                            <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
-                            <label for="editChoPhepNopTre">
-                                Cho phép học sinh nộp trễ
-                                <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
-                            </label>
-                        </div>
-                    </div>
 
                     <div class="mb-3">
                         <div class="checkbox-wrapper">
@@ -904,7 +463,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+            <div class="assign-homework-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>
@@ -916,33 +475,33 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </div>
 
     <script>
-        // Modal functions
+        // assign-homework-modal functions
         function openAddModal() {
-            document.getElementById('addHomeworkModal').classList.add('show');
+            document.getElementById('add-assign-homework').classList.add('show');
             document.getElementById('addHomeworkForm').reset();
         }
 
         function closeAddModal() {
-            document.getElementById('addHomeworkModal').classList.remove('show');
+            document.getElementById('add-assign-homework').classList.remove('show');
             document.getElementById('addHomeworkForm').reset();
             // Reset file upload display
             document.getElementById('fileSelected').classList.remove('show');
             document.getElementById('fileBaiTap').value = '';
         }
 
-        // Edit modal functions
+        // Edit assign-homework-modal functions
         function openEditModal() {
-            document.getElementById('editHomeworkModal').classList.add('show');
+            document.getElementById('edit-assign-homework').classList.add('show');
         }
 
         function closeEditModal() {
-            document.getElementById('editHomeworkModal').classList.remove('show');
+            document.getElementById('edit-assign-homework').classList.remove('show');
             document.getElementById('editHomeworkForm').reset();
             document.getElementById('editFileSelected').classList.remove('show');
             document.getElementById('currentFile').style.display = 'none';
         }
 
-        // File upload handling for ADD modal
+        // File upload handling for ADD assign-homework-modal
         const fileUploadWrapper = document.getElementById('fileUploadWrapper');
         const fileInput = document.getElementById('fileBaiTap');
         const fileSelected = document.getElementById('fileSelected');
@@ -1007,7 +566,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             fileSelected.classList.add('show');
         }
 
-        // ========== FILE UPLOAD HANDLING FOR EDIT MODAL ==========
+        // ========== FILE UPLOAD HANDLING FOR EDIT assign-homework-modal ==========
         const editFileUploadWrapper = document.getElementById('editFileUploadWrapper');
         const editFileInput = document.getElementById('editFileBaiTap');
         const editFileSelected = document.getElementById('editFileSelected');
@@ -1015,17 +574,17 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         const editFileSize = document.getElementById('editFileSize');
         const editRemoveFileBtn = document.getElementById('editRemoveFile');
 
-        // Click to upload - Edit modal
+        // Click to upload - Edit assign-homework-modal
         editFileUploadWrapper.addEventListener('click', () => {
             editFileInput.click();
         });
 
-        // File selected - Edit modal
+        // File selected - Edit assign-homework-modal
         editFileInput.addEventListener('change', (e) => {
             handleEditFile(e.target.files[0]);
         });
 
-        // Drag and drop - Edit modal
+        // Drag and drop - Edit assign-homework-modal
         editFileUploadWrapper.addEventListener('dragover', (e) => {
             e.preventDefault();
             editFileUploadWrapper.classList.add('drag-over');
@@ -1050,7 +609,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             }
         });
 
-        // Remove file - Edit modal
+        // Remove file - Edit assign-homework-modal
         editRemoveFileBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             editFileInput.value = '';
@@ -1410,10 +969,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             }, 100);
         }
 
-        // Close modal when clicking outside
+        // Close assign-homework-modal when clicking outside
         window.onclick = function(event) {
-            const addModal = document.getElementById('addHomeworkModal');
-            const editModal = document.getElementById('editHomeworkModal');
+            const addModal = document.getElementById('add-assign-homework');
+            const editModal = document.getElementById('edit-assign-homework');
 
             if (event.target == addModal) {
                 closeAddModal();

@@ -128,8 +128,6 @@ if (!isset($data)) {
                     </div>
 
                 </div>
-
-                <!-- Filter Section -->
                 <form method="GET" action="../../controller/cTeachingSchedule.php">
                     <input type="hidden" name="action" value="schedule">
                     <div class="filter-section">
@@ -172,124 +170,129 @@ if (!isset($data)) {
                         </div>
                     </div>
                 </form>
-
-                <!-- Schedule Grid -->
+            </div>
+            <div class="card-body">
                 <div class="schedule-grid">
-                    <h3 class="section-title"><i class="fas fa-sun"></i> BUỔI SÁNG (7:00 - 10:50)</h3>
-                    <table class="schedule-table">
-                        <thead>
-                            <tr>
-                                <th class="time-cell">Tiết</th>
-                                <th class="day-header">Thứ 2</th>
-                                <th class="day-header">Thứ 3</th>
-                                <th class="day-header">Thứ 4</th>
-                                <th class="day-header">Thứ 5</th>
-                                <th class="day-header">Thứ 6</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $morningLessons = [
-                                1 => '07:00 - 07:45',
-                                2 => '07:50 - 08:35',
-                                3 => '08:40 - 09:25',
-                                4 => '09:55 - 10:40',
-                                5 => '10:45 - 11:30'
-                            ];
-
-                            foreach ($morningLessons as $tiet => $gio):
-                            ?>
+                    <div>
+                        <h3 class="section-title morning"><i class="fas fa-sun"></i> BUỔI SÁNG (7:00 - 11:30)</h3>
+                        <table class="common-table">
+                            <thead>
                                 <tr>
-                                    <td class="time-cell">
-                                        <strong>Tiết <?php echo $tiet; ?></strong><br>
-                                        <small><?php echo $gio; ?></small>
-                                    </td>
-                                    <?php for ($thu = 2; $thu <= 6; $thu++): ?>
-                                        <td>
-                                            <?php
-                                            if (
-                                                isset($data['scheduleGrid'][$thu][$tiet]) &&
-                                                $data['scheduleGrid'][$thu][$tiet] !== null &&
-                                                $data['scheduleGrid'][$thu][$tiet] !== 'merged'
-                                            ):
-                                                $lesson = $data['scheduleGrid'][$thu][$tiet];
-                                            ?>
-                                                <div class="lesson-cell">
-                                                    <h3 class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></h3>
-                                                    <div class="lesson-info-class">
+                                    <th class="time-cell">Tiết</th>
+                                    <th class="day-header">Thứ 2</th>
+                                    <th class="day-header">Thứ 3</th>
+                                    <th class="day-header">Thứ 4</th>
+                                    <th class="day-header">Thứ 5</th>
+                                    <th class="day-header">Thứ 6</th>
+                                    <th class="day-header">Thứ 7</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $morningLessons = [
+                                    1 => '07:00 - 07:45',
+                                    2 => '07:50 - 08:35',
+                                    3 => '08:40 - 09:25',
+                                    4 => '09:55 - 10:40',
+                                    5 => '10:45 - 11:30'
+                                ];
+
+                                foreach ($morningLessons as $tiet => $gio):
+                                ?>
+                                    <tr>
+                                        <td class="time-cell">
+                                            <strong>Tiết <?php echo $tiet; ?></strong><br>
+                                            <small><?php echo $gio; ?></small>
+                                        </td>
+                                        <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                                            <td>
+                                                <?php
+                                                if (
+                                                    isset($data['scheduleGrid'][$thu][$tiet]) &&
+                                                    $data['scheduleGrid'][$thu][$tiet] !== null &&
+                                                    $data['scheduleGrid'][$thu][$tiet] !== 'merged'
+                                                ):
+                                                    $lesson = $data['scheduleGrid'][$thu][$tiet];
+                                                ?>
+                                                    <div class="lesson-cell">
+                                                        <h3 class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></h3>
+                                                        <div class="lesson-info-class">
+                                                            <div class="lesson-class"><i class="fas fa-users"></i> <?php echo htmlspecialchars($lesson['tenLop']); ?></div>
+                                                            <div class="lesson-room"><i class="fas fa-door-open"></i> <?php echo htmlspecialchars($lesson['tenPhong']); ?></div>
+
+                                                        </div>
+                                                    </div>
+                                                <?php elseif ($data['scheduleGrid'][$thu][$tiet] === 'merged'): ?>
+                                                    <!-- Cell merged with above -->
+                                                <?php else: ?>
+                                                    <span class="empty-cell">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        <?php endfor; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <h3 class="section-title morning"><i class="fas fa-moon"></i> BUỔI CHIỀU (12:00 - 16:30)</h3>
+                        <table class="common-table">
+                            <thead>
+                                <tr>
+                                    <th class="time-cell">Tiết</th>
+                                    <th class="day-header">Thứ 2</th>
+                                    <th class="day-header">Thứ 3</th>
+                                    <th class="day-header">Thứ 4</th>
+                                    <th class="day-header">Thứ 5</th>
+                                    <th class="day-header">Thứ 6</th>
+                                    <th class="day-header">Thứ 7</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $afternoonLessons = [
+                                    6 => '12:00 - 12:45',
+                                    7 => '12:50 - 13:35',
+                                    8 => '13:40 - 14:25',
+                                    9 => '14:55 - 15:40',
+                                    10 => '15:45 - 16:30'
+                                ];
+
+                                foreach ($afternoonLessons as $tiet => $gio):
+                                ?>
+                                    <tr>
+                                        <td class="time-cell">
+                                            <strong>Tiết <?php echo $tiet; ?></strong><br>
+                                            <small><?php echo $gio; ?></small>
+                                        </td>
+                                        <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                                            <td>
+                                                <?php
+                                                if (
+                                                    isset($data['scheduleGrid'][$thu][$tiet]) &&
+                                                    $data['scheduleGrid'][$thu][$tiet] !== null &&
+                                                    $data['scheduleGrid'][$thu][$tiet] !== 'merged'
+                                                ):
+                                                    $lesson = $data['scheduleGrid'][$thu][$tiet];
+                                                ?>
+                                                    <div class="lesson-cell">
+                                                        <div class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></div>
                                                         <div class="lesson-class"><i class="fas fa-users"></i> <?php echo htmlspecialchars($lesson['tenLop']); ?></div>
                                                         <div class="lesson-room"><i class="fas fa-door-open"></i> <?php echo htmlspecialchars($lesson['tenPhong']); ?></div>
-
                                                     </div>
-                                                </div>
-                                            <?php elseif ($data['scheduleGrid'][$thu][$tiet] === 'merged'): ?>
-                                                <!-- Cell merged with above -->
-                                            <?php else: ?>
-                                                <span class="empty-cell">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    <?php endfor; ?>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-
-                    <h3 class="section-title"><i class="fas fa-moon"></i> BUỔI CHIỀU (13:30 - 17:15)</h3>
-                    <table class="schedule-table">
-                        <thead>
-                            <tr>
-                                <th class="time-cell">Tiết</th>
-                                <th class="day-header">Thứ 2</th>
-                                <th class="day-header">Thứ 3</th>
-                                <th class="day-header">Thứ 4</th>
-                                <th class="day-header">Thứ 5</th>
-                                <th class="day-header">Thứ 6</th>
-                                <th class="day-header">Thứ 7</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $afternoonLessons = [
-                                6 => '12:00 - 12:45',
-                                7 => '12:50 - 13:35',
-                                8 => '13:40 - 14:25',
-                                9 => '14:55 - 15:40',
-                                10 => '15:45 - 16:30'
-                            ];
-
-                            foreach ($afternoonLessons as $tiet => $gio):
-                            ?>
-                                <tr>
-                                    <td class="time-cell">
-                                        <strong>Tiết <?php echo $tiet; ?></strong><br>
-                                        <small><?php echo $gio; ?></small>
-                                    </td>
-                                    <?php for ($thu = 2; $thu <= 6; $thu++): ?>
-                                        <td>
-                                            <?php
-                                            if (
-                                                isset($data['scheduleGrid'][$thu][$tiet]) &&
-                                                $data['scheduleGrid'][$thu][$tiet] !== null &&
-                                                $data['scheduleGrid'][$thu][$tiet] !== 'merged'
-                                            ):
-                                                $lesson = $data['scheduleGrid'][$thu][$tiet];
-                                            ?>
-                                                <div class="lesson-cell">
-                                                    <div class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></div>
-                                                    <div class="lesson-class"><i class="fas fa-users"></i> <?php echo htmlspecialchars($lesson['tenLop']); ?></div>
-                                                    <div class="lesson-room"><i class="fas fa-door-open"></i> <?php echo htmlspecialchars($lesson['tenPhong']); ?></div>
-                                                </div>
-                                            <?php elseif ($data['scheduleGrid'][$thu][$tiet] === 'merged'): ?>
-                                                <!-- Cell merged with above -->
-                                            <?php else: ?>
-                                                <span class="empty-cell">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    <?php endfor; ?>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                                                <?php elseif ($data['scheduleGrid'][$thu][$tiet] === 'merged'): ?>
+                                                    <!-- Cell merged with above -->
+                                                <?php else: ?>
+                                                    <span class="empty-cell">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        <?php endfor; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
