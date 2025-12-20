@@ -22,17 +22,8 @@ $trangThai = $_GET['trangThai'] ?? 'all';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách yêu cầu - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-        }
 
         .container {
             max-width: 1400px;
@@ -60,50 +51,6 @@ $trangThai = $_GET['trangThai'] ?? 'all';
             flex-wrap: wrap;
         }
 
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn-success {
-            background: #9b59b6;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #8e44ad;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
-        }
-
-        .filter-section {
-            background: white;
-            padding: 20px 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
         .filter-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -111,29 +58,8 @@ $trangThai = $_GET['trangThai'] ?? 'all';
             align-items: end;
         }
 
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
 
-        .filter-group label {
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .filter-control {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .filter-control:focus {
-            outline: none;
-            border-color: #3498db;
-        }
+        
 
         .btn-filter {
             padding: 9px 20px;

@@ -155,8 +155,9 @@ class mSubmitHomework
             error_log("SQL Error in getSubjectsForStudent: " . $this->conn->error);
             return [];
         }
-        
-        $stmt->bind_param("i", $lop);
+
+        $stmt->bind_param("iii", $lop, $lop, $maHS);
+
         $stmt->execute();
         $result = $stmt->get_result();
 

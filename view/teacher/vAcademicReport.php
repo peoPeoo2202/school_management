@@ -11,24 +11,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <title>Báo cáo kết quả học tập - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        *{
-            margin: 0
-        }
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
 
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        .container {
-            max-width: 100%;
-        }
 
         .header {
             background: white;
@@ -73,70 +56,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             margin-bottom: 16px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 17px;
-        }
-
-        .form-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
         .filter-buttons {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-info:hover {
-            background: #138496;
         }
 
         .report-section {

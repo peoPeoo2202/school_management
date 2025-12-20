@@ -11,23 +11,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 16px 8px;
-            overflow-y: auto;
-        }
-
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -72,14 +55,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #545b62;
         }
 
-        .filter-section {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
         .filter-title {
             font-size: 18px;
             font-weight: 600;
@@ -96,25 +71,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             gap: 15px;
             margin-bottom: 20px;
         }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .form-group select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
         .filter-buttons {
             display: flex;
             gap: 10px;

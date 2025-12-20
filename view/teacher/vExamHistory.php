@@ -52,26 +52,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-        }
-
-        .header {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-        }
-
+   
         .header h1 {
             font-size: 26px;
             font-weight: 600;
@@ -112,58 +93,6 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             border-bottom: 2px solid #5081BE;
         }
 
-        .filter-section {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-        }
-
-        .filter-form {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr) 160px;
-            gap: 15px;
-            align-items: end;
-        }
-
-        .form-group {
-            margin-bottom: 0;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            color: #555;
-            margin-bottom: 8px;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            height: 42px;
-            box-sizing: border-box;
-        }
-
-        .form-group select:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
-        }
-
-        .filter-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            align-self: stretch;
-            justify-content: flex-end;
-        }
-
         .filter-actions .btn {
             width: 100%;
             padding: 0;
@@ -175,21 +104,6 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             justify-content: center;
             gap: 6px;
             border: none;
-            box-sizing: border-box;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
             box-sizing: border-box;
         }
 
