@@ -12,7 +12,7 @@ body {
 }
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f8f9fa;
+    background-color: white;
     overflow: hidden; /* body không scroll */
 }
 /* =========================================================
@@ -229,23 +229,47 @@ body {
 .main-wrapper {
     display: flex;
     height: 100vh;
-    width: 100%;
+    width: 100vw;
 }
 
 .content-area {
     flex: 1;
-    padding: 32px;
+    display: grid;
     overflow-y: auto;
     overflow-x: hidden;
-    height: 100vh;
     box-sizing: border-box;
     padding: 24px 5%;
     background-color: white;
+    gap: 24px !important;
 }
 .content-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+.stats-assign-row {
+    display: flex;
+    justify-content: space-around;
+    background: #f8f9ff;
+    border-radius: 8px;
+    background-color: transparent;
+    border-radius: 16px;
+    padding: 8px;
+    height: fit-content;
+}
+.empty-state {
+    text-align: center;
+    padding: 64px 24px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 24px;
+    opacity: 0.5;
+}
+.table-responsive {
+    border: 1px solid black;
 }
 /* -----------------------------------------HEADER---------------------------------- */
 
@@ -254,10 +278,10 @@ body {
     padding: 24px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 32px;
     font-size: 14px;
     display: flex;
     justify-content: space-between;
+    max-height: 100px;
 }
 .header-left {
     display: flex;
@@ -338,13 +362,23 @@ body {
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 24px;
+    display: grid;
+    gap: 24px;
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 16px;
+}
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background-color: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
@@ -366,7 +400,6 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    margin-bottom: 8px;
     padding: 16px;
     background: #f8f9ff;
     border-radius: 8px;
@@ -398,13 +431,14 @@ body {
     font-size: 12px;
     background: white;
     outline: none;
+    cursor: pointer;
 }
-.filter-actions {
+.filter-actions-button {
     display: flex;
-    flex-direction: column;
-    gap: 9px;
+    gap: 16px;
     align-self: stretch;
-    justify-content: flex-end;
+    justify-content: center;
+    align-items: end;
 }
 .filter-control {
     padding: 8px 12px;
@@ -426,7 +460,10 @@ body {
     font-weight: 500;
     transition: all 0.3s;
     text-decoration: none;
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
     font-size: 14px;
 }
 .btn-primary {
@@ -437,7 +474,7 @@ body {
     font-size: 14px;
 }
 .btn-primary:hover {
-    background: #5a6fd8;
+    background: #4a6fa5;
 }
 
 .btn-success {
@@ -448,14 +485,6 @@ body {
 .btn-success:hover {
     background: #218838;
 }
-.btn-info {
-    background: #17a2b8;
-    color: white;
-}
-
-.btn-info:hover {
-    background: #138496;
-}
 .btn-secondary {
     background: #6c757d;
     color: white;
@@ -463,7 +492,7 @@ body {
 .btn-secondary:hover {
     background: #5a6268;
 }
-.btn-warning {
+.btn-edit {
     background: #ffc107;
     color: #000;
 }
@@ -502,14 +531,54 @@ body {
     color: #2d5a8c;
     gap: 10px;
 }
+/* -------------------------------------------      FORM      ------------------------------ */
+.form-control {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+    font-family: inherit;
+}
 
+.form-control:focus {
+    outline: none;
+    border-color: #5081be;
+    box-shadow: 0 0 0 4px rgba(80, 129, 190, 0.1);
+}
+
+.form-select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+    background: white;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #5081be;
+    box-shadow: 0 0 0 4px rgba(80, 129, 190, 0.1);
+}
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 14px;
+    display: block;
+}
+
+.form-label span {
+    color: #dc3545;
+    margin-left: 3px;
+}
 /* =========================================================
    3) DASHBOARD
    ========================================================= */
-
-.info-session {
-    margin-bottom: 32px;
-}
 .card-info {
     display: flex;
     gap: 32px;
@@ -603,44 +672,54 @@ body {
     display: flex;
 }
 .schedule-grid {
+    display: grid;
+    gap: 24px;
     overflow-x: auto;
 }
-.schedule-table {
+.common-table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
-.schedule-table th,
+.common-table th,
 td {
     border: 1px solid #e0e0e0;
     padding: 8px;
     text-align: center;
     vertical-align: middle;
 }
-.schedule-table td{
-    height: 60px;
+.common-table td {
+    height: 50px;
 }
-.schedule-table th {
+.common-table th {
     background: #5081be;
 
     color: white;
     font-weight: 600;
     font-size: 14px;
 }
-.schedule-table .day-header {
+.common-table .day-header {
     background: #4a6fa5;
 }
-.schedule-table th.time-cell,
-.schedule-table td.time-cell {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
+.common-table th.time-cell,
+.common-table td.time-cell {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
 }
-.schedule-table td.time-cell {
-    font-size: 12px;
+.common-table td.time-cell {
     font-weight: 500;
     background: #f0f0f0;
     text-align: center;
+}
+.time-cell strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+.time-cell small {
+    font-size: 12px;
+    font-weight: 400;
+    color: #666;
 }
 .lesson-cell {
     background: linear-gradient(135deg, #5081be15 0%, #4a6fa515 100%);
@@ -648,7 +727,7 @@ td {
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
 .lesson-subject {
@@ -674,12 +753,598 @@ td {
     color: #ccc;
     font-style: italic;
 }
+/* =========================================================
+   4) TEACHING SCHEDULE
+   ========================================================= */
 
 .section-title {
     text-align: center;
-    margin-bottom: 24px;
     color: #5081be;
+    font-size: 20px;
+    font-weight: 700;
+}
+.morning {
+    margin-bottom: 16px;
+}
+.filter-actions-button .btn {
+    min-width: 115px;
+    max-height: 32px;
+}
+.exam-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s;
+}
+.exam-card:hover {
+    border-color: #5081be;
+    box-shadow: 0 5px 20px rgba(80, 129, 190, 0.2);
+}
+.exam-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+.exam-card-subject {
+    font-size: 16px;
+    font-weight: 700;
+    color: #5081be;
+}
+.exam-card-type {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #2d5a8c;
+    color: white;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.exam-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.exam-detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #666;
+}
+
+.exam-detail-item i {
+    width: 24px;
+    color: #5081be;
+}
+.exam-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 16px;
+}
+.badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 24px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge.scheduled {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge.in-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge.urgent {
+    background: #f8d7da;
+    color: #721c24;
+}
+.badge.soon {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.exam-sup-total,
+.exam-sup-upcoming,
+.exam-sup-finish {
+    font-size: 36px;
+}
+.exam-sup-upcoming {
+    color: #ffb200;
+}
+.exam-sup-finish {
+    color: #00c94b;
+}
+.progress-text {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+/* =========================================================
+   4) TEACHING SCHEDULE
+   ========================================================= */
+.badge.mieng {
+    background: #e3e8ff;
+    color: #5081be;
+}
+
+.badge.phut15 {
+    background: #d4edda;
+    color: #155724;
+}
+.badge.tiet1 {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge.giuaky {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge.cuoiky {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+/* =========================================================
+   5) GRANDING ASSIGNMENT
+   ========================================================= */
+.assign-total,
+.assign-pending,
+.assign-inprogress,
+.assign-finish {
+    font-size: 36px;
+}
+.assign-pending {
+    color: #ff0000;
+}
+.assign-finish {
+    color: #00c94b;
+}
+.assign-inprogress {
+    color: #ffb200;
+}
+.progress-container {
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.low {
+    background: linear-gradient(90deg, #f5576c 0%, #f093fb 100%);
+}
+
+.progress-fill.medium {
+    background: linear-gradient(90deg, #f093fb 0%, #feca57 100%);
+}
+
+.progress-fill.high {
+    background: linear-gradient(90deg, #5081be 0%, #2d5a8c 100%);
+}
+
+.progress-fill.complete {
+    background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
+}
+.assign-table-index {
+    width: 50px;
+    font-size: 14px !important;
+}
+.assign-table-body td {
+    height: 40px;
+    font-size: 13px;
+}
+.assign-subject-name {
+    font-size: 14px !important;
+}
+/* =========================================================
+   6) ASSIGN HOMEWORK STUDENT
+   ========================================================= */
+.assign-homework-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.assign-homework-card-header {
+    padding: 16px;
+    background: #5081be;
+    color: white;
+    display: flex;
+    justify-content: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+.assign-homework-card-header h3 {
     font-size: 18px;
+    font-weight: 6s00;
+}
+.assign-homework-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.assign-homework-card-body .requirement {
+    flex-direction: column;
+    align-items: start;
+}
+.assign-homework-card-body .requirement p {
+    padding-left: 8px;
+    font-style: italic;
+    font-weight: 500;
+    text-decoration: underline;
+}
+.assign-homework-card-body span {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.assign-homework-card-body span strong {
+    font-size: 1rem;
+    font-weight: inherit;
+    color: #666;
+}
+.assign-homework-card-body span p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #212121;
+    text-align: left;
+}
+.assign-homework-card-footer {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    display: flex;
+    border-top: 1px solid #e1e0e0;
+    padding: 16px 8px;
+    justify-content: space-around;
+}
+.status-assign-homework-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-assign-homework-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-assign-homework-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+.assign-homework-action {
+    justify-content: start;
+}
+.btn-assign-homework-info {
+    background: #5081be;
+    color: white;
+}
+
+.btn-assign-homework-info:hover {
+    background: #40699b;
+}
+.btn-assign-homework-edit {
+    border: 1px solid #5081be;
+    color: #5081be;
+    background: white;
+}
+.btn-assign-homework-edit:hover {
+    background-color: #eef7ff;
+}
+.btn-assign-homework-delete {
+    background-color: #e60808;
+    color: #fff5f5;
+}
+.btn-assign-homework-delete:hover {
+    background-color: #d81212;
+}
+.btn-close-modal-assign-homework {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    padding: 16px !important;
+    cursor: pointer;
+    color: white;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.btn-close-modal-assign-homework:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+.assign-homework-modal-body {
+    padding: 28px;
+    max-height: calc(90vh - 160px);
+    overflow-y: auto;
+}
+.assign-homework-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s;
+}
+
+.assign-homework-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.assign-homework-modal-dialog {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    animation: slideDown 0.3s;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border-radius: 24px;
+}
+
+.assign-homework-modal-header {
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #5081be 0%, #3d6a9e 100%);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+}
+
+.assign-homework-modal-title {
+    font-size: 20px;
     font-weight: 600;
-    margin-top: 24px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.assign-homework-modal-title i {
+    font-size: 24px;
+}
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.mb-3 {
+    margin-bottom: 16px;
+}
+.file-upload-wrapper {
+    position: relative;
+    border: 2px dashed #c0c0c0;
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.file-upload-wrapper:hover {
+    border-color: #5081be;
+    background: #f0f5fa;
+}
+
+.file-upload-wrapper.drag-over {
+    border-color: #5081be;
+    background: #e8f0ff;
+}
+
+.file-upload-icon {
+    width: 80px;
+    height: 80px;
+    margin: 8px auto;
+    background: #5081be;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.file-upload-icon::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: inherit;
+    opacity: 0.3;
+    filter: blur(10px);
+}
+
+.file-upload-icon i {
+    font-size: 36px;
+    color: white;
+    position: relative;
+    z-index: 1;
+}
+
+.file-upload-text {
+    margin-bottom: 8px;
+}
+
+.file-upload-text h4 {
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.file-upload-text p {
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+}
+
+.file-upload-input {
+    display: none;
+}
+
+.file-upload-hint {
+    font-size: 12px;
+    color: #999;
+}
+
+.file-selected {
+    margin-top: 16px;
+    padding: 8px 16px;
+    background: #edfff4;
+    border: 1px solid #00c94b;
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-selected.show {
+    display: flex;
+}
+
+.file-selected i {
+    color: #4caf50;
+    font-size: 20px;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-info .file-name {
+    color: #2e7d32;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+.file-info .file-size {
+    color: #66bb6a;
+    font-size: 12px;
+}
+
+.remove-file {
+    background: #ffebee;
+    border: none;
+    color: white;
+
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.remove-file:hover {
+    background: #2e7d32;
+    color: white;
+}
+
+.assign-homework-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    background: #f8f9fa;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.checkbox-wrapper:hover {
+    background: #e8f0ff;
+    border-color: #5081be;
+}
+
+.checkbox-wrapper input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #5081be;
+}
+
+.checkbox-wrapper label {
+    cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+    margin: 0;
+    user-select: none;
+}
+
+.checkbox-wrapper .checkbox-hint {
+    color: #666;
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 4px;
 }

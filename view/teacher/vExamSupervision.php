@@ -42,221 +42,6 @@ if (!isset($data)) {
     <title>Phân công coi thi - Giáo viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-
-        .header {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            font-size: 14px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            color: #5081BE;
-        }
-
-        .container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .nav-tab {
-            padding: 12px 25px;
-            background: white;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #5081BE;
-            font-weight: 500;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .nav-tab:hover {
-            background: #5081BE;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(80, 129, 190, 0.3);
-        }
-
-        .nav-tab.active {
-            background: #5081BE;
-            color: white;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2d5a8c;
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #d0d0d0;
-        }
-
-        .exam-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .exam-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.3s;
-        }
-
-        .exam-card:hover {
-            border-color: #5081BE;
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(80, 129, 190, 0.2);
-        }
-
-        .exam-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .exam-subject {
-            font-size: 16px;
-            font-weight: 700;
-            color: #5081BE;
-        }
-
-        .exam-type {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #2d5a8c;
-            color: white;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* .exam-details {
-            margin-bottom: 16px;
-        } */
-
-        .exam-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 400;
-            color: #666;
-        }
-
-        .exam-detail-item i {
-            width: 24px;
-            color: #5081BE;
-        }
-
-        .exam-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 16px;
-            border-top: 1px solid #f0f0f0;
-            margin-top: 16px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge.scheduled {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .badge.in-progress {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge.completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge.cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge.urgent {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge.soon {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 24px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 24px;
-            opacity: 0.5;
-        }
-
-        .stats-row {
-            display: flex;
-            justify-content: space-around;
-            background: #f8f9ff;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            background-color: white;
-            border-radius: 16px;
-            padding: 32px;
-        }
-        
-
-        
-
-    </style>
 </head>
 
 <body>
@@ -266,19 +51,29 @@ if (!isset($data)) {
 
         <!-- Main Content -->
         <div class="content-area">
-            <div class="header">
-                <h1><i class="fas fa-eye"></i> Phân công coi thi</h1>
-            </div>
+            <div class="header-section header-assign">
+                <div class="header-left ">
+                    <h2>
+                        <i class="fas fa-eye"></i> Phân công coi thi
+                    </h2>
+                    <p>Tra cứu thông tin phân công coi thi.</p>
+                </div>
+                <!-- <div class="header-left-icon"> -->
 
-            <!-- Statistics -->
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
+                </div>
+
+            </div>
             <?php if ($data['examSupervision']['success']): ?>
-                <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value"><?php echo $data['examSupervision']['total']; ?></div>
-                            <div class="stat-label">Tổng số ca thi</div>
-                        </div>
+                <div class="stats-assign-row">
                     <div class="stat-item">
-                        <div class="stat-value">
+                        <div class="stat-value exam-sup-total"><?php echo $data['examSupervision']['total']; ?></div>
+                        <div class="stat-label">Tổng số ca thi</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-upcoming">
                             <?php
                             $upcoming = 0;
                             foreach ($data['examSupervision']['data'] as $exam) {
@@ -289,10 +84,10 @@ if (!isset($data)) {
                             echo $upcoming;
                             ?>
                         </div>
-                        <div class="stat-label">Ca thi sắp tới</div>
+                        <div class="stat-label ">Ca thi sắp tới</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">
+                        <div class="stat-value exam-sup-finish">
                             <?php
                             $completed = 0;
                             foreach ($data['examSupervision']['data'] as $exam) {
@@ -303,18 +98,15 @@ if (!isset($data)) {
                             echo $completed;
                             ?>
                         </div>
-                        <div class="stat-label">Đã hoàn thành</div>
+                        <div class="stat-label ">Đã hoàn thành</div>
                     </div>
                 </div>
             <?php endif; ?>
 
-            <!-- Main Card -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-list"></i> Danh sách phân công coi thi</h2>
                 </div>
-
-                <!-- Filter Section -->
                 <form method="GET" action="">
                     <input type="hidden" name="action" value="viewExamSupervision">
                     <div class="filter-section">
@@ -356,15 +148,15 @@ if (!isset($data)) {
                         </div>
                     </div>
                 </form>
-
-                <!-- Exam Cards Grid -->
+            </div>
+            <div class="card-body">
                 <?php if ($data['examSupervision']['success'] && count($data['examSupervision']['data']) > 0): ?>
-                    <div class="exam-grid">
+                    <div class="content-grid">
                         <?php foreach ($data['examSupervision']['data'] as $exam): ?>
                             <div class="exam-card">
-                                <div class="exam-header">
-                                    <div class="exam-subject"><?php echo htmlspecialchars($exam['tenMonHoc']); ?></div>
-                                    <div class="exam-type"><?php echo htmlspecialchars($exam['loaiKyThi']); ?></div>
+                                <div class="exam-card-header">
+                                    <div class="exam-card-subject"><?php echo htmlspecialchars($exam['tenMonHoc']); ?></div>
+                                    <div class="exam-card-type"><?php echo htmlspecialchars($exam['loaiKyThi']); ?></div>
                                 </div>
 
                                 <div class="exam-details">
@@ -427,6 +219,7 @@ if (!isset($data)) {
                 <?php endif; ?>
             </div>
         </div>
+
 </body>
 
 </html>

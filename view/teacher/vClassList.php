@@ -49,12 +49,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .filter-actions {
-            display: flex;
-            gap: 16px;
-            align-items: flex-end;
-        }
-
         .table-responsive {
             overflow-x: auto;
         }
@@ -120,18 +114,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             background: #d1ecf1;
             color: #0c5460;
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
     </style>
 </head>
 
@@ -145,19 +127,23 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <div class="header-section">
                 <div class="header-left ">
                     <h2>
-                        <i class="fas fa-list"></i> Danh sách lớp
+                        <i class="fa-solid fa-clipboard-user"></i>
+                        Danh sách lớp
                     </h2>
                     <p>Xem và quản lý danh sách lớp học của bạn.</p>
                 </div>
                 <!-- <div class="header-left-icon"> -->
 
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
                 </div>
             </div>
 
             <!-- Main Card -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title"><i class="fas fa-list"></i> Danh sách lớp học đang giảng dạy</h2>
+                    <h2 class="card-title"><i class="fa-solid fa-list-ul"></i> Danh sách lớp học đang giảng dạy</h2>
                 </div>
 
                 <!-- Filter Section -->
@@ -192,7 +178,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </select>
                         </div>
 
-                        <div class="filter-actions">
+                        <div class="filter-actions-button">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-filter"></i> Lọc
                             </button>
@@ -204,58 +190,59 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </form>
 
                 <!-- Table -->
-                <div class="table-responsive">
-                    <?php if ($data['classes']['success'] && count($data['classes']['data']) > 0): ?>
-                        <table>
-                            <thead>
+
+            </div>
+            <div >
+                <?php if ($data['classes']['success'] && count($data['classes']['data']) > 0): ?>
+                    <table class="table-responsive">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên lớp</th>
+                                <th>Khối</th>
+                                <th>Môn học</th>
+                                <th>Sĩ số</th>
+                                <th>Phòng học</th>
+                                <th>GVCN</th>
+                                <th>Số tiết/tuần</th>
+                                <th>Học kỳ</th>
+                                <th>Năm học</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($data['classes']['data'] as $index => $class): ?>
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Tên lớp</th>
-                                    <th>Khối</th>
-                                    <th>Môn học</th>
-                                    <th>Sĩ số</th>
-                                    <th>Phòng học</th>
-                                    <th>GVCN</th>
-                                    <th>Số tiết/tuần</th>
-                                    <th>Học kỳ</th>
-                                    <th>Năm học</th>
+                                    <td><?php echo $index + 1; ?></td>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars($class['tenLop']); ?></strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge primary">Khối <?php echo htmlspecialchars($class['khoiLop']); ?></span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($class['tenMonHoc']); ?></td>
+                                    <td>
+                                        <i class="fas fa-users"></i> <?php echo htmlspecialchars($class['siSo']); ?>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-door-open"></i> <?php echo htmlspecialchars($class['tenPhong'] ?? 'Chưa xếp'); ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($class['giaoVienChuNhiem'] ?? 'Chưa có'); ?></td>
+                                    <td>
+                                        <span class="badge info"><?php echo htmlspecialchars($class['soTietTrongTuan']); ?> tiết</span>
+                                    </td>
+                                    <td>HK <?php echo htmlspecialchars($class['hocKy']); ?></td>
+                                    <td><?php echo htmlspecialchars($class['namHoc']); ?></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($data['classes']['data'] as $index => $class): ?>
-                                    <tr>
-                                        <td><?php echo $index + 1; ?></td>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($class['tenLop']); ?></strong>
-                                        </td>
-                                        <td>
-                                            <span class="badge primary">Khối <?php echo htmlspecialchars($class['khoiLop']); ?></span>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($class['tenMonHoc']); ?></td>
-                                        <td>
-                                            <i class="fas fa-users"></i> <?php echo htmlspecialchars($class['siSo']); ?>
-                                        </td>
-                                        <td>
-                                            <i class="fas fa-door-open"></i> <?php echo htmlspecialchars($class['tenPhong'] ?? 'Chưa xếp'); ?>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($class['giaoVienChuNhiem'] ?? 'Chưa có'); ?></td>
-                                        <td>
-                                            <span class="badge info"><?php echo htmlspecialchars($class['soTietTrongTuan']); ?> tiết</span>
-                                        </td>
-                                        <td>HK <?php echo htmlspecialchars($class['hocKy']); ?></td>
-                                        <td><?php echo htmlspecialchars($class['namHoc']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <h3>Không tìm thấy lớp học nào</h3>
-                            <p>Vui lòng thử lại với các tiêu chí lọc khác</p>
-                        </div>
-                    <?php endif; ?>
-                </div>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h3>Không tìm thấy lớp học nào</h3>
+                        <p>Vui lòng thử lại với các tiêu chí lọc khác</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 </body>
