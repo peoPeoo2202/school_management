@@ -4,13 +4,11 @@ ini_set('display_errors', 1);
 
 session_start();
 
-// Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
     header("Location: ../../public/index.php");
     exit();
 }
 
-// Kiểm tra quyền giáo viên
 if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     header("Location: ../../public/index.php?error=access_denied");
     exit();
@@ -26,87 +24,28 @@ if (!$maGV) {
 }
 
 $controller = new cSubmitExam();
-
-// Lấy danh sách môn học của giáo viên
 $subjects = $controller->getTeacherSubjects($maGV);
-
-// Lấy danh sách năm học
 $schoolYears = $controller->getSchoolYears();
 
-// Xử lý bộ lọc - BỎ môn học
 $filters = [
     'hocKy' => isset($_GET['hocKy']) ? intval($_GET['hocKy']) : null,
     'namHoc' => isset($_GET['namHoc']) ? trim($_GET['namHoc']) : null,
     'trangThai' => isset($_GET['trangThai']) ? trim($_GET['trangThai']) : null
 ];
 
-// Lấy danh sách đề thi
 $exams = $controller->getTeacherExams($maGV, $filters);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch sử đề thi - Hệ thống Quản lý</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+
     <style>
-   
-        .header h1 {
-            font-size: 26px;
-            font-weight: 600;
-            color: #5081BE;
-            margin: 0;
-        }
-
-        .breadcrumb {
-            display: flex;
-            gap: 10px;
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-        }
-
-        .breadcrumb a {
-            color: #5081BE;
-            text-decoration: none;
-        }
-
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-
-        .list-section {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #5081BE;
-        }
-
-        .filter-actions .btn {
-            width: 100%;
-            padding: 0;
-            height: 41px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            border: none;
-            box-sizing: border-box;
-        }
-
         .btn-info {
             background: #2196f3;
             color: white;
@@ -115,134 +54,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
         .btn-info:hover {
             background: #1976d2;
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-        }
-
-        .btn-sm {
-            padding: 6px 15px;
-            font-size: 12px;
-        }
-
-        .btn-warning {
-            background: #ff9800;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: #f9f9f9;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
-            font-size: 13px;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 13px;
-        }
-
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: #ddd;
-            margin-bottom: 15px;
-        }
-
-        .empty-state p {
-            font-size: 16px;
-        }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-        }
-
-        .back-button:hover {
-            background: #5a6268;
-            transform: translateX(-5px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.25);
         }
 
         .exam-title-link {
@@ -263,7 +75,9 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             font-weight: 600;
         }
 
-        /* Modal sửa đề thi */
+        /* Responsive */
+   
+        /* ===== Modal (GIỮ NGUYÊN style ông xã) ===== */
         .modal {
             display: none;
             position: fixed;
@@ -294,14 +108,8 @@ $exams = $controller->getTeacherExams($maGV, $filters);
         }
 
         @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-header {
@@ -458,66 +266,46 @@ $exams = $controller->getTeacherExams($maGV, $filters);
         .modal-footer .btn-secondary:hover {
             background: #5a6268;
         }
-
-        @media (max-width: 768px) {
-            .main-wrapper {
-                flex-direction: column;
-            }
-
-            .content-area {
-                padding: 15px;
-            }
-
-            .filter-form {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-actions {
-                flex-direction: row;
-            }
-        }
-
-        @media (max-width: 1024px) and (min-width: 769px) {
-            .filter-form {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .filter-actions {
-                grid-column: 1 / -1;
-                flex-direction: row;
-                justify-content: flex-start;
-            }
-
-            .filter-actions .btn {
-                width: auto;
-                min-width: 120px;
-            }
-        }
     </style>
 </head>
+
 <body>
     <div class="main-wrapper">
         <?php include('../layouts/navigate/navigateTeacher.php'); ?>
 
         <div class="content-area">
-            <!-- Page Header -->
-            <div class="header">
-                <h1>Lịch sử đề thi đã gửi</h1>
+            <!-- Header theo mẫu -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h2><i class="fas fa-history"></i> Lịch sử đề thi</h2>
+                    <p>Quản lý danh sách đề thi đã gửi</p>
+                </div>
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
+                </div>
             </div>
 
-            <a href="vSubmitExam.php" class="back-button">
-                <i class="fas fa-arrow-left"></i> Quay lại
-            </a>
+            <!-- Card thao tác nhanh -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-bolt"></i> Thao tác nhanh</h2>
+                    <a href="vSubmitExam.php" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
 
-            <!-- List Section -->
-            <div class="list-section">
-                <h2 class="section-title"><i class="fas fa-list"></i> Danh sách đề thi</h2>
+            <!-- Card bộ lọc theo mẫu -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-filter"></i> Bộ lọc</h2>
+                </div>
 
-                <!-- Filter -->
-                <div class="filter-section">
+                <div class="card-body">
                     <form id="filterForm" method="GET">
-                        <div class="filter-form">
-                            <div class="form-group">
+                        <div class="filter-section">
+                            <div class="filter-group">
                                 <label for="filter_hocKy">Học kỳ</label>
                                 <select id="filter_hocKy" name="hocKy">
                                     <option value="">-- Tất cả --</option>
@@ -526,20 +314,19 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="filter-group">
                                 <label for="filter_namHoc">Năm học</label>
                                 <select id="filter_namHoc" name="namHoc">
                                     <option value="">-- Tất cả --</option>
                                     <?php foreach ($schoolYears as $year): ?>
-                                        <option value="<?php echo $year; ?>"
-                                                <?php echo ($filters['namHoc'] == $year) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $year; ?>" <?php echo ($filters['namHoc'] == $year) ? 'selected' : ''; ?>>
                                             <?php echo $year; ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="filter-group">
                                 <label for="filter_trangThai">Trạng thái</label>
                                 <select id="filter_trangThai" name="trangThai">
                                     <option value="">-- Tất cả --</option>
@@ -550,122 +337,135 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                 </select>
                             </div>
 
-                            <div class="filter-actions">
-                                <button type="submit" class="btn btn-info btn-sm">
-                                    <i class="fas fa-filter"></i> Lọc
-                                </button>
-                                <a href="vExamHistory.php" class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-redo"></i> Reset
-                                </a>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <div class="filter-actions">
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="fas fa-filter"></i> Lọc
+                                    </button>
+                                    <a href="vExamHistory.php" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
+            </div>
 
-                <!-- Table -->
-                <div class="table-responsive">
-                    <?php if (count($exams) > 0): ?>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Tên đề thi</th>
-                                    <th>HK/Năm học</th>
-                                    <th>Tải File</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày gửi</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                $stt = 1;
-                                foreach ($exams as $exam): 
-                                    $badgeClass = 'badge-warning';
-                                    if ($exam['trangThai'] == 'Daduyet') {
-                                        $badgeClass = 'badge-success';
-                                    } elseif ($exam['trangThai'] == 'Dachon') {
-                                        $badgeClass = 'badge-info';
-                                    } elseif ($exam['trangThai'] == 'Tuchoi') {
-                                        $badgeClass = 'badge-danger';
-                                    }
-                                    
-                                    // Tạo link download
-                                    $downloadLink = $exam['tenFile'] ? '../../controller/cSubmitExam.php?action=download&id=' . $exam['maDeThi'] : '#';
-                                    
-                                    // Tạo link để view file trực tiếp
-                                    $viewLink = $exam['tenFile'] ? '../../controller/cSubmitExam.php?action=view&id=' . $exam['maDeThi'] : '#';
-                                ?>
-                                <tr>
-                                    <td><?php echo $stt++; ?></td>
-                                    <td>
-                                        <?php if ($exam['tenFile']): ?>
-                                            <a href="<?php echo $viewLink; ?>" 
-                                               target="_blank"
-                                               class="exam-title-link"
-                                               title="Click để xem file">
-                                                <?php echo htmlspecialchars($exam['tenDeThi']); ?>
-                                            </a>
-                                        <?php else: ?>
-                                            <span class="exam-title-text"><?php echo htmlspecialchars($exam['tenDeThi']); ?></span>
-                                        <?php endif; ?>
-                                        <?php if ($exam['moTa']): ?>
-                                            <br><small style="color: #999;"><?php echo htmlspecialchars(substr($exam['moTa'], 0, 50)) . (strlen($exam['moTa']) > 50 ? '...' : ''); ?></small>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>HK<?php echo $exam['hocKy']; ?> / <?php echo $exam['namHoc']; ?></td>
-                                    <td>
-                                        <?php if ($exam['tenFile']): ?>
-                                            <a href="javascript:void(0);" 
-                                               onclick="downloadFile('<?php echo addslashes($downloadLink); ?>', '<?php echo addslashes($exam['tenDeThi'] . '.' . pathinfo($exam['tenFile'], PATHINFO_EXTENSION)); ?>')"
-                                               class="btn btn-info btn-sm"
-                                               title="Tải file">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                        <?php else: ?>
-                                            <span style="color: #999;">Không có</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="badge <?php echo $badgeClass; ?>">
-                                            <?php echo $exam['trangThaiText']; ?>
-                                        </span>
-                                    </td>
-                                    <td><?php echo date('d/m/Y H:i', strtotime($exam['ngayTao'])); ?></td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <?php if ($exam['trangThai'] == 'Chuaduyet'): ?>
-                                                <button class="btn btn-sm btn-warning" 
-                                                        onclick='editExam(<?php echo json_encode($exam, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
-                                                        title="Sửa">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-danger" 
-                                                        onclick="deleteExam(<?php echo $exam['maDeThi']; ?>)"
-                                                        title="Xóa">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            <?php else: ?>
-                                                <span style="color: #999; font-size: 12px;">-</span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>Chưa có đề thi nào được gửi</p>
-                        </div>
-                    <?php endif; ?>
+            <!-- Card bảng danh sách theo mẫu -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-table"></i> Danh sách đề thi</h2>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <?php if (count($exams) > 0): ?>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tên đề thi</th>
+                                        <th>HK/Năm học</th>
+                                        <th>Tải File</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày gửi</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $stt = 1;
+                                    foreach ($exams as $exam):
+                                        $badgeClass = 'badge-warning';
+                                        if ($exam['trangThai'] == 'Daduyet') {
+                                            $badgeClass = 'badge-success';
+                                        } elseif ($exam['trangThai'] == 'Dachon') {
+                                            $badgeClass = 'badge-info';
+                                        } elseif ($exam['trangThai'] == 'Tuchoi') {
+                                            $badgeClass = 'badge-danger';
+                                        }
+
+                                        $downloadLink = $exam['tenFile'] ? '../../controller/cSubmitExam.php?action=download&id=' . $exam['maDeThi'] : '#';
+                                        $viewLink = $exam['tenFile'] ? '../../controller/cSubmitExam.php?action=view&id=' . $exam['maDeThi'] : '#';
+                                    ?>
+                                        <tr>
+                                            <td><?php echo $stt++; ?></td>
+                                            <td>
+                                                <?php if ($exam['tenFile']): ?>
+                                                    <a href="<?php echo $viewLink; ?>"
+                                                        target="_blank"
+                                                        class="exam-title-link"
+                                                        title="Click để xem file">
+                                                        <?php echo htmlspecialchars($exam['tenDeThi']); ?>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="exam-title-text"><?php echo htmlspecialchars($exam['tenDeThi']); ?></span>
+                                                <?php endif; ?>
+
+                                                <?php if ($exam['moTa']): ?>
+                                                    <br>
+                                                    <small style="color: #999;">
+                                                        <?php echo htmlspecialchars(substr($exam['moTa'], 0, 50)) . (strlen($exam['moTa']) > 50 ? '...' : ''); ?>
+                                                    </small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>HK<?php echo $exam['hocKy']; ?> / <?php echo $exam['namHoc']; ?></td>
+                                            <td>
+                                                <?php if ($exam['tenFile']): ?>
+                                                    <a href="javascript:void(0);"
+                                                        onclick="downloadFile('<?php echo addslashes($downloadLink); ?>', '<?php echo addslashes($exam['tenDeThi'] . '.' . pathinfo($exam['tenFile'], PATHINFO_EXTENSION)); ?>')"
+                                                        class="btn-sm btn-info"
+                                                        title="Tải file">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span style="color: #999;">Không có</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span class="badge <?php echo $badgeClass; ?>">
+                                                    <?php echo $exam['trangThaiText']; ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo date('d/m/Y H:i', strtotime($exam['ngayTao'])); ?></td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <?php if ($exam['trangThai'] == 'Chuaduyet'): ?>
+                                                        <button class="btn-sm btn-warning"
+                                                            onclick='editExam(<?php echo json_encode($exam, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
+                                                            title="Sửa">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn-sm btn-danger"
+                                                            onclick="deleteExam(<?php echo $exam['maDeThi']; ?>)"
+                                                            title="Xóa">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span style="color: #999; font-size: 12px;">-</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>Chưa có đề thi nào được gửi</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <!-- Modal sửa đề thi -->
+    <!-- Modal sửa đề thi (GIỮ NGUYÊN HTML) -->
     <div id="editExamModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -675,7 +475,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             <form id="editExamForm" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" id="edit_maDeThi" name="maDeThi">
-                    
+
                     <div class="form-group">
                         <label for="edit_tenDeThi">Tên đề thi <span class="required">*</span></label>
                         <input type="text" id="edit_tenDeThi" name="tenDeThi" required>
@@ -717,7 +517,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                     <div class="form-group">
                         <label>File hiện tại</label>
                         <div id="currentFileInfo" class="current-file-info"></div>
-                        
+
                         <label>Thay đổi file (không bắt buộc)</label>
                         <div class="file-input-wrapper">
                             <input type="file" id="edit_file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx">
@@ -741,60 +541,48 @@ $exams = $controller->getTeacherExams($maGV, $filters);
     </div>
 
     <script>
-        // Hàm download file tự động
         function downloadFile(url, filename) {
-            // Tạo một thẻ a ẩn
             const link = document.createElement('a');
             link.href = url;
             link.download = filename || 'download';
             link.style.display = 'none';
-            
-            // Thêm vào DOM, click, và xóa
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Hiển thị tên file khi chọn
         document.getElementById('edit_file').addEventListener('change', function(e) {
             const fileName = e.target.files[0]?.name || 'Chọn file mới (PDF, DOC, DOCX, XLS, XLSX)';
             document.getElementById('fileNameDisplay').textContent = fileName;
         });
 
-        // Mở modal sửa đề thi
         function editExam(exam) {
             document.getElementById('edit_maDeThi').value = exam.maDeThi;
             document.getElementById('edit_tenDeThi').value = exam.tenDeThi;
             document.getElementById('edit_loaiDeThi').value = exam.loaiDeThi || 'de-thi';
             document.getElementById('edit_hocKy').value = exam.hocKy;
             document.getElementById('edit_namHoc').value = exam.namHoc;
-            
-            // Xử lý mô tả - không hiển thị "0" mà để placeholder
+
             const moTa = exam.moTa && exam.moTa !== '0' ? exam.moTa : '';
             document.getElementById('edit_moTa').value = moTa;
-            
-            // Hiển thị thông tin file hiện tại
+
             const fileInfo = document.getElementById('currentFileInfo');
             if (exam.tenFile) {
                 fileInfo.innerHTML = '<strong>File:</strong> ' + exam.tenFile;
             } else {
                 fileInfo.innerHTML = '<strong>Chưa có file</strong>';
             }
-            
-            // Reset file input
+
             document.getElementById('edit_file').value = '';
             document.getElementById('fileNameDisplay').textContent = 'Chọn file mới (PDF, DOC, DOCX, XLS, XLSX)';
-            
-            // Hiển thị modal
+
             document.getElementById('editExamModal').style.display = 'block';
         }
 
-        // Đóng modal
         function closeEditModal() {
             document.getElementById('editExamModal').style.display = 'none';
         }
 
-        // Đóng modal khi click bên ngoài
         window.onclick = function(event) {
             const modal = document.getElementById('editExamModal');
             if (event.target == modal) {
@@ -802,21 +590,20 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             }
         }
 
-        // Xử lý submit form sửa
         document.getElementById('editExamForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             const maDeThi = document.getElementById('edit_maDeThi').value;
-            
+
             try {
                 const response = await fetch('../../controller/cSubmitExam.php?action=update&id=' + maDeThi, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     alert(result.message);
                     closeEditModal();
@@ -829,19 +616,18 @@ $exams = $controller->getTeacherExams($maGV, $filters);
             }
         });
 
-        // Hàm xóa đề thi
         async function deleteExam(maDeThi) {
             if (!confirm('Bạn có chắc chắn muốn xóa đề thi này?')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch('../../controller/cSubmitExam.php?action=delete&id=' + maDeThi, {
                     method: 'POST'
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     alert(result.message);
                     window.location.reload();
@@ -854,4 +640,5 @@ $exams = $controller->getTeacherExams($maGV, $filters);
         }
     </script>
 </body>
+
 </html>

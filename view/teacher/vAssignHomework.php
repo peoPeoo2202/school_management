@@ -63,40 +63,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo url('assets/css/style.css'); ?>">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* assign-homework-modal Styles */
-
-
-
-
-
-
-
-        /* Custom File Upload */
-        
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -273,7 +239,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </div>
 
     <!-- assign-homework-modal Thêm Bài Tập -->
-    <div class="assign-homework-modal" id="add-assign-homework">
+    <div class="common-modal" id="add-assign-homework">
         <div class="assign-homework-modal-dialog">
             <div class="assign-homework-modal-header">
                 <h5 class="assign-homework-modal-title">
@@ -369,7 +335,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </div>
 
     <!-- assign-homework-modal Sửa Bài Tập -->
-    <div class="assign-homework-modal" id="edit-assign-homework">
+    <div class="common-modal" id="edit-assign-homework">
         <div class="assign-homework-modal-dialog">
             <div class="assign-homework-modal-header">
                 <h5 class="assign-homework-modal-title">

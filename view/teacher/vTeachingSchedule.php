@@ -175,7 +175,7 @@ if (!isset($data)) {
                 <div class="schedule-grid">
                     <div>
                         <h3 class="section-title morning"><i class="fas fa-sun"></i> BUỔI SÁNG (7:00 - 11:30)</h3>
-                        <table class="common-table">
+                        <table class="common-table schedule">
                             <thead>
                                 <tr>
                                     <th class="time-cell">Tiết</th>
