@@ -384,10 +384,35 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
         <div class="filters">
             <div class="filters-grid">
                 <div class="form-group">
+                    <label>Khối:</label>
+                    <select id="filterKhoi" class="form-control" onchange="filterClassesByKhoi()">
+                        <option value="">-- Tất cả --</option>
+                        <option value="6">Khối 6</option>
+                        <option value="7">Khối 7</option>
+                        <option value="8">Khối 8</option>
+                        <option value="9">Khối 9</option>
+                        <option value="10">Khối 10</option>
+                        <option value="11">Khối 11</option>
+                        <option value="12">Khối 12</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Lớp học:</label>
                     <select id="filterClass" class="form-control">
                         <option value="">-- Tất cả --</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Học kỳ:</label>
+                    <select id="filterHocKy" class="form-control">
+                        <option value="">-- Tất cả --</option>
+                        <option value="1">Học kỳ 1</option>
+                        <option value="2">Học kỳ 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Năm học:</label>
+                    <input type="text" id="filterNamHoc" class="form-control" placeholder="VD: 2024-2025" value="2024-2025">
                 </div>
                 <div class="form-group">
                     <label>Môn học:</label>
@@ -400,14 +425,6 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     <select id="filterTeacher" class="form-control">
                         <option value="">-- Tất cả --</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>Từ ngày:</label>
-                    <input type="date" id="filterFromDate" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Đến ngày:</label>
-                    <input type="date" id="filterToDate" class="form-control">
                 </div>
             </div>
             <button class="btn btn-primary" onclick="loadTimetables()">🔍 Tìm kiếm</button>
@@ -440,15 +457,31 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     
                     <div class="form-row">
                         <div class="form-group">
+                            <label>Học kỳ: <span class="required">*</span></label>
+                            <select id="hocKy" class="form-control" required>
+                                <option value="">-- Chọn học kỳ --</option>
+                                <option value="1">Học kỳ 1</option>
+                                <option value="2">Học kỳ 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Năm học: <span class="required">*</span></label>
+                            <input type="text" id="namHoc" class="form-control" required placeholder="VD: 2024-2025" value="2024-2025">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>Lớp học: <span class="required">*</span></label>
-                            <select id="maLop" class="form-control" required>
+                            <select id="maLop" class="form-control" required onchange="checkTeachingAssignment()">
                                 <option value="">-- Chọn lớp --</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label>Môn học: <span class="required">*</span></label>
-                            <select id="maMonHoc" class="form-control" required>
+                            <select id="maMonHoc" class="form-control" required onchange="checkTeachingAssignment()">
                                 <option value="">-- Chọn môn --</option>
                             </select>
                         </div>
@@ -457,30 +490,40 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     <div class="form-row">
                         <div class="form-group">
                             <label>Giáo viên: <span class="required">*</span></label>
-                            <select id="maGV" class="form-control" required>
+                            <select id="maGV" class="form-control" required onchange="checkTeachingAssignment()">
                                 <option value="">-- Chọn giáo viên --</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>Ngày học: <span class="required">*</span></label>
-                            <input type="date" id="thuNgay" class="form-control" required>
+                            <label>Thứ trong tuần: <span class="required">*</span></label>
+                            <select id="dayOfWeek" class="form-control" required onchange="loadAvailableRooms()">
+                                <option value="">-- Chọn thứ --</option>
+                                <option value="2">Thứ 2</option>
+                                <option value="3">Thứ 3</option>
+                                <option value="4">Thứ 4</option>
+                                <option value="5">Thứ 5</option>
+                                <option value="6">Thứ 6</option>
+                                <option value="7">Thứ 7 (Sáng)</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>Tiết học: <span class="required">*</span></label>
-                            <select id="tietHoc" class="form-control" required>
+                            <select id="period" class="form-control" required onchange="loadAvailableRooms()">
                                 <option value="">-- Chọn tiết --</option>
-                                <option value="Tiết 1">Tiết 1 (7:00-7:45)</option>
-                                <option value="Tiết 2">Tiết 2 (7:50-8:35)</option>
-                                <option value="Tiết 3">Tiết 3 (8:40-9:25)</option>
-                                <option value="Tiết 4">Tiết 4 (9:30-10:15)</option>
-                                <option value="Tiết 5">Tiết 5 (10:20-11:05)</option>
-                                <option value="Tiết 1-2">Tiết 1-2 (7:00-8:35)</option>
-                                <option value="Tiết 3-4">Tiết 3-4 (8:40-10:15)</option>
-                                <option value="Tiết 5-6">Tiết 5-6 (10:20-12:00)</option>
+                                <option value="1">Tiết 1 (07:00-07:45)</option>
+                                <option value="2">Tiết 2 (07:50-08:35)</option>
+                                <option value="3">Tiết 3 (08:40-09:25)</option>
+                                <option value="4">Tiết 4 (09:55-10:40)</option>
+                                <option value="5">Tiết 5 (10:45-11:30)</option>
+                                <option value="6">Tiết 6 (12:00-12:45)</option>
+                                <option value="7">Tiết 7 (12:50-13:35)</option>
+                                <option value="8">Tiết 8 (13:40-14:25)</option>
+                                <option value="9">Tiết 9 (14:55-15:40)</option>
+                                <option value="10">Tiết 10 (15:45-16:30)</option>
                             </select>
                         </div>
 
@@ -491,8 +534,17 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     </div>
 
                     <div class="form-group">
-                        <label>Phòng học:</label>
-                        <input type="text" id="phong" class="form-control" placeholder="VD: P101, P102...">
+                        <label>Phòng học: <span class="required">*</span></label>
+                        <select id="phong" class="form-control" required>
+                            <option value="">-- Chọn phòng --</option>
+                        </select>
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">
+                            💡 Chỉ hiển thị phòng khả dụng (không bảo trì, không trùng lịch)
+                        </small>
+                    </div>
+
+                    <div id="assignmentWarning" style="display: none; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; margin-top: 10px;">
+                        <strong>⚠️ Cảnh báo:</strong> <span id="assignmentWarningText"></span>
                     </div>
                 </form>
             </div>
@@ -589,21 +641,23 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
         // Load timetables list
         function loadTimetables(page = 1) {
             currentPage = page;
+            const maKhoi = document.getElementById('filterKhoi').value;
             const maLop = document.getElementById('filterClass').value;
             const maMonHoc = document.getElementById('filterSubject').value;
             const maGV = document.getElementById('filterTeacher').value;
-            const tuNgay = document.getElementById('filterFromDate').value;
-            const denNgay = document.getElementById('filterToDate').value;
+            const hocKy = document.getElementById('filterHocKy').value;
+            const namHoc = document.getElementById('filterNamHoc').value;
 
             const params = new URLSearchParams({
                 action: 'list',
                 page: page,
                 limit: 20,
+                maKhoi: maKhoi,
                 maLop: maLop,
                 maMonHoc: maMonHoc,
                 maGV: maGV,
-                tuNgay: tuNgay,
-                denNgay: denNgay
+                hocKy: hocKy,
+                namHoc: namHoc
             });
 
             fetch(`../../controller/cTimetableManagement.php?${params}`)
@@ -643,11 +697,11 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     <thead>
                         <tr>
                             <th>Mã TKB</th>
+                            <th>HK/Năm</th>
                             <th>Lớp</th>
                             <th>Môn học</th>
                             <th>Giáo viên</th>
-                            <th>Ngày học</th>
-                            <th>Tiết học</th>
+                            <th>Thứ/Tiết</th>
                             <th>Thời gian</th>
                             <th>Phòng</th>
                             <th>Thao tác</th>
@@ -657,17 +711,20 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             `;
 
             timetables.forEach(item => {
-                const dateObj = new Date(item.thuNgay);
-                const formattedDate = dateObj.toLocaleDateString('vi-VN');
+                // Map day_of_week to Vietnamese
+                const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                const dayOfWeek = item.day_of_week ? dayNames[item.day_of_week - 1] : '';
+                const period = item.period || '';
+                const timeSlot = dayOfWeek && period ? `${dayOfWeek} - T${period}` : (item.tietHoc || '');
                 
                 html += `
                     <tr>
                         <td>${item.maTKB}</td>
+                        <td><span class="badge badge-date">HK${item.hocKy || ''} - ${item.namHoc || ''}</span></td>
                         <td><strong>${item.tenLop || ''}</strong></td>
                         <td>${item.tenMonHoc || ''}</td>
                         <td>${item.tenGiaoVien || ''}</td>
-                        <td><span class="badge badge-date">${formattedDate}</span></td>
-                        <td><span class="badge badge-time">${item.tietHoc || ''}</span></td>
+                        <td><span class="badge badge-time">${timeSlot}</span></td>
                         <td>${item.thoiGianHoc || ''}</td>
                         <td><span class="badge badge-room">${item.phong || ''}</span></td>
                         <td>
@@ -728,13 +785,20 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
                     if (data.success) {
                         const item = data.data;
                         document.getElementById('timetableId').value = item.maTKB;
+                        document.getElementById('hocKy').value = item.hocKy || '1';
+                        document.getElementById('namHoc').value = item.namHoc || '2024-2025';
                         document.getElementById('maLop').value = item.maLop || '';
                         document.getElementById('maMonHoc').value = item.maMonHoc || '';
                         document.getElementById('maGV').value = item.maGV || '';
-                        document.getElementById('thuNgay').value = item.thuNgay || '';
-                        document.getElementById('tietHoc').value = item.tietHoc || '';
+                        document.getElementById('dayOfWeek').value = item.day_of_week || '';
+                        document.getElementById('period').value = item.period || '';
                         document.getElementById('thoiGianHoc').value = item.thoiGianHoc || '';
-                        document.getElementById('phong').value = item.phong || '';
+                        
+                        // Load available rooms first, then set phong
+                        loadAvailableRooms().then(() => {
+                            document.getElementById('phong').value = item.phong || '';
+                        });
+                        
                         document.getElementById('timetableModal').style.display = 'block';
                     } else {
                         showError('Không thể tải thông tin thời khóa biểu');
@@ -751,16 +815,118 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'quantrivie
             document.getElementById('timetableModal').style.display = 'none';
         }
 
+        // Load available rooms
+        function loadAvailableRooms() {
+            const dayOfWeek = document.getElementById('dayOfWeek').value;
+            const period = document.getElementById('period').value;
+            const hocKy = document.getElementById('hocKy').value;
+            const namHoc = document.getElementById('namHoc').value;
+
+            if (!dayOfWeek || !period || !hocKy || !namHoc) {
+                return Promise.resolve(); // Chưa đủ thông tin
+            }
+
+            const params = new URLSearchParams({
+                action: 'available-rooms',
+                dayOfWeek: dayOfWeek,
+                period: period,
+                hocKy: hocKy,
+                namHoc: namHoc
+            });
+
+            return fetch(`../../controller/cTimetableManagement.php?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    const phongSelect = document.getElementById('phong');
+                    phongSelect.innerHTML = '<option value="">-- Chọn phòng --</option>';
+
+                    if (data.success && data.data.length > 0) {
+                        data.data.forEach(room => {
+                            const option = document.createElement('option');
+                            option.value = room.tenPhong;
+                            option.textContent = `${room.tenPhong} (${room.loaiPhong || 'Phòng học'}, ${room.sucChua || 'N/A'} chỗ)`;
+                            phongSelect.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = '⚠️ Không có phòng khả dụng';
+                        option.disabled = true;
+                        phongSelect.appendChild(option);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                });
+        }
+
+        // Check teaching assignment
+        function checkTeachingAssignment() {
+            const maLop = document.getElementById('maLop').value;
+            const maMonHoc = document.getElementById('maMonHoc').value;
+            const maGV = document.getElementById('maGV').value;
+            const hocKy = document.getElementById('hocKy').value;
+            const namHoc = document.getElementById('namHoc').value;
+
+            const warning = document.getElementById('assignmentWarning');
+            
+            if (!maLop || !maMonHoc || !maGV || !hocKy || !namHoc) {
+                warning.style.display = 'none';
+                return;
+            }
+
+            // Simple check - could be enhanced with API call
+            warning.style.display = 'block';
+            document.getElementById('assignmentWarningText').textContent = 
+                'Đảm bảo giáo viên được phân công dạy môn này cho lớp đã chọn.';
+        }
+
+        // Filter classes by khoi
+        function filterClassesByKhoi() {
+            const khoi = document.getElementById('filterKhoi').value;
+            const classSelect = document.getElementById('filterClass');
+            const allOptions = Array.from(classSelect.options);
+
+            allOptions.forEach(option => {
+                if (option.value === '') {
+                    option.style.display = 'block';
+                    return;
+                }
+
+                if (!khoi) {
+                    option.style.display = 'block';
+                } else {
+                    const optionText = option.textContent;
+                    if (optionText.includes(`Khối ${khoi}`)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+        }
+
         // Save timetable
         function saveTimetable() {
             const formData = new FormData();
+            formData.append('hocKy', document.getElementById('hocKy').value);
+            formData.append('namHoc', document.getElementById('namHoc').value);
             formData.append('maLop', document.getElementById('maLop').value);
             formData.append('maMonHoc', document.getElementById('maMonHoc').value);
             formData.append('maGV', document.getElementById('maGV').value);
-            formData.append('thuNgay', document.getElementById('thuNgay').value);
-            formData.append('tietHoc', document.getElementById('tietHoc').value);
+            formData.append('day_of_week', document.getElementById('dayOfWeek').value);
+            formData.append('period', document.getElementById('period').value);
             formData.append('thoiGianHoc', document.getElementById('thoiGianHoc').value);
             formData.append('phong', document.getElementById('phong').value);
+
+            // Validation
+            if (!formData.get('hocKy') || !formData.get('namHoc') || 
+                !formData.get('maLop') || !formData.get('maMonHoc') || 
+                !formData.get('maGV') || !formData.get('day_of_week') || 
+                !formData.get('period') || !formData.get('phong')) {
+                showError('Vui lòng điền đầy đủ các trường bắt buộc (*)');
+                return;
+            }
 
             let url = '../../controller/cTimetableManagement.php?action=create';
             if (isEditMode) {

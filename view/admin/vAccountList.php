@@ -22,8 +22,8 @@ $csrfToken = cAccountManagement::generateCSRFToken();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Tài khoản - Hệ thống Quản lý Trường học</title>
-    <link rel="stylesheet" href="../public/css/style.css">
-    <link rel="stylesheet" href="./admin/css/account-management.css">
+    <link rel="stylesheet" href="../../public/css/style.css">
+    <link rel="stylesheet" href="./css/account-management.css">
     <style>
         .account-management-container {
             max-width: 1400px;
@@ -284,6 +284,42 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             border: 1px solid #f5c6cb;
         }
 
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -345,76 +381,89 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         <!-- Tabs Section -->
         <div class="tabs-container" style="margin-bottom: 20px; border-bottom: 2px solid #e0e0e0;">
             <button class="tab-btn active" onclick="switchTab('assign')" id="tab-assign">
-                Cấp tài khoản
+                Thông tin tài khoản
             </button>
-            <button class="tab-btn" onclick="switchTab('manage')" id="tab-manage">
+            <!-- <button class="tab-btn" onclick="switchTab('manage')" id="tab-manage">
                 Tạo tài khoản
-            </button>
+            </button> -->
         </div>
 
         <div id="alert-container"></div>
 
-        <!-- Tab Content: Cấp tài khoản -->
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <div>Đang xử lý...</div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Thông tin tài khoản -->
         <div id="assign-account-tab" class="tab-content">
-            <h3 style="margin-bottom: 20px;">Cấp tài khoản cho học sinh</h3>
+            <h3 style="margin-bottom: 20px;">Thông tin tài khoản</h3>
             
             <div class="filter-section">
                 <div class="filter-group">
-                    <label>Mã học sinh</label>
-                    <input type="text" id="filter-student-id" placeholder="Nhập mã học sinh...">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="filter-username" placeholder="Nhập tên đăng nhập...">
                 </div>
                 <div class="filter-group">
-                    <label>Tên học sinh</label>
-                    <input type="text" id="filter-student-name" placeholder="Nhập tên học sinh...">
+                    <label>Họ tên</label>
+                    <input type="text" id="filter-fullname" placeholder="Nhập họ tên...">
                 </div>
                 <div class="filter-group">
-                    <label>Lớp</label>
-                    <select id="filter-student-class">
+                    <label>Loại tài khoản</label>
+                    <select id="filter-role">
                         <option value="">Tất cả</option>
+                        <option value="quantrivien">Quản trị viên</option>
+                        <option value="bangiamhieu">Ban giám hiệu</option>
+                        <option value="ttbm">Tổ trưởng bộ môn</option>
+                        <option value="giaovien">Giáo viên</option>
+                        <option value="hocsinh">Học sinh</option>
+                        <option value="phuhuynh">Phụ huynh</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Trạng thái tài khoản</label>
-                    <select id="filter-has-account">
+                    <label>Trạng thái</label>
+                    <select id="filter-status">
                         <option value="">Tất cả</option>
-                        <option value="no">Chưa có tài khoản</option>
-                        <option value="yes">Đã có tài khoản</option>
+                        <option value="active">Hoạt động</option>
+                        <option value="locked">Đã khóa</option>
+                        <option value="disabled">Vô hiệu hóa</option>
                     </select>
                 </div>
                 <div class="filter-actions">
-                    <button class="btn btn-primary" onclick="loadStudents()">Tìm kiếm</button>
-                    <button class="btn btn-warning" onclick="resetStudentFilters()">Đặt lại</button>
+                    <button class="btn btn-primary" onclick="loadAccounts()">Tìm kiếm</button>
+                    <button class="btn btn-warning" onclick="resetFilters()">Đặt lại</button>
                 </div>
             </div>
 
             <div class="table-container">
-                <div id="student-loading" class="loading" style="display: none;">
+                <div id="loading" class="loading" style="display: none;">
                     Đang tải dữ liệu...
                 </div>
-                <table id="students-table">
+                <table id="accounts-table">
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Mã HS</th>
-                            <th>Tên học sinh</th>
-                            <th>Ngày sinh</th>
-                            <th>Lớp</th>
-                            <th>Tài khoản</th>
+                            <th>Mã TK</th>
+                            <th>Tên đăng nhập</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Loại tài khoản</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody id="students-tbody">
+                    <tbody id="accounts-tbody">
                     </tbody>
                 </table>
             </div>
 
-            <div class="pagination" id="student-pagination">
+            <div class="pagination" id="pagination">
             </div>
         </div>
-
-        <!-- Tab Content: Tạo tài khoản (existing content) -->
-        <div id="manage-account-tab" class="tab-content" style="display: none;">
 
         <!-- Tab Content: Tạo tài khoản (existing content) -->
         <div id="manage-account-tab" class="tab-content" style="display: none;">
@@ -422,15 +471,15 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         <div class="filter-section">
             <div class="filter-group">
                 <label>Tên đăng nhập</label>
-                <input type="text" id="filter-username" placeholder="Nhập tên đăng nhập...">
+                <input type="text" id="filter-username-2" placeholder="Nhập tên đăng nhập...">
             </div>
             <div class="filter-group">
                 <label>Họ tên</label>
-                <input type="text" id="filter-fullname" placeholder="Nhập họ tên...">
+                <input type="text" id="filter-fullname-2" placeholder="Nhập họ tên...">
             </div>
             <div class="filter-group">
                 <label>Loại tài khoản</label>
-                <select id="filter-role">
+                <select id="filter-role-2">
                     <option value="">Tất cả</option>
                     <option value="quantrivien">Quản trị viên</option>
                     <option value="bangiamhieu">Ban giám hiệu</option>
@@ -441,7 +490,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             </div>
             <div class="filter-group">
                 <label>Trạng thái</label>
-                <select id="filter-status">
+                <select id="filter-status-2">
                     <option value="">Tất cả</option>
                     <option value="active">Hoạt động</option>
                     <option value="locked">Đã khóa</option>
@@ -456,10 +505,10 @@ $csrfToken = cAccountManagement::generateCSRFToken();
 
         <!-- Table Section -->
         <div class="table-container">
-            <div id="loading" class="loading" style="display: none;">
+            <div id="loading-2" class="loading" style="display: none;">
                 Đang tải dữ liệu...
             </div>
-            <table id="accounts-table">
+            <table id="accounts-table-2">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -473,14 +522,14 @@ $csrfToken = cAccountManagement::generateCSRFToken();
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="accounts-tbody">
+                <tbody id="accounts-tbody-2">
                     <!-- Data loaded via JavaScript -->
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination" id="pagination">
+        <div class="pagination" id="pagination-2">
             <!-- Pagination loaded via JavaScript -->
         </div>
         </div>
@@ -560,11 +609,116 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         </div>
     </div>
 
+    <!-- Update Account Modal -->
+    <div id="update-account-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 8px 8px 0 0; margin: -30px -30px 25px -30px;">
+                <h3 style="margin: 0; color: white; font-size: 24px;">📝 Cập nhật thông tin tài khoản</h3>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <form id="update-account-form">
+                    <input type="hidden" id="update-maTaiKhoan" name="maTaiKhoan">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+
+                    <!-- Thông tin cơ bản Section -->
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                            📋 Thông tin cơ bản
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Mã tài khoản:</label>
+                            <input type="text" id="update-maTaiKhoan-display" readonly 
+                                   style="background: #e9ecef; border: 1px solid #ced4da; cursor: not-allowed;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Tên đăng nhập:</label>
+                            <input type="text" id="update-tenDangNhap" readonly 
+                                   style="background: #e9ecef; border: 1px solid #ced4da; cursor: not-allowed;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Họ tên:</label>
+                            <input type="text" id="update-hoTen" name="hoTen" required 
+                                   style="border: 2px solid #ced4da;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Email:</label>
+                            <input type="email" id="update-email" name="email" 
+                                   placeholder="example@email.com"
+                                   style="border: 2px solid #ced4da;">
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Số điện thoại:</label>
+                            <input type="text" id="update-soDienThoai" name="soDienThoai" 
+                                   placeholder="0123456789"
+                                   style="border: 2px solid #ced4da;">
+                        </div>
+                    </div>
+
+                    <!-- Phân quyền Section -->
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #333; font-size: 18px; border-bottom: 2px solid #667eea; padding-bottom: 10px;">
+                            🔐 Phân quyền
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Loại tài khoản:</label>
+                            <select id="update-loaiTaiKhoan" name="loaiTaiKhoan" required
+                                    style="border: 2px solid #ced4da; padding: 10px;">
+                                <option value="">-- Chọn loại tài khoản --</option>
+                                <option value="quantrivien">Quản trị viên</option>
+                                <option value="bangiamhieu">Ban giám hiệu</option>
+                                <option value="ttbm">Tổ trưởng bộ môn</option>
+                                <option value="giaovien">Giáo viên</option>
+                                <option value="hocsinh">Học sinh</option>
+                                <option value="phuhuynh">Phụ huynh</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Nhóm người dùng:</label>
+                            <select id="update-maNhom" name="maNhom"
+                                    style="border: 2px solid #ced4da; padding: 10px;">
+                                <option value="">-- Chọn nhóm --</option>
+                                <!-- Loaded via JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight: 600; color: #555;">Trạng thái:</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <select id="update-trangThaiTaiKhoan" name="trangThaiTaiKhoan" required
+                                        style="border: 2px solid #ced4da; padding: 10px; flex: 1;">
+                                    <option value="active">Hoạt động</option>
+                                    <option value="locked">Đã khóa</option>
+                                    <option value="disabled">Vô hiệu hóa</option>
+                                </select>
+                                <span id="update-status-badge" class="badge" style="font-size: 14px; padding: 8px 15px;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 2px solid #e0e0e0; padding-top: 20px; margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeUpdateModal()" style="background: #6c757d; color: white; padding: 12px 30px; font-size: 16px;">
+                    ❌ Hủy
+                </button>
+                <button class="btn btn-primary" onclick="saveUpdateAccount()" style="padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                    ✅ Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Assign Account Modal -->
     <div id="assign-account-modal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; margin: -30px -30px 20px -30px;">
-                <h3 id="assign-modal-title" style="margin: 0; color: white;">Cấp tài khoản cho học sinh</h3>
+                <h3 id="assign-modal-title" style="margin: 0; color: white;">Thông tin tài khoàn</h3>
             </div>
             <div class="modal-body" style="max-height: 600px; overflow-y: auto;">
                 <form id="assign-account-form">
@@ -673,7 +827,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
                     ❌ Hủy
                 </button>
                 <button class="btn btn-success" onclick="saveAssignAccount()">
-                    ✅ Cấp tài khoản
+                    ✅ Thông tin tài khoản
                 </button>
             </div>
         </div>
@@ -685,11 +839,10 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         let groups = [];
         let currentTab = 'assign';
 
-        // Load groups on page load
+        // Load accounts on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadGroups();
-            loadClasses();
-            loadStudents();
+            loadAccounts(); // Load accounts instead of students
         });
 
         function switchTab(tab) {
@@ -705,7 +858,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             if (tab === 'assign') {
                 document.getElementById('assign-account-tab').style.display = 'block';
                 document.getElementById('manage-account-tab').style.display = 'none';
-                loadStudents();
+                loadAccounts();
             } else {
                 document.getElementById('assign-account-tab').style.display = 'none';
                 document.getElementById('manage-account-tab').style.display = 'block';
@@ -796,7 +949,7 @@ $csrfToken = cAccountManagement::generateCSRFToken();
                         <td>
                             <div class="actions">
                                 ${!student.maTaiKhoan 
-                                    ? `<button class="btn btn-sm btn-success" onclick="assignAccount('${student.maHocSinh}')" title="Cấp tài khoản">
+                                    ? `<button class="btn btn-sm btn-success" onclick="assignAccount('${student.maHocSinh}')" title="Thông tin tài khoản">
                                         📝 Cấp TK
                                     </button>`
                                     : `<button class="btn btn-sm btn-primary" onclick="viewStudentAccount('${student.maHocSinh}')" title="Xem tài khoản">
@@ -1006,6 +1159,13 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             }
         }
 
+        async function loadGroupsIfNeeded() {
+            // Chỉ load nếu chưa có data
+            if (!groups || groups.length === 0) {
+                await loadGroups();
+            }
+        }
+
         function updateGroupDropdown() {
             const select = document.getElementById('maNhom');
             select.innerHTML = '<option value="">-- Chọn nhóm --</option>';
@@ -1042,6 +1202,11 @@ $csrfToken = cAccountManagement::generateCSRFToken();
                 if (result.success) {
                     renderAccounts(result.data);
                     renderPagination(result.pagination);
+                    
+                    // Show subtle success indicator when reloading after update
+                    if (page === currentPage && result.data.length > 0) {
+                        console.log('✅ Data refreshed successfully');
+                    }
                 } else {
                     showAlert('Lỗi tải dữ liệu: ' + result.message, 'error');
                 }
@@ -1061,30 +1226,24 @@ $csrfToken = cAccountManagement::generateCSRFToken();
                 return;
             }
 
+            let stt = (currentPage - 1) * 20 + 1;
             tbody.innerHTML = accounts.map(account => `
                 <tr>
+                    <td>${stt++}</td>
                     <td>${account.maTaiKhoan}</td>
                     <td>${account.tenDangNhap}</td>
                     <td>${account.hoTen}</td>
                     <td>${account.email || '-'}</td>
+                    <td>${account.soDienThoai || '-'}</td>
                     <td>${getRoleText(account.loaiTaiKhoan)}</td>
-                    <td>${account.tenNhom || '-'}</td>
                     <td><span class="badge badge-${account.trangThaiTaiKhoan}">${getStatusText(account.trangThaiTaiKhoan)}</span></td>
-                    <td>${formatDate(account.ngayTao)}</td>
                     <td>
                         <div class="actions">
-                            <button class="btn btn-sm btn-primary" onclick="editAccount(${account.maTaiKhoan})" title="Sửa">
-                                ✏️
+                            <button class="btn btn-sm btn-primary" onclick="viewAccount(${account.maTaiKhoan})" title="Xem chi tiết">
+                                👁️ Chi tiết tài khoản   
                             </button>
-                            ${account.trangThaiTaiKhoan === 'locked' 
-                                ? `<button class="btn btn-sm btn-success" onclick="unlockAccount(${account.maTaiKhoan})" title="Mở khóa">🔓</button>`
-                                : `<button class="btn btn-sm btn-warning" onclick="lockAccount(${account.maTaiKhoan})" title="Khóa">🔒</button>`
-                            }
-                            <button class="btn btn-sm btn-warning" onclick="resetAccountPassword(${account.maTaiKhoan})" title="Reset mật khẩu">
-                                🔑
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteAccount(${account.maTaiKhoan})" title="Xóa">
-                                🗑️
+                            <button class="btn btn-sm btn-warning" onclick="updateAccount(${account.maTaiKhoan})" title="Cập nhật thông tin">
+                                ✏️ Cập nhật
                             </button>
                         </div>
                     </td>
@@ -1317,17 +1476,53 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
             alert.textContent = message;
+            alert.style.animation = 'slideIn 0.3s ease-out';
             container.appendChild(alert);
 
             setTimeout(() => {
-                alert.remove();
-            }, 5000);
+                alert.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
         }
+
+        function showLoading(show = true) {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Add slide animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
         function getRoleText(role) {
             const roles = {
                 'quantrivien': 'Quản trị viên',
                 'bangiamhieu': 'Ban giám hiệu',
+                'ttbm': 'Tổ trưởng bộ môn',
                 'giaovien': 'Giáo viên',
                 'hocsinh': 'Học sinh',
                 'phuhuynh': 'Phụ huynh'
@@ -1339,7 +1534,9 @@ $csrfToken = cAccountManagement::generateCSRFToken();
             const statuses = {
                 'active': 'Hoạt động',
                 'locked': 'Đã khóa',
-                'disabled': 'Vô hiệu hóa'
+                'disabled': 'Vô hiệu hóa',
+                '1': 'Hoạt động',
+                '0': 'Vô hiệu hóa'
             };
             return statuses[status] || status;
         }
@@ -1347,18 +1544,223 @@ $csrfToken = cAccountManagement::generateCSRFToken();
         function formatDate(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
-            return date.toLocaleString('vi-VN');
+            return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
         }
 
-        // Close modal when clicking outside
+        function viewAccount(id) {
+            // Open a modal or redirect to view account details
+            window.location.href = `vAccountDetail.php?id=${id}`;
+        }
+
+        async function updateAccount(id) {
+            try {
+                // Fetch account details
+                const response = await fetch(`../../controller/cAccountManagement.php?action=get&id=${id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const account = result.data;
+                    
+                    // Fill form with account data
+                    document.getElementById('update-maTaiKhoan').value = account.maTaiKhoan;
+                    document.getElementById('update-maTaiKhoan-display').value = account.maTaiKhoan;
+                    document.getElementById('update-tenDangNhap').value = account.tenDangNhap;
+                    document.getElementById('update-hoTen').value = account.hoTen;
+                    document.getElementById('update-email').value = account.email || '';
+                    document.getElementById('update-soDienThoai').value = account.soDienThoai || '';
+                    document.getElementById('update-loaiTaiKhoan').value = account.loaiTaiKhoan;
+                    document.getElementById('update-trangThaiTaiKhoan').value = account.trangThaiTaiKhoan;
+                    
+                    // Update status badge
+                    updateStatusBadge(account.trangThaiTaiKhoan);
+                    
+                    // Load groups for dropdown first, then set the value
+                    await loadGroupsIfNeeded();
+                    updateGroupDropdownForUpdate();
+                    
+                    // Set maNhom after dropdown is populated
+                    document.getElementById('update-maNhom').value = account.maNhom || '';
+                    
+                    // Show modal
+                    document.getElementById('update-account-modal').style.display = 'block';
+                } else {
+                    showAlert('Lỗi: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('update-status-badge');
+            const statusInfo = {
+                'active': { text: 'Hoạt động', class: 'badge-active' },
+                'locked': { text: 'Đã khóa', class: 'badge-locked' },
+                'disabled': { text: 'Vô hiệu hóa', class: 'badge-disabled' }
+            };
+            
+            const info = statusInfo[status] || statusInfo['active'];
+            badge.textContent = info.text;
+            badge.className = 'badge ' + info.class;
+        }
+
+        function updateGroupDropdownForUpdate() {
+            const select = document.getElementById('update-maNhom');
+            const currentMaNhom = document.getElementById('update-maNhom').value;
+            
+            select.innerHTML = '<option value="">-- Chọn nhóm --</option>';
+            
+            groups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.maNhom;
+                option.textContent = group.tenNhom;
+                select.appendChild(option);
+            });
+            
+            // Re-select current value after loading options
+            if (currentMaNhom) {
+                select.value = currentMaNhom;
+            }
+        }
+
+        // Update status badge when dropdown changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('update-trangThaiTaiKhoan');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', function() {
+                    updateStatusBadge(this.value);
+                });
+            }
+        });
+
+        async function saveUpdateAccount() {
+            const form = document.getElementById('update-account-form');
+            const formData = new FormData(form);
+            const id = document.getElementById('update-maTaiKhoan').value;
+
+            // Validate required fields
+            const hoTen = document.getElementById('update-hoTen').value.trim();
+            const loaiTaiKhoan = document.getElementById('update-loaiTaiKhoan').value;
+            const trangThaiTaiKhoan = document.getElementById('update-trangThaiTaiKhoan').value;
+
+            if (!hoTen) {
+                showAlert('Vui lòng nhập họ tên!', 'error');
+                return;
+            }
+
+            if (!loaiTaiKhoan) {
+                showAlert('Vui lòng chọn loại tài khoản!', 'error');
+                return;
+            }
+
+            if (!trangThaiTaiKhoan) {
+                showAlert('Vui lòng chọn trạng thái!', 'error');
+                return;
+            }
+
+            // Validate email if provided
+            const email = document.getElementById('update-email').value.trim();
+            if (email && !isValidEmail(email)) {
+                showAlert('Email không hợp lệ!', 'error');
+                return;
+            }
+
+            // Validate phone if provided
+            const soDienThoai = document.getElementById('update-soDienThoai').value.trim();
+            if (soDienThoai && !isValidPhone(soDienThoai)) {
+                showAlert('Số điện thoại không hợp lệ (9-11 chữ số)!', 'error');
+                return;
+            }
+
+            // Disable save button to prevent double submission
+            const saveBtn = event.target;
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Đang lưu...';
+
+            try {
+                const response = await fetch(`../../controller/cAccountManagement.php?action=update&id=${id}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const text = await response.text();
+                console.log('Update response:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON response:', text);
+                    showAlert('Lỗi: Server không trả về dữ liệu hợp lệ', 'error');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '✅ Lưu thay đổi';
+                    return;
+                }
+
+                if (result.success) {
+                    showAlert('✅ ' + (result.message || 'Cập nhật tài khoản thành công!'), 'success');
+                    
+                    // Reload data immediately to show updated information
+                    await loadAccounts(currentPage);
+                    
+                    // Close modal after successful update
+                    closeUpdateModal();
+                } else {
+                    showAlert('❌ Lỗi: ' + result.message, 'error');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = '✅ Lưu thay đổi';
+                }
+            } catch (error) {
+                console.error('Error updating account:', error);
+                showAlert('❌ Lỗi kết nối: ' + error.message, 'error');
+                saveBtn.disabled = false;
+                saveBtn.textContent = '✅ Lưu thay đổi';
+            }
+        }
+
+        // Helper validation functions
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function isValidPhone(phone) {
+            const re = /^[0-9]{9,11}$/;
+            return re.test(phone);
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('update-account-modal').style.display = 'none';
+            document.getElementById('update-account-form').reset();
+            
+            // Reset save button state
+            const saveBtn = document.querySelector('#update-account-modal .btn-primary');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '✅ Lưu thay đổi';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-username').value = '';
+            document.getElementById('filter-fullname').value = '';
+            document.getElementById('filter-role').value = '';
+            document.getElementById('filter-status').value = '';
+            loadAccounts(1);
+        }
         window.onclick = function(event) {
             const modal = document.getElementById('account-modal');
             const assignModal = document.getElementById('assign-account-modal');
+            const updateModal = document.getElementById('update-account-modal');
+            
             if (event.target === modal) {
                 closeModal();
             }
             if (event.target === assignModal) {
                 closeAssignModal();
+            }
+            if (event.target === updateModal) {
+                closeUpdateModal();
             }
         }
     </script>

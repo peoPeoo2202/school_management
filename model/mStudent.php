@@ -277,14 +277,11 @@ public function getStudentInfoByAccount($tenDangNhap)
         $offset = ($page - 1) * $limit;
         
         $sql = "SELECT hs.*, lh.tenLop, kh.khoiLop, tk.tenDangNhap,
-                       hl.tenHocLuc, hk.tenHanhKiem,
                        ph.hoTen as tenPhuHuynh, ph.soDienThoai as sdtPhuHuynh
                 FROM hocsinh hs
                 LEFT JOIN lophoc lh ON hs.maLop = lh.maLop
                 LEFT JOIN khoi kh ON lh.maKhoi = kh.maKhoi
                 LEFT JOIN taikhoan tk ON hs.maTaiKhoan = tk.maTaiKhoan
-                LEFT JOIN hocluc hl ON hs.maHocLuc = hl.maHocLuc
-                LEFT JOIN hanhkiem hk ON hs.maHanhKiem = hk.maHanhKiem
                 LEFT JOIN phuhuynh ph ON hs.maPH = ph.maPH
                 WHERE 1=1";
 

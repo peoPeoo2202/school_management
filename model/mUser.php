@@ -355,10 +355,34 @@ class mUser
 
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {
+                // Xử lý đặc biệt cho maNhom - chỉ cập nhật nếu có giá trị hợp lệ
+                if ($field === 'maNhom') {
+                    $maNhom = $data[$field];
+                    // Chỉ cập nhật nếu maNhom là số nguyên dương
+                    if (!empty($maNhom) && is_numeric($maNhom) && intval($maNhom) > 0) {
+                        $fields[] = "$field = ?";
+                        $params[] = intval($maNhom);
+                        $types .= 'i';
+                    } else if ($maNhom === null || $maNhom === '') {
+                        // Nếu muốn set NULL thì dùng cách này
+                        $fields[] = "$field = NULL";
+                        // Không thêm vào params
+                    }
+                    continue;
+                }
+                
+                // Xử lý các trường email và soDienThoai - cho phép NULL
+                if ($field === 'email' || $field === 'soDienThoai') {
+                    if ($data[$field] === '' || $data[$field] === null) {
+                        $fields[] = "$field = NULL";
+                        continue;
+                    }
+                }
+                
                 $fields[] = "$field = ?";
                 $params[] = $data[$field];
                 
-                if ($field === 'maNhom' || $field === 'batBuocDoiMatKhau') {
+                if ($field === 'batBuocDoiMatKhau') {
                     $types .= 'i';
                 } else {
                     $types .= 's';
@@ -381,9 +405,19 @@ class mUser
         $types .= 'i';
 
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Prepare failed: " . $this->conn->error);
+            return false;
+        }
+        
         $stmt->bind_param($types, ...$params);
         
         $result = $stmt->execute();
+        
+        if (!$result) {
+            error_log("Execute failed: " . $stmt->error);
+        }
+        
         $stmt->close();
 
         if ($result) {
