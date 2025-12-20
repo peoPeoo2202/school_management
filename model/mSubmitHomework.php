@@ -97,76 +97,73 @@ class mSubmitHomework
 
     public function getSubjectsForStudent($maHS)
     {
-        // Lấy thông tin lớp của học sinh
-        $lop = null;
+        // 1) Lấy lớp của học sinh
         $lopSql = "SELECT maLop FROM hocsinh WHERE maHS = ?";
         $lopStmt = $this->conn->prepare($lopSql);
-        $lopStmt->bind_param("i", $maHS);
-        $lopStmt->execute();
-        $lopResult = $lopStmt->get_result();
-        if ($lopRow = $lopResult->fetch_assoc()) {
-            $lop = $lopRow['maLop'];
-        }
 
-        if (!$lop) {
-            return []; // Không tìm thấy lớp
-        }
-
-        // Lấy TẤT CẢ môn học trong hệ thống và thông tin bài tập của lớp đó
-        // Đếm bài tập dựa trên bảng baitap (không cần phân công giảng dạy)
-        // Logic quá hạn: Tính TẤT CẢ bài đã qua deadline
-        $sql = "SELECT DISTINCT 
-        m.maMonHoc, 
-        m.tenMonHoc,
-
-        COALESCE(COUNT(DISTINCT bt.maBaiTap), 0) as tongBaiTap,
-
-        COALESCE(COUNT(DISTINCT bn.maBaiTap), 0) as daNop,
-
-        COALESCE(COUNT(DISTINCT CASE 
-            WHEN bt.maBaiTap IS NOT NULL
-             AND bt.thoiGianNop < NOW()
-             AND bn.maBaiTap IS NULL
-            THEN bt.maBaiTap
-        END), 0) as quaHan,
-
-        CASE 
-            WHEN pg.maPhanCong IS NOT NULL THEN 1 
-            ELSE 0 
-        END as duocPhanCong
-
-        FROM monhoc m
-        LEFT JOIN phancong_giangday pg ON pg.maMonHoc = m.maMonHoc 
-            AND pg.maLop = ? 
-            AND pg.trangThai = 'active'
-
-        LEFT JOIN baitap bt ON bt.maMonHoc = m.maMonHoc 
-            AND bt.maLop = ?
-            AND (bt.anBai IS NULL OR bt.anBai = 0)
-
-        LEFT JOIN bainop bn ON bt.maBaiTap = bn.maBaiTap AND bn.maHS = ?
-
-        GROUP BY m.maMonHoc, m.tenMonHoc
-        ORDER BY m.tenMonHoc";
-
-
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            error_log("SQL Error in getSubjectsForStudent: " . $this->conn->error);
+        if (!$lopStmt) {
+            error_log("SQL Prepare Error (lopSql): " . $this->conn->error);
             return [];
         }
 
-        $stmt->bind_param("iii", $lop, $lop, $maHS);
+        $lopStmt->bind_param("i", $maHS);
+        $lopStmt->execute();
+        $lopResult = $lopStmt->get_result();
+        $lopRow = $lopResult->fetch_assoc();
 
+        $lop = $lopRow['maLop'] ?? null;
+
+        // Debug
+        error_log("DEBUG getSubjectsForStudent: maHS=$maHS | maLop=" . var_export($lop, true));
+
+        if (empty($lop)) {
+            // Nếu muốn: trả về mảng rỗng nhưng log rõ nguyên nhân
+            error_log("DEBUG getSubjectsForStudent: Student has NO class (maLop NULL) -> return []");
+            return [];
+        }
+
+        // 2) Query môn học + thống kê bài tập
+        $sql = "SELECT 
+                m.maMonHoc,
+                m.tenMonHoc,
+                COUNT(DISTINCT bt.maBaiTap) as tongBaiTap,
+                COUNT(DISTINCT bn.maBaiTap) as daNop,
+                COUNT(DISTINCT CASE 
+                    WHEN bt.maBaiTap IS NOT NULL
+                     AND bt.thoiGianNop < NOW()
+                     AND bn.maBaiTap IS NULL
+                    THEN bt.maBaiTap
+                END) as quaHan
+            FROM monhoc m
+            LEFT JOIN baitap bt 
+                ON bt.maMonHoc = m.maMonHoc 
+                AND bt.maLop = ?
+                AND (bt.anBai IS NULL OR bt.anBai = 0)
+            LEFT JOIN bainop bn 
+                ON bt.maBaiTap = bn.maBaiTap 
+                AND bn.maHS = ?
+            GROUP BY m.maMonHoc, m.tenMonHoc
+            ORDER BY m.tenMonHoc";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Prepare Error (subjectsSql): " . $this->conn->error);
+            return [];
+        }
+
+        $stmt->bind_param("ii", $lop, $maHS);
         $stmt->execute();
-        $result = $stmt->get_result();
 
+        $result = $stmt->get_result();
         $subjects = [];
         while ($row = $result->fetch_assoc()) {
             $subjects[] = $row;
         }
+
+        error_log("DEBUG getSubjectsForStudent: subjects_count=" . count($subjects));
         return $subjects;
     }
+
 
     public function getHomeworkForStudent($maHS, $maMonHoc = null)
     {

@@ -91,153 +91,6 @@ if (!isset($data)) {
     <title>Lịch dạy - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2d5a8c;
-        }
-
-        .print-btn-container {
-            max-height: 60px;
-            align-items: center;
-            display: flex;
-        }
-
-        .btn-primary i {
-            font-size: 14px;
-        }
-
-        .schedule-grid {
-            overflow-x: auto;
-        }
-
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .schedule-table th {
-            background: #5081BE;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .schedule-table td {
-            padding: 8px;
-            text-align: center;
-            vertical-align: middle;
-            min-height: 50px;
-            font-size: 12px;
-            min-width: 48px;
-            max-width: 80px;
-        }
-
-        .schedule-table .day-header {
-            background: #4a6fa5;
-        }
-
-        .lesson-cell {
-            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-            padding: 8px;
-            border-radius: 8px;
-        }
-
-        .lesson-subject {
-            font-weight: 700;
-            color: #5081BE;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .lesson-class {
-            color: #333;
-            font-weight: 500;
-            margin-bottom: 3px;
-        }
-
-        .lesson-room {
-            color: #666;
-            font-size: 12px;
-        }
-
-        .empty-cell {
-            color: #ccc;
-            font-style: italic;
-        }
-
-        .section-title {
-            text-align: center;
-            margin-bottom: 24px;
-            color: #5081BE;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 24px;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-        }
-
-
-
-        @media print {
-
-            .header-section,
-            .filter-section {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header-section {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .filter-section {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -332,8 +185,6 @@ if (!isset($data)) {
                                 <th class="day-header">Thứ 4</th>
                                 <th class="day-header">Thứ 5</th>
                                 <th class="day-header">Thứ 6</th>
-                                <th class="day-header">Thứ 7</th>
-                                <th class="day-header">CN</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -353,7 +204,7 @@ if (!isset($data)) {
                                         <strong>Tiết <?php echo $tiet; ?></strong><br>
                                         <small><?php echo $gio; ?></small>
                                     </td>
-                                    <?php for ($thu = 2; $thu <= 8; $thu++): ?>
+                                    <?php for ($thu = 2; $thu <= 6; $thu++): ?>
                                         <td>
                                             <?php
                                             if (
@@ -364,9 +215,12 @@ if (!isset($data)) {
                                                 $lesson = $data['scheduleGrid'][$thu][$tiet];
                                             ?>
                                                 <div class="lesson-cell">
-                                                    <div class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></div>
-                                                    <div class="lesson-class"><i class="fas fa-users"></i> <?php echo htmlspecialchars($lesson['tenLop']); ?></div>
-                                                    <div class="lesson-room"><i class="fas fa-door-open"></i> <?php echo htmlspecialchars($lesson['tenPhong']); ?></div>
+                                                    <h3 class="lesson-subject"><?php echo htmlspecialchars($lesson['tenMonHoc']); ?></h3>
+                                                    <div class="lesson-info-class">
+                                                        <div class="lesson-class"><i class="fas fa-users"></i> <?php echo htmlspecialchars($lesson['tenLop']); ?></div>
+                                                        <div class="lesson-room"><i class="fas fa-door-open"></i> <?php echo htmlspecialchars($lesson['tenPhong']); ?></div>
+
+                                                    </div>
                                                 </div>
                                             <?php elseif ($data['scheduleGrid'][$thu][$tiet] === 'merged'): ?>
                                                 <!-- Cell merged with above -->
@@ -391,17 +245,16 @@ if (!isset($data)) {
                                 <th class="day-header">Thứ 5</th>
                                 <th class="day-header">Thứ 6</th>
                                 <th class="day-header">Thứ 7</th>
-                                <th class="day-header">CN</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             $afternoonLessons = [
-                                6 => '13:30',
-                                7 => '14:20',
-                                8 => '15:20',
-                                9 => '16:10',
-                                10 => '17:00'
+                                6 => '12:00 - 12:45',
+                                7 => '12:50 - 13:35',
+                                8 => '13:40 - 14:25',
+                                9 => '14:55 - 15:40',
+                                10 => '15:45 - 16:30'
                             ];
 
                             foreach ($afternoonLessons as $tiet => $gio):
@@ -411,7 +264,7 @@ if (!isset($data)) {
                                         <strong>Tiết <?php echo $tiet; ?></strong><br>
                                         <small><?php echo $gio; ?></small>
                                     </td>
-                                    <?php for ($thu = 2; $thu <= 8; $thu++): ?>
+                                    <?php for ($thu = 2; $thu <= 6; $thu++): ?>
                                         <td>
                                             <?php
                                             if (
@@ -437,18 +290,6 @@ if (!isset($data)) {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Legend -->
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color"></div>
-                        <span>Tiết học có lịch</span>
-                    </div>
-                    <div class="legend-item">
-                        <i class="fas fa-info-circle" style="color: #5081BE;"></i>
-                        <span>Nhấp vào ô tiết để xem chi tiết</span>
-                    </div>
                 </div>
             </div>
         </div>

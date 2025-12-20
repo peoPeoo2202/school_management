@@ -143,11 +143,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         <!-- Main Content -->
         <div class="content-area">
             <div class="header-section">
-                <div class="header-left-icon">
+                <div class="header-left ">
                     <h2>
-                    <i class="fas fa-list"></i>
+                        <i class="fas fa-list"></i> Danh sách lớp
                     </h2>
-                    <h2>Danh sách lớp</h2>
+                    <p>Xem và quản lý danh sách lớp học của bạn.</p>
+                </div>
+                <!-- <div class="header-left-icon"> -->
+
                 </div>
             </div>
 
