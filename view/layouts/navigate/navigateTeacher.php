@@ -98,7 +98,7 @@ $maGV = $_SESSION['maGV'] ?? '';
         <li>
             <a href="<?php echo url('view/teacher/vClassList.php'); ?>" class="menu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vClassList.php') ? 'active' : ''; ?>">
                 <i class="fa-solid fa-clipboard-user"></i>
-                    <span>Danh sách lớp</span>
+                <span>Danh sách lớp</span>
             </a>
         </li>
         <!-- Giao bài tập -->
@@ -123,7 +123,13 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
         </li>
 
-
+        <!-- Tra cứu giảng dạy -->
+        <li class="menu-parent"> <a href="#" class="menu-item menu-toggle" data-submenu="searchTeaching"> <i class="fa-solid fa-magnifying-glass"></i> <span>Tra cứu giảng dạy</span> <i class="fas fa-chevron-right"></i> </a>
+            <ul class="submenu" id="searchTeaching-submenu">
+                <li> <a href="<?php echo url('view/teacher/vExamSupervision.php'); ?>" class="submenu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vExamSupervision.php') ? 'active' : ''; ?>"> <i class="fas fa-eye"></i> <span>Phân công coi thi</span> </a> </li>
+                <li> <a href="<?php echo url('view/teacher/vGradingAssignment.php'); ?>" class="submenu-item <?php echo (basename($_SERVER['PHP_SELF']) == 'vGradingAssignment.php') ? 'active' : ''; ?>"> <i class="fas fa-pen-square"></i> <span>Phân công chấm điểm</span> </a> </li>
+            </ul>
+        </li>
         <!-- Gửi yêu cầu -->
         <li class="menu-parent">
             <a href="#" class="menu-item menu-toggle" data-submenu="requests">
