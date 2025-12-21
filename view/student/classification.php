@@ -5,13 +5,25 @@ if (session_status() === PHP_SESSION_NONE) {
 
 include_once("../../model/mStudent.php");
 
-if (!isset($_SESSION['login']) || $_SESSION['loaiTaiKhoan'] != 'hocsinh') {
+// Cho phép cả học sinh và phụ huynh truy cập
+if (!isset($_SESSION['login']) || !in_array($_SESSION['loaiTaiKhoan'], ['hocsinh', 'phuhuynh'])) {
     echo "<p class='error-message'>Bạn chưa đăng nhập.</p>";
     exit;
 }
 
 $model = new mStudent();
-$info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+
+// Nếu là phụ huynh, sử dụng maHS từ session (đã được set ở index.php của phụ huynh)
+// Nếu là học sinh, lấy thông tin từ tài khoản
+if ($_SESSION['loaiTaiKhoan'] == 'phuhuynh') {
+    if (!isset($_SESSION['maHS'])) {
+        echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
+        exit;
+    }
+    $info = $model->getStudentInfoById($_SESSION['maHS']);
+} else {
+    $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+}
 
 if (!$info) {
     echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
@@ -97,8 +109,18 @@ $hocLucHK2 = calculateHocLucFromBangDiem($conn, $maHS, 2, $namHoc, $totalSubject
 $hanhKiemHK1 = $model->getHanhKiem($maHS, 1, $namHoc);
 $hanhKiemHK2 = $model->getHanhKiem($maHS, 2, $namHoc);
 
-// Lấy danh hiệu từ bảng danhhieu (qua cột maDanhHieu trong bảng hocsinh)
-$danhHieu = $model->getDanhHieu($maHS);
+// Lấy danh hiệu từ bảng hocsinh_danhhieu theo năm học
+$sqlDanhHieu = "SELECT dh.tenDanhHieu 
+                FROM hocsinh_danhhieu hsd
+                JOIN danhhieu dh ON hsd.maDanhHieu = dh.maDanhHieu
+                WHERE hsd.maHS = ? AND hsd.namHoc = ?
+                LIMIT 1";
+$stmtDH = $conn->prepare($sqlDanhHieu);
+$stmtDH->bind_param("is", $maHS, $namHoc);
+$stmtDH->execute();
+$resultDH = $stmtDH->get_result();
+$danhHieu = $resultDH->fetch_assoc();
+$stmtDH->close();
 
 // Helper function để map loại học lực sang class CSS
 function getHocLucClass($loaiHocLuc) {
@@ -182,7 +204,39 @@ if ($hocLucHK1['diemTB'] && $hocLucHK2['diemTB']) {
 $hanhKiemCaNam = 'Chưa có dữ liệu';
 $hanhKiemCaNamClass = 'no-data';
 if ($loaiHocLucCaNam && $loaiHocLucCaNam !== 'Chưa có dữ liệu' && $hanhKiemHK1 && $hanhKiemHK2) {
-    $hanhKiemCaNam = ($hanhKiemHK1['loaiHK'] == 'Tốt' && $hanhKiemHK2['loaiHK'] == 'Tốt') ? 'Tốt' : 'Khá';
+    // Tính hạnh kiểm cả năm theo quy tắc:
+    // - Nếu có kỳ nào Chưa đạt → Chưa đạt
+    // - Nếu có kỳ nào Đạt (và không có Chưa đạt) → Đạt
+    // - Nếu cả 2 kỳ Tốt → Tốt
+    // - Nếu có ít nhất 1 kỳ Khá và 1 kỳ Tốt → Khá
+    // - Nếu cả 2 kỳ Khá → Khá
+    
+    $hk1 = $hanhKiemHK1['loaiHK'];
+    $hk2 = $hanhKiemHK2['loaiHK'];
+    
+    if (stripos($hk1, 'chưa') !== false || stripos($hk2, 'chưa') !== false || 
+        stripos($hk1, 'chua') !== false || stripos($hk2, 'chua') !== false) {
+        $hanhKiemCaNam = 'Chưa đạt';
+    } elseif (stripos($hk1, 'đạt') !== false || stripos($hk2, 'đạt') !== false ||
+              stripos($hk1, 'dat') !== false || stripos($hk2, 'dat') !== false) {
+        // Kiểm tra xem có phải là "Đạt" thuần túy (không phải "Chưa đạt")
+        if ((stripos($hk1, 'đạt') !== false && stripos($hk1, 'chưa') === false && stripos($hk1, 'chua') === false) ||
+            (stripos($hk2, 'đạt') !== false && stripos($hk2, 'chưa') === false && stripos($hk2, 'chua') === false)) {
+            $hanhKiemCaNam = 'Đạt';
+        } else {
+            // Cả 2 đều Tốt hoặc Khá
+            if ($hk1 == 'Tốt' && $hk2 == 'Tốt') {
+                $hanhKiemCaNam = 'Tốt';
+            } else {
+                $hanhKiemCaNam = 'Khá';
+            }
+        }
+    } elseif ($hk1 == 'Tốt' && $hk2 == 'Tốt') {
+        $hanhKiemCaNam = 'Tốt';
+    } else {
+        $hanhKiemCaNam = 'Khá';
+    }
+    
     $hanhKiemCaNamClass = getHanhKiemClass($hanhKiemCaNam);
 }
 
@@ -192,8 +246,32 @@ $classifications['canam'] = [
     'hocLucClass' => getHocLucClass($loaiHocLucCaNam),
     'hanhKiem' => $hanhKiemCaNam,
     'hanhKiemClass' => $hanhKiemCaNamClass,
-    'danhHieu' => ($loaiHocLucCaNam && $loaiHocLucCaNam !== 'Chưa có dữ liệu' && $danhHieu && $coDuDieuKienDanhHieu) ? $danhHieu['tenDanhHieu'] : null
+    'danhHieu' => null
 ];
+
+// Tính danh hiệu tự động nếu đủ điều kiện
+if ($loaiHocLucCaNam && $loaiHocLucCaNam !== 'Chưa có dữ liệu' && $coDuDieuKienDanhHieu) {
+    // Nếu đã có trong database thì dùng
+    if ($danhHieu && isset($danhHieu['tenDanhHieu'])) {
+        $classifications['canam']['danhHieu'] = $danhHieu['tenDanhHieu'];
+    } else {
+        // Tính toán danh hiệu tự động dựa vào học lực và hạnh kiểm
+        // ĐIỀU KIỆN BẮT BUỘC: Hạnh kiểm CẢ 2 KỲ PHẢI TỐT
+        
+        // Học sinh xuất sắc: Cả 2 kỳ đều Tốt (Học lực và Hạnh kiểm)
+        if ($hocLucHK1['loaiHocLuc'] == 'Tốt' && $hocLucHK2['loaiHocLuc'] == 'Tốt' && 
+            $hanhKiem1 == 'Tốt' && $hanhKiem2 == 'Tốt') {
+            $classifications['canam']['danhHieu'] = 'Học sinh xuất sắc';
+        }
+        // Học sinh giỏi: Hạnh kiểm CẢ 2 KỲ TỐT, học lực có ít nhất 1 kỳ Tốt, kỳ còn lại Khá trở lên
+        elseif ($hanhKiem1 == 'Tốt' && $hanhKiem2 == 'Tốt' &&
+                ($hocLucHK1['loaiHocLuc'] == 'Tốt' || $hocLucHK2['loaiHocLuc'] == 'Tốt') && 
+                in_array($hocLucHK1['loaiHocLuc'], ['Tốt', 'Khá']) && 
+                in_array($hocLucHK2['loaiHocLuc'], ['Tốt', 'Khá'])) {
+            $classifications['canam']['danhHieu'] = 'Học sinh giỏi';
+        }
+    }
+}
 ?>
 <div class="title-header">
     <i class="fas fa-star"></i>
@@ -204,11 +282,14 @@ $classifications['canam'] = [
     <div class="classification-header">
 
 
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="" class="filter-form" id="classificationFilterForm">
             <input type="hidden" name="page" value="classification">
+            <?php if (isset($_GET['childIndex'])): ?>
+                <input type="hidden" name="childIndex" value="<?= htmlspecialchars($_GET['childIndex']) ?>">
+            <?php endif; ?>
 
             <label>Năm học:</label>
-            <select name="namHoc" id="namHoc">
+            <select name="namHoc" id="namHoc" onchange="document.getElementById('classificationFilterForm').submit()">
                 <?php foreach ($availableYears as $year): ?>
                     <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
                         <?= $year ?>

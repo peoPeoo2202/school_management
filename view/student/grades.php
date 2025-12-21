@@ -5,13 +5,25 @@ if (session_status() === PHP_SESSION_NONE) {
 
 include_once("../../model/mStudent.php");
 
-if (!isset($_SESSION["login"]) || $_SESSION["loaiTaiKhoan"] != "hocsinh") {
-    header("Location: ../../public/index.php");
+// Cho phép cả học sinh và phụ huynh truy cập
+if (!isset($_SESSION["login"]) || !in_array($_SESSION["loaiTaiKhoan"], ['hocsinh', 'phuhuynh'])) {
+    echo "<p class='error-message'>Bạn chưa đăng nhập.</p>";
     exit;
 }
 
 $model = new mStudent();
-$info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+
+// Nếu là phụ huynh, sử dụng maHS từ session (đã được set ở index.php của phụ huynh)
+// Nếu là học sinh, lấy thông tin từ tài khoản
+if ($_SESSION["loaiTaiKhoan"] == 'phuhuynh') {
+    if (!isset($_SESSION['maHS'])) {
+        echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
+        exit;
+    }
+    $info = $model->getStudentInfoById($_SESSION['maHS']);
+} else {
+    $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+}
 
 if (!$info) {
     echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
@@ -43,14 +55,17 @@ if ($hocKy === 'canam') {
 </div>
 <div class="container">
     <div class="grades-header">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="" class="filter-form" id="gradesFilterForm">
             <input type="hidden" name="page" value="grades">
+            <?php if (isset($_GET['childIndex'])): ?>
+                <input type="hidden" name="childIndex" value="<?= htmlspecialchars($_GET['childIndex']) ?>">
+            <?php endif; ?>
             <div>
 
             </div>
             <div>
                 <label>Năm học:</label>
-                <select name="namHoc" id="namHoc">
+                <select name="namHoc" id="namHoc" onchange="document.getElementById('gradesFilterForm').submit()">
                     <?php foreach ($availableYears as $year): ?>
                         <option value="<?= $year ?>" <?= $year == $namHoc ? 'selected' : '' ?>>
                             <?= $year ?>
@@ -61,7 +76,7 @@ if ($hocKy === 'canam') {
 
             <div>
                 <label>Học kỳ:</label>
-                <select name="hocKy" id="hocKy">
+                <select name="hocKy" id="hocKy" onchange="document.getElementById('gradesFilterForm').submit()">
                     <?php foreach ($semesters as $semester): ?>
                         <?php if ($semester === 'canam'): ?>
                             <option value="canam" <?= $hocKy === 'canam' ? 'selected' : '' ?>>

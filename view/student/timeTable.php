@@ -4,13 +4,25 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include_once("../../model/mStudent.php");
 
-if (!isset($_SESSION["login"]) || $_SESSION["loaiTaiKhoan"] != "hocsinh") {
+// Cho phép cả học sinh và phụ huynh truy cập
+if (!isset($_SESSION["login"]) || !in_array($_SESSION["loaiTaiKhoan"], ['hocsinh', 'phuhuynh'])) {
   echo "<p class='error-message'>Bạn chưa đăng nhập.</p>";
   exit;
 }
 
 $model = new mStudent();
-$info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+
+// Nếu là phụ huynh, sử dụng maHS từ session (đã được set ở index.php của phụ huynh)
+// Nếu là học sinh, lấy thông tin từ tài khoản
+if ($_SESSION["loaiTaiKhoan"] == 'phuhuynh') {
+  if (!isset($_SESSION['maHS'])) {
+    echo "<p class='error-message'>Không tìm thấy thông tin học sinh.</p>";
+    exit;
+  }
+  $info = $model->getStudentInfoById($_SESSION['maHS']);
+} else {
+  $info = $model->getStudentInfoByAccount($_SESSION["tenDangNhap"]);
+}
 
 // Kiểm tra thông tin học sinh
 if (!$info) {

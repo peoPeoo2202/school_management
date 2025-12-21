@@ -53,6 +53,44 @@ public function getStudentInfoByAccount($tenDangNhap)
     return $info;
 }
 
+    /** 
+     * Lấy thông tin học sinh dựa vào mã học sinh (dùng cho phụ huynh)
+     */
+    public function getStudentInfoById($maHS)
+    {
+        if (!$this->conn) {
+            return null;
+        }
+
+        $sql = "SELECT hs.maHS, hs.hoTen, hs.ngaySinh, hs.gioiTinh, hs.diaChi, 
+                       hs.trangThaiHocTap, hs.maLop, l.tenLop, k.khoiLop
+                FROM hocsinh hs
+                LEFT JOIN lophoc l ON hs.maLop = l.maLop
+                LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+                WHERE hs.maHS = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Prepare failed: " . $this->conn->error);
+            return null;
+        }
+
+        $stmt->bind_param("i", $maHS);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            error_log("DEBUG getStudentInfoById: No student found for maHS=" . $maHS);
+            $stmt->close();
+            return null;
+        }
+
+        $info = $result->fetch_assoc();
+        error_log("DEBUG getStudentInfoById: maHS=" . $maHS . " => hoTen=" . $info['hoTen']);
+        $stmt->close();
+        return $info;
+    }
+
     /**
      * Lấy điểm trung bình của học sinh theo từng môn
      */

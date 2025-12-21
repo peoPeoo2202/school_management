@@ -25,6 +25,52 @@ class ModelStudentClassification {
     }
     
     /**
+     * Lấy danh sách môn học của khối
+     */
+    public function getSubjectsByClass($maLop) {
+        // Lấy danh sách môn học từ bảng điểm của các học sinh trong lớp
+        $sql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc
+                FROM monhoc mh
+                WHERE mh.maMonHoc IN (
+                    SELECT DISTINCT bd.maMonHoc
+                    FROM bangdiem bd
+                    JOIN hocsinh hs ON bd.maHS = hs.maHS
+                    WHERE hs.maLop = ?
+                )
+                ORDER BY mh.tenMonHoc";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $subjects = [];
+        while ($row = $result->fetch_assoc()) {
+            $subjects[] = [
+                'maMonHoc' => $row['maMonHoc'],
+                'tenMonHoc' => $row['tenMonHoc']
+            ];
+        }
+        
+        // Nếu không có dữ liệu từ bangdiem, lấy tất cả môn học
+        if (empty($subjects)) {
+            $sqlAll = "SELECT maMonHoc, tenMonHoc FROM monhoc ORDER BY tenMonHoc";
+            $stmtAll = $this->conn->prepare($sqlAll);
+            $stmtAll->execute();
+            $resultAll = $stmtAll->get_result();
+            
+            while ($row = $resultAll->fetch_assoc()) {
+                $subjects[] = [
+                    'maMonHoc' => $row['maMonHoc'],
+                    'tenMonHoc' => $row['tenMonHoc']
+                ];
+            }
+        }
+        
+        return $subjects;
+    }
+    
+    /**
      * Lấy thông tin lớp
      */
     public function getClassInfo($maLop) {
@@ -80,30 +126,40 @@ class ModelStudentClassification {
      * Lấy bảng điểm chi tiết của học sinh theo học kỳ
      */
     public function getStudentGradesDetail($maLop, $hocKy, $namHoc) {
-        // Đếm tổng số môn học trong khối
-        $countMonSql = "SELECT COUNT(DISTINCT mh.maMonHoc) as totalSubjects
+        // Lấy danh sách tất cả các môn học từ bảng điểm
+        $subjectsSql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc
                         FROM monhoc mh
-                        JOIN lophoc l ON l.maLop = ?
-                        JOIN khoi k ON l.maKhoi = k.maKhoi";
+                        WHERE mh.maMonHoc IN (
+                            SELECT DISTINCT bd.maMonHoc
+                            FROM bangdiem bd
+                            JOIN hocsinh hs ON bd.maHS = hs.maHS
+                            WHERE hs.maLop = ?
+                        )
+                        ORDER BY mh.tenMonHoc";
         
-        $stmtCount = $this->conn->prepare($countMonSql);
-        $stmtCount->bind_param("i", $maLop);
-        $stmtCount->execute();
-        $resultCount = $stmtCount->get_result();
-        $totalSubjects = $resultCount->fetch_assoc()['totalSubjects'] ?? 10; // Mặc định 10 môn
-        $stmtCount->close();
+        $stmtSubjects = $this->conn->prepare($subjectsSql);
+        $stmtSubjects->bind_param("i", $maLop);
+        $stmtSubjects->execute();
+        $resultSubjects = $stmtSubjects->get_result();
         
+        $subjects = [];
+        while ($subRow = $resultSubjects->fetch_assoc()) {
+            $subjects[$subRow['maMonHoc']] = $subRow['tenMonHoc'];
+        }
+        $stmtSubjects->close();
+        $totalSubjects = count($subjects);
+        
+        // Lấy danh sách học sinh và điểm của họ
         $sql = "SELECT 
                     hs.maHS,
                     hs.hoTen,
-                    mh.tenMonHoc,
+                    bd.maMonHoc,
                     bd.tbDiem,
                     bd.nhanXet
                 FROM hocsinh hs
                 LEFT JOIN bangdiem bd ON hs.maHS = bd.maHS AND bd.hocKy = ? AND bd.namHoc = ?
-                LEFT JOIN monhoc mh ON bd.maMonHoc = mh.maMonHoc
                 WHERE hs.maLop = ?
-                ORDER BY hs.hoTen, mh.tenMonHoc";
+                ORDER BY hs.hoTen";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("isi", $hocKy, $namHoc, $maLop);
@@ -123,9 +179,13 @@ class ModelStudentClassification {
                     'totalSubjectsRequired' => $totalSubjects
                 ];
             }
-            if ($row['tenMonHoc'] && $row['tbDiem'] !== null) {
+            
+            // Thêm điểm môn học nếu có
+            if ($row['maMonHoc'] && $row['tbDiem'] !== null) {
+                $tenMonHoc = $subjects[$row['maMonHoc']] ?? 'Unknown';
                 $students[$maHS]['grades'][] = [
-                    'tenMonHoc' => $row['tenMonHoc'],
+                    'maMonHoc' => $row['maMonHoc'],
+                    'tenMonHoc' => $tenMonHoc,
                     'tbDiem' => $row['tbDiem'],
                     'nhanXet' => $row['nhanXet']
                 ];

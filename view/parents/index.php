@@ -208,14 +208,14 @@ if (!empty($children)) {
                         $_SESSION['maHS'] = $children[$_SESSION['selectedChildIndex']]['maHS'];
                     }
                     
-                    // Hiển thị nội dung theo page
+                    // Hiển thị nội dung theo page - Tái sử dụng view từ student
                     $page = $_GET['page'] ?? 'timeTable';
                     if($page == 'grades'){
-                        include_once('grades.php');
+                        include_once(__DIR__ . '/../student/grades.php');
                     }elseif($page == 'classification'){
-                        include_once('classification.php');
+                        include_once(__DIR__ . '/../student/classification.php');
                     }else{
-                        include_once('timeTable.php');
+                        include_once(__DIR__ . '/../student/timeTable.php');
                     }
                 }
             ?>

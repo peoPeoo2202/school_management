@@ -245,7 +245,7 @@ class cInsertGrade
         
         // Thông báo kết quả
         if ($successCount > 0) {
-            $_SESSION['success'] = "Đã lưu điểm thành công cho $successCount học sinh!";
+            $_SESSION['success'] = "Đã lưu điểm thành công!";
             // Không hiển thị lỗi nếu đã có thành công
         } elseif ($errorCount > 0) {
             // Chỉ hiển thị lỗi khi không có gì thành công cả

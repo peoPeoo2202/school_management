@@ -1003,6 +1003,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         const itemsPerPage = 10;
         let totalStudents = 0;
         let allStudents = [];
+        let allSubjects = []; // Lưu danh sách môn học
         let needsDataRefresh = false; // Cờ đánh dấu cần reload dữ liệu
 
         function switchTab(tab) {
@@ -1079,6 +1080,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     // Lưu toàn bộ danh sách học sinh
                     allStudents = data.students;
                     totalStudents = allStudents.length;
+                    
+                    // Lưu danh sách môn học (nếu có)
+                    if (data.subjects && Array.isArray(data.subjects)) {
+                        allSubjects = data.subjects;
+                    }
                     
                     // Hiển thị dữ liệu với phân trang
                     if (currentTab === 'academic') {
@@ -1160,9 +1166,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 return;
             }
 
-            // Lấy danh sách tên môn từ học sinh đầu tiên
+            // Lấy danh sách tên môn từ allSubjects (được trả về từ server)
             let subjectNames = [];
-            if (allStudents[0] && allStudents[0].grades && allStudents[0].grades.length > 0) {
+            if (allSubjects && allSubjects.length > 0) {
+                subjectNames = allSubjects.map(subject => subject.tenMonHoc || '');
+            } else if (allStudents[0] && allStudents[0].grades && allStudents[0].grades.length > 0) {
+                // Fallback: lấy từ học sinh đầu tiên nếu không có allSubjects
                 subjectNames = allStudents[0].grades.map(grade => grade.tenMonHoc || '');
             }
 
@@ -1200,18 +1209,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <td style="text-align: left;">${student.hoTen}</td>
                 `;
                 
-                // Hiển thị điểm các môn
-                student.grades.forEach(grade => {
-                    if (grade.tbDiem === null || grade.tbDiem === undefined || grade.tbDiem === '') {
+                // Hiển thị điểm các môn theo thứ tự của allSubjects
+                if (student.grades && student.grades.length > 0) {
+                    student.grades.forEach(grade => {
+                        if (grade.tbDiem === null || grade.tbDiem === undefined || grade.tbDiem === '') {
+                            html += `<td style="color: #999; text-align: center;">-</td>`;
+                        } else {
+                            html += `<td style="text-align: center;">${parseFloat(grade.tbDiem).toFixed(1)}</td>`;
+                        }
+                    });
+                } else {
+                    // Nếu học sinh không có grades, hiển thị tất cả môn là "-"
+                    for (let i = 0; i < subjectNames.length; i++) {
                         html += `<td style="color: #999; text-align: center;">-</td>`;
-                    } else {
-                        html += `<td style="text-align: center;">${parseFloat(grade.tbDiem).toFixed(1)}</td>`;
                     }
-                });
-                
-                // Thêm các cột trống nếu học sinh có ít môn hơn
-                for (let i = student.grades.length; i < subjectNames.length; i++) {
-                    html += `<td style="color: #999; text-align: center;">-</td>`;
                 }
                 
                 // Hiển thị điểm TB và xếp loại
