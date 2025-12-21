@@ -497,12 +497,12 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
         <!-- Page Header -->
         <div class="page-header">
             <div class="page-header-content">
-                <h1>📝 Quản Lý Duyệt Đề Thi</h1>
-                <p>Tổ trưởng bộ môn - Duyệt và quản lý đề thi</p>
+                <h1>📝 Duyệt Đề Thi</h1>
+                <p>Tổ trưởng bộ môn - Xem và phê duyệt đề thi của giáo viên</p>
             </div>
             <div class="page-header-actions">
-                <a href="index.php" class="btn-back">← Quay lại</a>
-                <a href="../../public/logout.php" class="btn-logout">🚪 Đăng xuất</a>
+                <a href="index.php" class="btn-back" onclick="return confirmExit()">← Quay lại</a>
+                <a href="../../public/logout.php" class="btn-logout" onclick="return confirmExit()">🚪 Đăng xuất</a>
             </div>
         </div>
 
@@ -533,16 +533,16 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                     <label>Trạng thái</label>
                     <select id="filterStatus">
                         <option value="">Tất cả</option>
-                        <option value="Chuaduyet">Chờ duyệt</option>
+                        <option value="Chuaduyet" selected>Chờ duyệt</option>
                         <option value="Daduyet">Đã duyệt</option>
                         <option value="Dachon">Đã chọn</option>
                         <option value="Tuchoi">Từ chối</option>
                     </select>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="openCreateModal()">
-                ➕ Tạo đề thi mới
-            </button>
+            <div style="color: #7f8c8d; font-style: italic;">
+                * Hiển thị đề thi do giáo viên trong tổ bộ môn nộp
+            </div>
         </div>
 
         <!-- Table -->
@@ -553,89 +553,20 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                         <th>Mã ĐT</th>
                         <th>Tên đề thi</th>
                         <th>Môn học</th>
-                        <th>Học kỳ</th>
-                        <th>Năm học</th>
-                        <th>Loại</th>
-                        <th>Thời gian</th>
+                        <th>GV nộp</th>
+                        <th>Kỳ thi</th>
+                        <th>File đính kèm</th>
                         <th>Trạng thái</th>
-                        <th>Ngày tạo</th>
+                        <th>Ngày nộp</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="examTableBody">
                     <tr>
-                        <td colspan="10" class="loading">Đang tải dữ liệu...</td>
+                        <td colspan="9" class="loading">Đang tải dữ liệu...</td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    <!-- Modal: Tạo/Sửa đề thi -->
-    <div id="examModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closeModal('examModal')">&times;</button>
-            <div class="modal-header">
-                <h2 id="modalTitle">Tạo đề thi mới</h2>
-            </div>
-            <form id="examForm">
-                <input type="hidden" id="maDeThi">
-                
-                <div class="info-row">
-                    <div class="form-group required">
-                        <label>Tên đề thi</label>
-                        <input type="text" id="tenDeThi" required>
-                    </div>
-                    <div class="form-group required">
-                        <label>Môn học</label>
-                        <select id="maMonHoc" required>
-                            <option value="">-- Chọn môn học --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <div class="form-group required">
-                        <label>Học kỳ</label>
-                        <select id="hocKy" required>
-                            <option value="">-- Chọn học kỳ --</option>
-                            <option value="1">Học kỳ 1</option>
-                            <option value="2">Học kỳ 2</option>
-                        </select>
-                    </div>
-                    <div class="form-group required">
-                        <label>Năm học</label>
-                        <input type="text" id="namHoc" placeholder="VD: 2024-2025" required>
-                    </div>
-                </div>
-
-                <div class="info-row">
-                    <div class="form-group required">
-                        <label>Loại đề thi</label>
-                        <select id="loaiDeThi" required>
-                            <option value="">-- Chọn loại --</option>
-                            <option value="15phut">Kiểm tra 15 phút</option>
-                            <option value="1tiet">Kiểm tra 1 tiết</option>
-                            <option value="giuaky">Giữa kỳ</option>
-                            <option value="cuoiky">Cuối kỳ</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Thời gian làm bài</label>
-                        <input type="text" id="thoiGianLamBai" placeholder="VD: 45 phút">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Nội dung đề thi</label>
-                    <textarea id="noiDungDeThi" placeholder="Nhập nội dung đề thi..."></textarea>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn" onclick="closeModal('examModal')">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -677,18 +608,34 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
     <script>
         const API_URL = '../../controller/cExamApproval.php';
         let subjects = [];
+        let isProcessing = false; // Đánh dấu đang xử lý duyệt/từ chối
+
+        // Xác nhận thoát khi đang xử lý
+        function confirmExit() {
+            if (isProcessing) {
+                return confirm('Bạn đang trong quá trình duyệt đề thi. Bạn có chắc muốn thoát?');
+            }
+            return true;
+        }
+
+        // Cảnh báo khi đóng tab/cửa sổ
+        window.addEventListener('beforeunload', function(e) {
+            if (isProcessing) {
+                e.preventDefault();
+                e.returnValue = 'Bạn đang trong quá trình duyệt đề thi. Bạn có chắc muốn thoát?';
+                return e.returnValue;
+            }
+        });
 
         // Load dữ liệu khi trang tải
         document.addEventListener('DOMContentLoaded', function() {
             loadStatistics();
-            loadSubjects();
             loadExams();
 
             // Filter change
             document.getElementById('filterStatus').addEventListener('change', loadExams);
 
             // Form submit
-            document.getElementById('examForm').addEventListener('submit', saveExam);
             document.getElementById('rejectForm').addEventListener('submit', submitReject);
         });
 
@@ -711,37 +658,12 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
             }
         }
 
-        // Load môn học
-        async function loadSubjects() {
-            try {
-                const response = await fetch(`${API_URL}?action=subjects`, {
-                    credentials: 'same-origin'
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    subjects = result.data;
-                    const select = document.getElementById('maMonHoc');
-                    select.innerHTML = '<option value="">-- Chọn môn học --</option>';
-                    
-                    result.data.forEach(subject => {
-                        const option = document.createElement('option');
-                        option.value = subject.maMonHoc;
-                        option.textContent = subject.tenMonHoc;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading subjects:', error);
-            }
-        }
-
         // Load danh sách đề thi
         async function loadExams() {
             const status = document.getElementById('filterStatus').value;
             const tbody = document.getElementById('examTableBody');
             
-            tbody.innerHTML = '<tr><td colspan="10" class="loading">Đang tải dữ liệu...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="loading">Đang tải dữ liệu...</td></tr>';
 
             try {
                 let url = `${API_URL}?action=list`;
@@ -755,15 +677,23 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                 const result = await response.json();
 
                 if (result.success && result.data.length > 0) {
+                    isProcessing = false; // Reset processing state after load
                     tbody.innerHTML = result.data.map(exam => `
                         <tr>
                             <td>${exam.maDeThi}</td>
                             <td>${exam.tenDeThi}</td>
                             <td>${exam.tenMonHoc}</td>
-                            <td>HK${exam.hocKy}</td>
-                            <td>${exam.namHoc}</td>
-                            <td>${getLoaiDeThiText(exam.loaiDeThi)}</td>
-                            <td>${exam.thoiGianLamBai || '-'}</td>
+                            <td>${exam.tenGVNop || '-'}</td>
+                            <td>${exam.tenKyThi || (exam.hocKy ? `HK${exam.hocKy} - ${exam.namHoc}` : '-')}</td>
+                            <td>
+                                ${exam.tenFile ? `
+                                    <a href="../../uploads/exams/${exam.duongDan || exam.tenFile}" 
+                                       target="_blank" class="btn btn-sm btn-info" 
+                                       title="Tải file đề thi">
+                                        📄 ${exam.tenFile.length > 20 ? exam.tenFile.substring(0,20) + '...' : exam.tenFile}
+                                    </a>
+                                ` : '<span style="color:#999">Không có file</span>'}
+                            </td>
                             <td>${getStatusBadge(exam.trangThai)}</td>
                             <td>${exam.ngayTao || '-'}</td>
                             <td>
@@ -772,17 +702,11 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                                         👁️
                                     </button>
                                     ${exam.trangThai === 'Chuaduyet' ? `
-                                        <button class="btn btn-warning btn-sm" onclick="editExam(${exam.maDeThi})" title="Sửa">
-                                            ✏️
-                                        </button>
                                         <button class="btn btn-success btn-sm" onclick="approveExam(${exam.maDeThi})" title="Duyệt">
-                                            ✓
+                                            ✅ Duyệt
                                         </button>
                                         <button class="btn btn-danger btn-sm" onclick="openRejectModal(${exam.maDeThi})" title="Từ chối">
-                                            ✗
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteExam(${exam.maDeThi})" title="Xóa">
-                                            🗑️
+                                            ❌ Từ chối
                                         </button>
                                     ` : ''}
                                 </div>
@@ -792,9 +716,9 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                 } else {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="10" class="empty-state">
+                            <td colspan="9" class="empty-state">
                                 <div>📋</div>
-                                <p>Không có dữ liệu</p>
+                                <p>Không có đề thi ${status === 'Chuaduyet' ? 'chờ duyệt' : ''}</p>
                             </td>
                         </tr>
                     `;
@@ -803,99 +727,11 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                 console.error('Error loading exams:', error);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="empty-state">
+                        <td colspan="9" class="empty-state">
                             <p style="color: #e74c3c;">Lỗi tải dữ liệu</p>
                         </td>
                     </tr>
                 `;
-            }
-        }
-
-        // Mở modal tạo mới
-        function openCreateModal() {
-            document.getElementById('modalTitle').textContent = 'Tạo đề thi mới';
-            document.getElementById('examForm').reset();
-            document.getElementById('maDeThi').value = '';
-            
-            // Set năm học mặc định
-            const currentYear = new Date().getFullYear();
-            document.getElementById('namHoc').value = `${currentYear}-${currentYear + 1}`;
-            
-            openModal('examModal');
-        }
-
-        // Sửa đề thi
-        async function editExam(id) {
-            try {
-                const response = await fetch(`${API_URL}?action=detail&id=${id}`, {
-                    credentials: 'same-origin'
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    const exam = result.data;
-                    document.getElementById('modalTitle').textContent = 'Sửa đề thi';
-                    document.getElementById('maDeThi').value = exam.maDeThi;
-                    document.getElementById('tenDeThi').value = exam.tenDeThi;
-                    document.getElementById('maMonHoc').value = exam.maMonHoc;
-                    document.getElementById('hocKy').value = exam.hocKy;
-                    document.getElementById('namHoc').value = exam.namHoc;
-                    document.getElementById('loaiDeThi').value = exam.loaiDeThi;
-                    document.getElementById('thoiGianLamBai').value = exam.thoiGianLamBai || '';
-                    document.getElementById('noiDungDeThi').value = exam.noiDungDeThi || '';
-                    
-                    openModal('examModal');
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                console.error('Error loading exam:', error);
-                alert('Lỗi tải dữ liệu');
-            }
-        }
-
-        // Lưu đề thi
-        async function saveExam(e) {
-            e.preventDefault();
-
-            const maDeThi = document.getElementById('maDeThi').value;
-            const data = {
-                tenDeThi: document.getElementById('tenDeThi').value,
-                maMonHoc: parseInt(document.getElementById('maMonHoc').value),
-                hocKy: parseInt(document.getElementById('hocKy').value),
-                namHoc: document.getElementById('namHoc').value,
-                loaiDeThi: document.getElementById('loaiDeThi').value,
-                thoiGianLamBai: document.getElementById('thoiGianLamBai').value,
-                noiDungDeThi: document.getElementById('noiDungDeThi').value
-            };
-
-            try {
-                let url = `${API_URL}?action=create`;
-                if (maDeThi) {
-                    url = `${API_URL}?action=update&id=${maDeThi}`;
-                }
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert(result.message);
-                    closeModal('examModal');
-                    loadExams();
-                    loadStatistics();
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                console.error('Error saving exam:', error);
-                alert('Lỗi lưu dữ liệu');
             }
         }
 
@@ -926,18 +762,18 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                                 <div class="value">${exam.tenMonHoc}</div>
                             </div>
                             <div class="info-item">
-                                <label>Giáo viên</label>
-                                <div class="value">${exam.tenGV || '-'}</div>
+                                <label>Giáo viên nộp</label>
+                                <div class="value">${exam.tenGVNop || '-'} ${exam.emailGV ? `(${exam.emailGV})` : ''}</div>
                             </div>
                         </div>
                         <div class="info-row">
                             <div class="info-item">
-                                <label>Học kỳ</label>
-                                <div class="value">Học kỳ ${exam.hocKy}</div>
+                                <label>Kỳ thi</label>
+                                <div class="value">${exam.tenKyThi || '-'}</div>
                             </div>
                             <div class="info-item">
-                                <label>Năm học</label>
-                                <div class="value">${exam.namHoc}</div>
+                                <label>Học kỳ / Năm học</label>
+                                <div class="value">${exam.hocKy ? `HK${exam.hocKy} - ${exam.namHoc}` : '-'}</div>
                             </div>
                         </div>
                         <div class="info-row">
@@ -946,45 +782,54 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                                 <div class="value">${getLoaiDeThiText(exam.loaiDeThi)}</div>
                             </div>
                             <div class="info-item">
-                                <label>Thời gian làm bài</label>
-                                <div class="value">${exam.thoiGianLamBai || '-'}</div>
+                                <label>Trạng thái</label>
+                                <div class="value">${getStatusBadge(exam.trangThai)}</div>
                             </div>
                         </div>
                         <div class="info-row">
                             <div class="info-item">
-                                <label>Trạng thái</label>
-                                <div class="value">${getStatusBadge(exam.trangThai)}</div>
-                            </div>
-                            <div class="info-item">
-                                <label>Ngày tạo</label>
+                                <label>Ngày nộp</label>
                                 <div class="value">${exam.ngayTao || '-'}</div>
                             </div>
+                            <div class="info-item">
+                                <label>Ngày duyệt</label>
+                                <div class="value">${exam.ngayDuyet || '-'}</div>
+                            </div>
                         </div>
-                        ${exam.ngayDuyet ? `
-                            <div class="info-row">
-                                <div class="info-item">
-                                    <label>Ngày duyệt</label>
-                                    <div class="value">${exam.ngayDuyet}</div>
+                        ${exam.tenFile ? `
+                            <div class="form-group">
+                                <label>📎 File đề thi đính kèm</label>
+                                <div class="exam-content">
+                                    <a href="../../uploads/exams/${exam.duongDan || exam.tenFile}" 
+                                       target="_blank" class="btn btn-primary">
+                                        📄 Tải xuống: ${exam.tenFile}
+                                    </a>
                                 </div>
                             </div>
                         ` : ''}
-                        ${exam.lyDoTuChoi ? `
+                        ${exam.moTa ? `
                             <div class="form-group">
-                                <label>Lý do từ chối</label>
+                                <label>Mô tả / Ghi chú</label>
+                                <div class="exam-content">${exam.moTa}</div>
+                            </div>
+                        ` : ''}
+                        ${exam.lyDoDuyet && exam.trangThai === 'Tuchoi' ? `
+                            <div class="form-group">
+                                <label>❌ Lý do từ chối</label>
                                 <div class="exam-content" style="background: #f8d7da; color: #721c24;">
-                                    ${exam.lyDoTuChoi}
+                                    ${exam.lyDoDuyet}
                                 </div>
-                            </div>
-                        ` : ''}
-                        ${exam.noiDungDeThi ? `
-                            <div class="form-group">
-                                <label>Nội dung đề thi</label>
-                                <div class="exam-content">${exam.noiDungDeThi}</div>
                             </div>
                         ` : ''}
                     `;
 
                     document.getElementById('examDetail').innerHTML = detailHTML;
+                    
+                    // Nếu đang chờ duyệt, đánh dấu đang xử lý
+                    if (exam.trangThai === 'Chuaduyet') {
+                        isProcessing = true;
+                    }
+                    
                     openModal('detailModal');
                 } else {
                     alert(result.message);
@@ -997,27 +842,31 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
 
         // Duyệt đề thi
         async function approveExam(id) {
-            if (!confirm('Bạn có chắc muốn duyệt đề thi này?')) {
+            if (!confirm('Bạn có chắc muốn DUYỆT đề thi này?\n\nSau khi duyệt, đề thi sẽ có thể được sử dụng cho kỳ thi.')) {
                 return;
             }
 
+            isProcessing = true;
+            
             try {
                 const response = await fetch(`${API_URL}?action=approve&id=${id}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    credentials: 'same-origin'
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(result.message);
+                    alert('✅ ' + result.message + '\n\nThông báo đã được gửi đến giáo viên nộp đề.');
+                    isProcessing = false;
                     loadExams();
                     loadStatistics();
                 } else {
-                    alert(result.message);
+                    alert('❌ ' + result.message);
                 }
             } catch (error) {
                 console.error('Error approving exam:', error);
-                alert('Lỗi duyệt đề thi');
+                alert('❌ Lỗi hệ thống khi duyệt đề thi. Vui lòng thử lại sau.');
             }
         }
 
@@ -1025,6 +874,7 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
         function openRejectModal(id) {
             document.getElementById('rejectExamId').value = id;
             document.getElementById('lyDoTuChoi').value = '';
+            isProcessing = true;
             openModal('rejectModal');
         }
 
@@ -1033,7 +883,12 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
             e.preventDefault();
 
             const id = document.getElementById('rejectExamId').value;
-            const lyDo = document.getElementById('lyDoTuChoi').value;
+            const lyDo = document.getElementById('lyDoTuChoi').value.trim();
+
+            if (!lyDo) {
+                alert('Vui lòng nhập lý do từ chối');
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_URL}?action=reject&id=${id}`, {
@@ -1041,48 +896,24 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ lyDo })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(result.message);
+                    alert('✅ ' + result.message + '\n\nThông báo đã được gửi đến giáo viên nộp đề để chỉnh sửa và nộp lại.');
+                    isProcessing = false;
                     closeModal('rejectModal');
                     loadExams();
                     loadStatistics();
                 } else {
-                    alert(result.message);
+                    alert('❌ ' + result.message);
                 }
             } catch (error) {
                 console.error('Error rejecting exam:', error);
-                alert('Lỗi từ chối đề thi');
-            }
-        }
-
-        // Xóa đề thi
-        async function deleteExam(id) {
-            if (!confirm('Bạn có chắc muốn xóa đề thi này?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}?action=delete&id=${id}`, {
-                    method: 'POST'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert(result.message);
-                    loadExams();
-                    loadStatistics();
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                console.error('Error deleting exam:', error);
-                alert('Lỗi xóa đề thi');
+                alert('❌ Lỗi hệ thống khi từ chối đề thi. Vui lòng thử lại sau.');
             }
         }
 
@@ -1102,9 +933,10 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
                 '15phut': '15 phút',
                 '1tiet': '1 tiết',
                 'giuaky': 'Giữa kỳ',
-                'cuoiky': 'Cuối kỳ'
+                'cuoiky': 'Cuối kỳ',
+                'de-thi': 'Đề thi'
             };
-            return texts[loai] || loai;
+            return texts[loai] || loai || '-';
         }
 
         function openModal(modalId) {
@@ -1113,12 +945,22 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
+            // Reset processing state khi đóng modal
+            if (modalId === 'detailModal' || modalId === 'rejectModal') {
+                isProcessing = false;
+            }
         }
 
         // Close modal khi click outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
+                if (isProcessing) {
+                    if (!confirm('Bạn đang xem/duyệt đề thi. Bạn có chắc muốn đóng?')) {
+                        return;
+                    }
+                }
                 event.target.classList.remove('active');
+                isProcessing = false;
             }
         }
     </script>

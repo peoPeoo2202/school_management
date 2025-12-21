@@ -8,13 +8,116 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
     header("Location: ../../public/index.php");
     exit;
 }
+
+// Lấy thông tin TTBM
+require_once(__DIR__ . '/../../model/mGradingAssignment.php');
+$mGrading = new mGradingAssignment();
+$ttbmInfo = $mGrading->getTTBMInfo($_SESSION['maTaiKhoan']);
+
+// Lấy filter status từ URL
+$filterStatus = isset($_GET['status']) ? $_GET['status'] : '';
+
+// Lấy danh sách phân công chấm điểm
+include_once("../../model/mConnect.php");
+$db = new mConnect();
+$conn = $db->mConnect();
+
+$assignments = [];
+$stats = [
+    'total' => 0,
+    'pending' => 0,
+    'in_progress' => 0,
+    'completed' => 0
+];
+
+if ($ttbmInfo && isset($ttbmInfo['toBoMon'])) {
+    $toBoMon = $ttbmInfo['toBoMon'];
+    
+    // Thống kê
+    $sql = "SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN pc.trangThai = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN pc.trangThai = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN pc.trangThai = 'completed' THEN 1 ELSE 0 END) as completed
+            FROM phancongchamdiem pc
+            INNER JOIN giaovien gv ON pc.maGV = gv.maGV
+            WHERE gv.toBoMon = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $toBoMon);
+    $stmt->execute();
+    $statsResult = $stmt->get_result()->fetch_assoc();
+    $stats = [
+        'total' => $statsResult['total'] ?? 0,
+        'pending' => $statsResult['pending'] ?? 0,
+        'in_progress' => $statsResult['in_progress'] ?? 0,
+        'completed' => $statsResult['completed'] ?? 0
+    ];
+    $stmt->close();
+    
+    // Lấy danh sách phân công
+    $sql = "SELECT 
+                pc.maPhanCong,
+                pc.maGV,
+                gv.hoTen as tenGV,
+                gv.email,
+                pc.maMonHoc,
+                mh.tenMonHoc,
+                pc.maKyThi,
+                kt.tenKyThi,
+                pc.maLop,
+                lh.tenLop,
+                pc.ngayPhanCong,
+                pc.hanChamDiem,
+                pc.trangThai,
+                pc.ghiChu
+            FROM phancongchamdiem pc
+            INNER JOIN giaovien gv ON pc.maGV = gv.maGV
+            LEFT JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
+            LEFT JOIN kythi kt ON pc.maKyThi = kt.maKyThi
+            LEFT JOIN lophoc lh ON pc.maLop = lh.maLop
+            WHERE gv.toBoMon = ?";
+    
+    $params = [$toBoMon];
+    $types = "s";
+    
+    if ($filterStatus && in_array($filterStatus, ['pending', 'in_progress', 'completed'])) {
+        $sql .= " AND pc.trangThai = ?";
+        $params[] = $filterStatus;
+        $types .= "s";
+    }
+    
+    $sql .= " ORDER BY pc.ngayPhanCong DESC";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $assignments[] = $row;
+    }
+    $stmt->close();
+}
+
+// Xác định tiêu đề trang theo filter
+$pageTitle = 'Tất cả Phân công Chấm điểm';
+$headerColor = '#667eea';
+if ($filterStatus === 'pending') {
+    $pageTitle = 'Phân công Chưa bắt đầu';
+    $headerColor = '#f39c12';
+} elseif ($filterStatus === 'in_progress') {
+    $pageTitle = 'Phân công Đang chấm';
+    $headerColor = '#3498db';
+} elseif ($filterStatus === 'completed') {
+    $pageTitle = 'Phân công Hoàn thành';
+    $headerColor = '#27ae60';
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phân công chấm thi - TTBM</title>
+    <title><?php echo $pageTitle; ?> - TTBM</title>
     <style>
         * {
             margin: 0;
@@ -24,133 +127,148 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f5f6fa;
+            color: #2c3e50;
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            overflow: hidden;
+            padding: 20px;
         }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .page-header {
+            background: linear-gradient(135deg, <?php echo $headerColor; ?> 0%, <?php echo $headerColor; ?>dd 100%);
             color: white;
-            padding: 25px 30px;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .header h1 {
+        .page-header-content h1 {
             font-size: 28px;
-            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .page-header-content p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 6px;
             font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-primary {
-            background: #667eea;
+        .btn-back {
+            background: rgba(255,255,255,0.2);
             color: white;
+            border: 2px solid white;
         }
 
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .btn-back:hover {
+            background: white;
+            color: <?php echo $headerColor; ?>;
         }
 
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #333;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .filters {
-            padding: 25px 30px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .filters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
+        .stats-tabs {
             display: flex;
-            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
         }
 
-        .form-group label {
-            font-size: 14px;
-            font-weight: 500;
+        .stat-tab {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .stat-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .stat-tab.active {
+            border-color: <?php echo $headerColor; ?>;
+        }
+
+        .stat-tab .number {
+            font-size: 32px;
+            font-weight: bold;
             margin-bottom: 5px;
-            color: #495057;
         }
 
-        .form-control {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
+        .stat-tab .label {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .stat-tab.all .number { color: #667eea; }
+        .stat-tab.pending .number { color: #f39c12; }
+        .stat-tab.progress .number { color: #3498db; }
+        .stat-tab.completed .number { color: #27ae60; }
+
+        .filter-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar input, .filter-bar select {
+            padding: 10px 15px;
+            border: 1px solid #dfe6e9;
+            border-radius: 6px;
             font-size: 14px;
         }
 
-        .form-control:focus {
+        .filter-bar input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-bar input:focus, .filter-bar select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: <?php echo $headerColor; ?>;
         }
 
         .table-container {
-            padding: 30px;
-            overflow-x: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
         table {
@@ -159,196 +277,38 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
         }
 
         thead {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, <?php echo $headerColor; ?> 0%, <?php echo $headerColor; ?>dd 100%);
+            color: white;
         }
 
         th {
             padding: 15px;
             text-align: left;
             font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #dee2e6;
-            white-space: nowrap;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         td {
             padding: 15px;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        tbody tr {
+            transition: background 0.3s;
         }
 
         tbody tr:hover {
             background: #f8f9fa;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-buttons .btn {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            padding: 20px;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .pagination button {
-            padding: 8px 15px;
-            border: 1px solid #dee2e6;
-            background: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination .page-info {
-            font-size: 14px;
-            color: #495057;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: white;
-            margin: 3% auto;
-            padding: 0;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 700px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: slideDown 0.3s;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            padding: 20px 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 22px;
-            font-weight: 600;
-        }
-
-        .close {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close:hover {
-            transform: scale(1.2);
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .modal-footer {
-            padding: 20px 25px;
-            background: #f8f9fa;
-            border-radius: 0 0 10px 10px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .alert {
-            padding: 12px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
         .badge {
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
             display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .badge-pending {
@@ -366,503 +326,259 @@ if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] !== 'ttbm') {
             color: #155724;
         }
 
-        .required {
-            color: red;
+        .teacher-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .teacher-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .teacher-email {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .deadline {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .deadline-date {
+            font-weight: 500;
+        }
+
+        .deadline-warning {
+            font-size: 11px;
+            color: #e74c3c;
+        }
+
+        .deadline-ok {
+            font-size: 11px;
+            color: #27ae60;
+        }
+
+        @media (max-width: 768px) {
+            .stats-tabs {
+                flex-direction: column;
+            }
+
+            .stat-tab {
+                min-width: 100%;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+            }
+
+            .filter-bar input {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📝 Phân công chấm thi</h1>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="openCreateModal()">➕ Thêm phân công</button>
-                <a href="index.php" class="btn btn-secondary">🏠 Dashboard</a>
+        <div class="page-header">
+            <div class="page-header-content">
+                <h1>📋 <?php echo $pageTitle; ?></h1>
+                <p>Tổ bộ môn: <strong><?php echo htmlspecialchars($ttbmInfo['toBoMon'] ?? 'N/A'); ?></strong> | Tổng: <?php echo count($assignments); ?> phân công</p>
+            </div>
+            <div class="header-actions">
+                <a href="index.php" class="btn btn-back">← Quay lại Dashboard</a>
             </div>
         </div>
 
-        <div class="filters">
-            <div class="filters-grid">
-                <div class="form-group">
-                    <label>Giáo viên:</label>
-                    <select id="filterTeacher" class="form-control">
-                        <option value="">-- Tất cả --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Lớp học:</label>
-                    <select id="filterClass" class="form-control">
-                        <option value="">-- Tất cả --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Môn học:</label>
-                    <select id="filterSubject" class="form-control">
-                        <option value="">-- Tất cả --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Loại kiểm tra:</label>
-                    <select id="filterExamType" class="form-control">
-                        <option value="">-- Tất cả --</option>
-                        <option value="15phut">Kiểm tra 15 phút</option>
-                        <option value="1tiet">Kiểm tra 1 tiết</option>
-                        <option value="giuaky">Giữa kỳ</option>
-                        <option value="cuoiky">Cuối kỳ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Trạng thái:</label>
-                    <select id="filterStatus" class="form-control">
-                        <option value="">-- Tất cả --</option>
-                        <option value="pending">Chưa bắt đầu</option>
-                        <option value="in_progress">Đang chấm</option>
-                        <option value="completed">Hoàn thành</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="loadAssignments()">🔍 Tìm kiếm</button>
+        <!-- Stats Tabs -->
+        <div class="stats-tabs">
+            <a href="vGradingAssignment.php" class="stat-tab all <?php echo $filterStatus === '' ? 'active' : ''; ?>">
+                <div class="number"><?php echo $stats['total']; ?></div>
+                <div class="label">Tất cả</div>
+            </a>
+            <a href="vGradingAssignment.php?status=pending" class="stat-tab pending <?php echo $filterStatus === 'pending' ? 'active' : ''; ?>">
+                <div class="number"><?php echo $stats['pending']; ?></div>
+                <div class="label">Chưa bắt đầu</div>
+            </a>
+            <a href="vGradingAssignment.php?status=in_progress" class="stat-tab progress <?php echo $filterStatus === 'in_progress' ? 'active' : ''; ?>">
+                <div class="number"><?php echo $stats['in_progress']; ?></div>
+                <div class="label">Đang chấm</div>
+            </a>
+            <a href="vGradingAssignment.php?status=completed" class="stat-tab completed <?php echo $filterStatus === 'completed' ? 'active' : ''; ?>">
+                <div class="number"><?php echo $stats['completed']; ?></div>
+                <div class="label">Hoàn thành</div>
+            </a>
         </div>
 
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm theo tên GV, môn học, lớp..." onkeyup="filterTable()">
+            <select id="sortSelect" onchange="sortTable()">
+                <option value="">-- Sắp xếp --</option>
+                <option value="date-desc">Ngày phân công (Mới nhất)</option>
+                <option value="date-asc">Ngày phân công (Cũ nhất)</option>
+                <option value="deadline">Hạn chấm điểm</option>
+                <option value="teacher">Tên giáo viên</option>
+            </select>
+        </div>
+
+        <!-- Table -->
         <div class="table-container">
-            <div id="alertContainer"></div>
-            <div id="tableContent">
-                <div class="loading">Đang tải dữ liệu...</div>
-            </div>
-        </div>
-
-        <div class="pagination" id="paginationContainer" style="display: none;">
-            <button onclick="changePage('prev')" id="btnPrev">« Trước</button>
-            <span class="page-info" id="pageInfo"></span>
-            <button onclick="changePage('next')" id="btnNext">Sau »</button>
-        </div>
-    </div>
-
-    <!-- Modal Create/Edit -->
-    <div id="assignmentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Thêm phân công chấm thi</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="assignmentForm">
-                    <input type="hidden" id="assignmentId">
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Giáo viên: <span class="required">*</span></label>
-                            <select id="maGV" class="form-control" required>
-                                <option value="">-- Chọn giáo viên --</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Lớp học: <span class="required">*</span></label>
-                            <select id="maLop" class="form-control" required>
-                                <option value="">-- Chọn lớp --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Môn học: <span class="required">*</span></label>
-                            <select id="maMonHoc" class="form-control" required>
-                                <option value="">-- Chọn môn --</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Loại kiểm tra: <span class="required">*</span></label>
-                            <select id="loaiKiemTra" class="form-control" required>
-                                <option value="">-- Chọn loại --</option>
-                                <option value="15phut">Kiểm tra 15 phút</option>
-                                <option value="1tiet">Kiểm tra 1 tiết</option>
-                                <option value="giuaky">Giữa kỳ</option>
-                                <option value="cuoiky">Cuối kỳ</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Ngày chấm:</label>
-                            <input type="date" id="ngayCham" class="form-control">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Hình thức chấm:</label>
-                            <select id="hinhThucCham" class="form-control">
-                                <option value="">-- Chọn --</option>
-                                <option value="Cá nhân">Cá nhân</option>
-                                <option value="Tập thể">Tập thể</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Trạng thái:</label>
-                        <select id="trangThai" class="form-control">
-                            <option value="pending">Chưa bắt đầu</option>
-                            <option value="in_progress">Đang chấm</option>
-                            <option value="completed">Hoàn thành</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
-                <button class="btn btn-primary" onclick="saveAssignment()">💾 Lưu</button>
-            </div>
+            <table id="assignmentTable">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Giáo viên</th>
+                        <th>Môn học</th>
+                        <th>Kỳ thi</th>
+                        <th>Lớp</th>
+                        <th>Ngày phân công</th>
+                        <th>Hạn chấm</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($assignments)): ?>
+                        <tr>
+                            <td colspan="9" class="empty-state">
+                                <div class="icon">📋</div>
+                                <p>Không có phân công nào<?php echo $filterStatus ? ' ở trạng thái này' : ''; ?></p>
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($assignments as $index => $assignment): ?>
+                            <?php
+                            $isOverdue = false;
+                            $daysLeft = null;
+                            if ($assignment['hanChamDiem'] && $assignment['trangThai'] !== 'completed') {
+                                $deadline = strtotime($assignment['hanChamDiem']);
+                                $today = strtotime('today');
+                                $daysLeft = floor(($deadline - $today) / (60 * 60 * 24));
+                                $isOverdue = $daysLeft < 0;
+                            }
+                            ?>
+                            <tr data-date="<?php echo $assignment['ngayPhanCong']; ?>" data-deadline="<?php echo $assignment['hanChamDiem']; ?>" data-teacher="<?php echo htmlspecialchars($assignment['tenGV']); ?>">
+                                <td><?php echo $index + 1; ?></td>
+                                <td>
+                                    <div class="teacher-info">
+                                        <span class="teacher-name"><?php echo htmlspecialchars($assignment['tenGV'] ?? '-'); ?></span>
+                                        <span class="teacher-email"><?php echo htmlspecialchars($assignment['email'] ?? ''); ?></span>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($assignment['tenMonHoc'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($assignment['tenKyThi'] ?? '-'); ?></td>
+                                <td><?php echo htmlspecialchars($assignment['tenLop'] ?? '-'); ?></td>
+                                <td><?php echo $assignment['ngayPhanCong'] ? date('d/m/Y', strtotime($assignment['ngayPhanCong'])) : '-'; ?></td>
+                                <td>
+                                    <div class="deadline">
+                                        <span class="deadline-date"><?php echo $assignment['hanChamDiem'] ? date('d/m/Y', strtotime($assignment['hanChamDiem'])) : '-'; ?></span>
+                                        <?php if ($assignment['hanChamDiem'] && $assignment['trangThai'] !== 'completed'): ?>
+                                            <?php if ($isOverdue): ?>
+                                                <span class="deadline-warning">⚠️ Quá hạn <?php echo abs($daysLeft); ?> ngày</span>
+                                            <?php elseif ($daysLeft <= 3): ?>
+                                                <span class="deadline-warning">⏰ Còn <?php echo $daysLeft; ?> ngày</span>
+                                            <?php else: ?>
+                                                <span class="deadline-ok">✓ Còn <?php echo $daysLeft; ?> ngày</span>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php
+                                    $badgeClass = 'badge-pending';
+                                    $statusText = 'Chưa bắt đầu';
+                                    if ($assignment['trangThai'] === 'in_progress') {
+                                        $badgeClass = 'badge-progress';
+                                        $statusText = 'Đang chấm';
+                                    } elseif ($assignment['trangThai'] === 'completed') {
+                                        $badgeClass = 'badge-completed';
+                                        $statusText = 'Hoàn thành';
+                                    }
+                                    ?>
+                                    <span class="badge <?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                                </td>
+                                <td><?php echo htmlspecialchars($assignment['ghiChu'] ?? '-'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        let currentPage = 1;
-        let totalPages = 1;
-        let isEditMode = false;
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('assignmentTable');
+            const rows = table.getElementsByTagName('tr');
 
-        // Load data on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDropdowns();
-            loadAssignments();
-        });
-
-        // Load all dropdown data
-        function loadDropdowns() {
-            // Load teachers (chỉ của tổ mình)
-            fetch('../../controller/cGradingAssignment.php?action=teachers')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const filterSelect = document.getElementById('filterTeacher');
-                        const formSelect = document.getElementById('maGV');
-                        
-                        data.data.forEach(teacher => {
-                            const optFilter = document.createElement('option');
-                            optFilter.value = teacher.maGV;
-                            optFilter.textContent = teacher.hoTen;
-                            filterSelect.appendChild(optFilter);
-
-                            const optForm = document.createElement('option');
-                            optForm.value = teacher.maGV;
-                            optForm.textContent = teacher.hoTen;
-                            formSelect.appendChild(optForm);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error loading teachers:', error));
-
-            // Load classes
-            fetch('../../controller/cGradingAssignment.php?action=classes')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const filterSelect = document.getElementById('filterClass');
-                        const formSelect = document.getElementById('maLop');
-                        
-                        data.data.forEach(cls => {
-                            const optFilter = document.createElement('option');
-                            optFilter.value = cls.maLop;
-                            optFilter.textContent = `${cls.khoiLop} - ${cls.tenLop}`;
-                            filterSelect.appendChild(optFilter);
-
-                            const optForm = document.createElement('option');
-                            optForm.value = cls.maLop;
-                            optForm.textContent = `${cls.khoiLop} - ${cls.tenLop}`;
-                            formSelect.appendChild(optForm);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error loading classes:', error));
-
-            // Load subjects
-            fetch('../../controller/cGradingAssignment.php?action=subjects')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const filterSelect = document.getElementById('filterSubject');
-                        const formSelect = document.getElementById('maMonHoc');
-                        
-                        data.data.forEach(subject => {
-                            const optFilter = document.createElement('option');
-                            optFilter.value = subject.maMonHoc;
-                            optFilter.textContent = subject.tenMonHoc;
-                            filterSelect.appendChild(optFilter);
-
-                            const optForm = document.createElement('option');
-                            optForm.value = subject.maMonHoc;
-                            optForm.textContent = subject.tenMonHoc;
-                            formSelect.appendChild(optForm);
-                        });
-                    }
-                })
-                .catch(error => console.error('Error loading subjects:', error));
-        }
-
-        // Load assignments list
-        function loadAssignments(page = 1) {
-            currentPage = page;
-            const maGV = document.getElementById('filterTeacher').value;
-            const maLop = document.getElementById('filterClass').value;
-            const maMonHoc = document.getElementById('filterSubject').value;
-            const loaiKiemTra = document.getElementById('filterExamType').value;
-            const trangThai = document.getElementById('filterStatus').value;
-
-            const params = new URLSearchParams({
-                action: 'list',
-                page: page,
-                limit: 20,
-                maGV: maGV,
-                maLop: maLop,
-                maMonHoc: maMonHoc,
-                loaiKiemTra: loaiKiemTra,
-                trangThai: trangThai
-            });
-
-            fetch(`../../controller/cGradingAssignment.php?${params}`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Response:', data);
-                    if (data.success) {
-                        displayAssignments(data.data);
-                        updatePagination(data.pagination);
-                    } else {
-                        showError('Không thể tải danh sách phân công');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError('Lỗi kết nối server');
-                });
-        }
-
-        // Display assignments table
-        function displayAssignments(assignments) {
-            const container = document.getElementById('tableContent');
-            
-            if (assignments.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
-                        <h3>Không tìm thấy phân công</h3>
-                        <p>Thử thay đổi bộ lọc hoặc thêm phân công mới</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã PC</th>
-                            <th>Giáo viên</th>
-                            <th>Lớp</th>
-                            <th>Môn học</th>
-                            <th>Loại kiểm tra</th>
-                            <th>Ngày chấm</th>
-                            <th>Hình thức</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            assignments.forEach(item => {
-                const statusClass = item.trangThai === 'completed' ? 'badge-completed' : 
-                                  (item.trangThai === 'in_progress' ? 'badge-progress' : 'badge-pending');
-                const statusText = item.trangThai === 'completed' ? 'Hoàn thành' : 
-                                 (item.trangThai === 'in_progress' ? 'Đang chấm' : 'Chưa bắt đầu');
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
                 
-                html += `
-                    <tr>
-                        <td>${item.maPhanCong}</td>
-                        <td><strong>${item.tenGiaoVien || ''}</strong></td>
-                        <td>${item.tenLop || ''}</td>
-                        <td>${item.tenMonHoc || ''}</td>
-                        <td>${item.loaiKiemTra || ''}</td>
-                        <td>${item.ngayCham || ''}</td>
-                        <td>${item.hinhThucCham || ''}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-warning" onclick="openEditModal(${item.maPhanCong})">✏️ Sửa</button>
-                                <button class="btn btn-danger" onclick="deleteAssignment(${item.maPhanCong}, '${item.tenGiaoVien}')">🗑️ Xóa</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                    </tbody>
-                </table>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        // Update pagination
-        function updatePagination(pagination) {
-            totalPages = pagination.total_pages;
-            document.getElementById('pageInfo').textContent = 
-                `Trang ${pagination.current_page} / ${pagination.total_pages} (Tổng: ${pagination.total_records} phân công)`;
-            
-            document.getElementById('btnPrev').disabled = pagination.current_page === 1;
-            document.getElementById('btnNext').disabled = pagination.current_page === pagination.total_pages;
-            document.getElementById('paginationContainer').style.display = 'flex';
-        }
-
-        // Change page
-        function changePage(direction) {
-            if (direction === 'prev' && currentPage > 1) {
-                loadAssignments(currentPage - 1);
-            } else if (direction === 'next' && currentPage < totalPages) {
-                loadAssignments(currentPage + 1);
-            }
-        }
-
-        // Open create modal
-        function openCreateModal() {
-            isEditMode = false;
-            document.getElementById('modalTitle').textContent = 'Thêm phân công chấm thi';
-            document.getElementById('assignmentForm').reset();
-            document.getElementById('assignmentId').value = '';
-            document.getElementById('assignmentModal').style.display = 'block';
-        }
-
-        // Open edit modal
-        function openEditModal(maPhanCong) {
-            isEditMode = true;
-            document.getElementById('modalTitle').textContent = 'Sửa phân công chấm thi';
-            
-            fetch(`../../controller/cGradingAssignment.php?action=get&id=${maPhanCong}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const item = data.data;
-                        document.getElementById('assignmentId').value = item.maPhanCong;
-                        document.getElementById('maGV').value = item.maGV || '';
-                        document.getElementById('maLop').value = item.maLop || '';
-                        document.getElementById('maMonHoc').value = item.maMonHoc || '';
-                        document.getElementById('loaiKiemTra').value = item.loaiKiemTra || '';
-                        document.getElementById('ngayCham').value = item.ngayCham || '';
-                        document.getElementById('hinhThucCham').value = item.hinhThucCham || '';
-                        document.getElementById('trangThai').value = item.trangThai || 'pending';
-                        document.getElementById('assignmentModal').style.display = 'block';
-                    } else {
-                        showError('Không thể tải thông tin phân công');
+                for (let j = 0; j < cells.length; j++) {
+                    const text = cells[j].textContent || cells[j].innerText;
+                    if (text.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError('Lỗi kết nối server');
-                });
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('assignmentModal').style.display = 'none';
-        }
-
-        // Save assignment
-        function saveAssignment() {
-            const formData = new FormData();
-            formData.append('maGV', document.getElementById('maGV').value);
-            formData.append('maLop', document.getElementById('maLop').value);
-            formData.append('maMonHoc', document.getElementById('maMonHoc').value);
-            formData.append('loaiKiemTra', document.getElementById('loaiKiemTra').value);
-            formData.append('ngayCham', document.getElementById('ngayCham').value);
-            formData.append('hinhThucCham', document.getElementById('hinhThucCham').value);
-            formData.append('trangThai', document.getElementById('trangThai').value);
-
-            let url = '../../controller/cGradingAssignment.php?action=create';
-            if (isEditMode) {
-                const maPhanCong = document.getElementById('assignmentId').value;
-                url = `../../controller/cGradingAssignment.php?action=update&id=${maPhanCong}`;
-            }
-
-            fetch(url, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccess(data.message);
-                    closeModal();
-                    loadAssignments(currentPage);
-                } else {
-                    showError(data.message);
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Lỗi kết nối server');
-            });
+                
+                rows[i].style.display = found ? '' : 'none';
+            }
         }
 
-        // Delete assignment
-        function deleteAssignment(maPhanCong, tenGiaoVien) {
-            if (!confirm(`Bạn có chắc muốn xóa phân công của giáo viên "${tenGiaoVien}"?\nThao tác này không thể hoàn tác.`)) {
-                return;
-            }
+        function sortTable() {
+            const sortBy = document.getElementById('sortSelect').value;
+            const table = document.getElementById('assignmentTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
 
-            fetch(`../../controller/cGradingAssignment.php?action=delete&id=${maPhanCong}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccess(data.message);
-                    loadAssignments(currentPage);
-                } else {
-                    showError(data.message);
+            if (!sortBy || rows.length <= 1) return;
+
+            rows.sort((a, b) => {
+                if (a.classList.contains('empty-state') || !a.dataset.date) return 0;
+                
+                switch(sortBy) {
+                    case 'date-desc':
+                        return new Date(b.dataset.date) - new Date(a.dataset.date);
+                    case 'date-asc':
+                        return new Date(a.dataset.date) - new Date(b.dataset.date);
+                    case 'deadline':
+                        const deadlineA = a.dataset.deadline || '9999-12-31';
+                        const deadlineB = b.dataset.deadline || '9999-12-31';
+                        return new Date(deadlineA) - new Date(deadlineB);
+                    case 'teacher':
+                        return (a.dataset.teacher || '').localeCompare(b.dataset.teacher || '');
+                    default:
+                        return 0;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Lỗi kết nối server');
             });
-        }
 
-        // Show success message
-        function showSuccess(message) {
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-success';
-            alert.textContent = message;
-            alert.style.display = 'block';
-            
-            const container = document.getElementById('alertContainer');
-            container.innerHTML = '';
-            container.appendChild(alert);
-            
-            setTimeout(() => alert.remove(), 5000);
-        }
-
-        // Show error message
-        function showError(message) {
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-error';
-            alert.textContent = message;
-            alert.style.display = 'block';
-            
-            const container = document.getElementById('alertContainer');
-            container.innerHTML = '';
-            container.appendChild(alert);
-            
-            setTimeout(() => alert.remove(), 5000);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('assignmentModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            rows.forEach(row => tbody.appendChild(row));
         }
     </script>
 </body>

@@ -17,6 +17,34 @@ class mGradingAssignment
     }
 
     /**
+     * Lấy thông tin TTBM từ maTaiKhoan
+     * 
+     * @param int $maTaiKhoan Mã tài khoản
+     * @return array|null Thông tin TTBM
+     */
+    public function getTTBMInfo($maTaiKhoan)
+    {
+        $sql = "SELECT 
+                    t.maTTBM,
+                    t.maGV,
+                    t.maTaiKhoan,
+                    g.hoTen,
+                    g.toBoMon
+                FROM ttbm t
+                LEFT JOIN giaovien g ON t.maGV = g.maGV
+                WHERE t.maTaiKhoan = ?";
+        
+        $stmt = $this->connection->prepare($sql);
+        $stmt->bind_param("i", $maTaiKhoan);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $info = $result->fetch_assoc();
+        $stmt->close();
+        
+        return $info;
+    }
+
+    /**
      * Lấy danh sách phân công chấm điểm với filter
      * 
      * @param array $filters Điều kiện lọc
@@ -216,110 +244,6 @@ class mGradingAssignment
     }
 
     /**
-     * Tạo phân công chấm thi mới
-     * 
-     * @param array $data Dữ liệu phân công
-     * @return int|false Mã phân công mới
-     */
-    public function createAssignment($data)
-    {
-        $columns = [];
-        $placeholders = [];
-        $params = [];
-        $types = "";
-        
-        foreach ($data as $key => $value) {
-            if ($value !== null && $value !== '') {
-                $columns[] = $key;
-                $placeholders[] = '?';
-                $params[] = $value;
-                
-                if (in_array($key, ['maGV', 'maLop', 'maMonHoc'])) {
-                    $types .= 'i';
-                } else {
-                    $types .= 's';
-                }
-            }
-        }
-        
-        if (empty($columns)) {
-            return false;
-        }
-        
-        $sql = "INSERT INTO phancongchamdiem (" . implode(', ', $columns) . ") 
-                VALUES (" . implode(', ', $placeholders) . ")";
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bind_param($types, ...$params);
-        
-        if ($stmt->execute()) {
-            $maPhanCong = $stmt->insert_id;
-            $stmt->close();
-            return $maPhanCong;
-        }
-        
-        $stmt->close();
-        return false;
-    }
-
-    /**
-     * Cập nhật phân công
-     * 
-     * @param int $maPhanCong Mã phân công
-     * @param array $data Dữ liệu cập nhật
-     * @return bool Kết quả
-     */
-    public function updateAssignment($maPhanCong, $data)
-    {
-        $updates = [];
-        $params = [];
-        $types = "";
-        
-        foreach ($data as $key => $value) {
-            $updates[] = "$key = ?";
-            $params[] = $value;
-            
-            if (in_array($key, ['maGV', 'maLop', 'maMonHoc'])) {
-                $types .= 'i';
-            } else {
-                $types .= 's';
-            }
-        }
-        
-        if (empty($updates)) {
-            return false;
-        }
-        
-        $sql = "UPDATE phancongchamdiem SET " . implode(', ', $updates) . " WHERE maPhanCong = ?";
-        $params[] = $maPhanCong;
-        $types .= 'i';
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bind_param($types, ...$params);
-        $result = $stmt->execute();
-        $stmt->close();
-        
-        return $result;
-    }
-
-    /**
-     * Xóa phân công
-     * 
-     * @param int $maPhanCong Mã phân công
-     * @return bool Kết quả
-     */
-    public function deleteAssignment($maPhanCong)
-    {
-        $sql = "DELETE FROM phancongchamdiem WHERE maPhanCong = ?";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bind_param("i", $maPhanCong);
-        $result = $stmt->execute();
-        $stmt->close();
-        
-        return $result;
-    }
-
-    /**
      * Lấy danh sách giáo viên theo tổ bộ môn
      * 
      * @param string|null $toBoMon Tổ bộ môn (null = tất cả)
@@ -397,42 +321,7 @@ class mGradingAssignment
     }
 
     /**
-     * Lấy thông tin TTBM từ maTaiKhoan
-     * 
-     * @param int $maTaiKhoan Mã tài khoản
-     * @return array|null Thông tin TTBM
-     */
-    public function getTTBMInfo($maTaiKhoan)
-    {
-        $sql = "SELECT 
-                    t.maTTBM,
-                    t.maGV,
-                    t.maTaiKhoan,
-                    g.hoTen,
-                    g.toBoMon
-                FROM ttbm t
-                LEFT JOIN giaovien g ON t.maGV = g.maGV
-                WHERE t.maTaiKhoan = ?";
-        
-        $stmt = $this->connection->prepare($sql);
-        $stmt->bind_param("i", $maTaiKhoan);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $info = $result->fetch_assoc();
-        $stmt->close();
-        
-        return $info;
-    }
-
-    /**
      * Kiểm tra xem giáo viên có bị trùng phân công không
-     * 
-     * @param int $maGV Mã giáo viên
-     * @param int $maLop Mã lớp
-     * @param int $maMonHoc Mã môn học
-     * @param string $loaiKiemTra Loại kiểm tra
-     * @param int|null $excludeMaPhanCong Loại trừ mã phân công (dùng khi update)
-     * @return bool True nếu trùng
      */
     public function checkDuplicate($maGV, $maLop, $maMonHoc, $loaiKiemTra, $excludeMaPhanCong = null)
     {
@@ -457,28 +346,6 @@ class mGradingAssignment
         $stmt->close();
         
         return intval($row['count']) > 0;
-    }
-
-    /**
-     * Lấy danh sách tổ bộ môn
-     * 
-     * @return array Danh sách tổ bộ môn
-     */
-    public function getAllDepartments()
-    {
-        $sql = "SELECT DISTINCT toBoMon 
-                FROM giaovien 
-                WHERE toBoMon IS NOT NULL AND toBoMon != ''
-                ORDER BY toBoMon ASC";
-        
-        $result = $this->connection->query($sql);
-        $departments = [];
-        
-        while ($row = $result->fetch_assoc()) {
-            $departments[] = $row;
-        }
-        
-        return $departments;
     }
 }
 ?>
