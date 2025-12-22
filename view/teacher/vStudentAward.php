@@ -845,7 +845,7 @@ if (empty($classes)) {
                     </div>
 
                     <div class="form-group">
-                        <label>Lý do khen thưởng (Nội dung) <span style="color: red;">*</span></label>
+                        <label>Giải thưởng: <span style="color: red;">*</span></label>
                         <input type="text" id="lyDo" class="form-control" required 
                                placeholder="Ví dụ: Học sinh giỏi toàn diện">
                     </div>
@@ -1198,7 +1198,7 @@ if (empty($classes)) {
 
             // Validate lý do khen thưởng
             if (!lyDo) {
-                alert('Vui lòng nhập lý do khen thưởng (Nội dung)');
+                alert('Vui lòng nhập giải thưởng');
                 return;
             }
 

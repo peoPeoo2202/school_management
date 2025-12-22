@@ -104,20 +104,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <?php endwhile; ?>
                             </select>
                         </div>
-                        <div class="filter-group">
-                            <label>Lọc theo khối</label>
-                            <select name="maKhoi" id="filterGrade" onchange="document.getElementById('filterForm').submit();">
-                                <option value="">-- Khối --</option>
-                                <?php
-                                $classes->data_seek(0);
-                                while ($class = $classes->fetch_assoc()): ?>
-                                    <option value="<?= $class['maLop'] ?>"
-                                        <?= (isset($_GET['maLop']) && $_GET['maLop'] == $class['maLop']) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($class['tenLop']) ?>
-                                    </option>
-                                <?php endwhile; ?>
-                            </select>
-                        </div>
 
                         <div class="filter-actions-button assign-homework-action">
                             <button type="button" class="btn btn-primary" onclick="openAddModal()">

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             : 'Bài tập đã hết hạn nộp và không cho phép nộp trễ! Vui lòng liên hệ giáo viên.';
         $messageType = 'error';
     } else {
-        $result = $controller->submitHomework($maBaiTap, $maHS, $_FILES['file'], $_POST['noiDung']);
+        $result = $controller->submitHomework($maBaiTap, $maHS, $_FILES['file'], $_POST['noiDung'] ?? '');
         $message = $result['message'];
         $messageType = $result['success'] ? 'success' : 'error';
         $submission = $controller->getStudentSubmission($maBaiTap, $maHS);
@@ -259,7 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 
                     <form method="POST" enctype="multipart/form-data" id="submitForm">
                         <div class="form-group">
-                            <!-- <label><i class="fas fa-cloud-upload-alt"></i> Tải lên file bài làm</label> -->
+                            <label><i class="fas fa-align-left"></i> Nội dung bài làm (tùy chọn)</label>
+                            <textarea name="noiDung" id="noiDung" rows="4" placeholder="Nhập nội dung bài làm của bạn..."><?php echo isset($submission['noiDung']) ? htmlspecialchars($submission['noiDung']) : ''; ?></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-cloud-upload-alt"></i> Tải lên file bài làm (tùy chọn)</label>
 
                             <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
                                 <div class="file-upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>

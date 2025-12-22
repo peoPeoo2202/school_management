@@ -80,11 +80,44 @@ class ControllerStudentClassification {
             }
             
             if ($type === 'academic') {
+                // Lấy danh sách môn học của khối
+                $subjects = $this->model->getSubjectsByClass($maLop);
+                
                 // Lấy bảng điểm chi tiết
                 $students = $this->model->getStudentGradesDetail($maLop, $hocKy, $namHoc);
                 
-                // Tính xếp loại cho từng học sinh
+                // Tạo map môn học theo maMonHoc để dễ tra cứu
+                $subjectMap = [];
+                foreach ($subjects as $subject) {
+                    $subjectMap[$subject['maMonHoc']] = $subject['tenMonHoc'];
+                }
+                
+                // Đảm bảo mỗi học sinh có đầy đủ các môn học (kể cả chưa có điểm)
                 foreach ($students as &$student) {
+                    // Tạo map điểm hiện có của học sinh
+                    $gradeMap = [];
+                    foreach ($student['grades'] as $grade) {
+                        $gradeMap[$grade['maMonHoc']] = $grade;
+                    }
+                    
+                    // Tạo lại mảng grades với đầy đủ các môn học theo thứ tự
+                    $student['grades'] = [];
+                    foreach ($subjects as $subject) {
+                        if (isset($gradeMap[$subject['maMonHoc']])) {
+                            // Có điểm
+                            $student['grades'][] = $gradeMap[$subject['maMonHoc']];
+                        } else {
+                            // Chưa có điểm
+                            $student['grades'][] = [
+                                'maMonHoc' => $subject['maMonHoc'],
+                                'tenMonHoc' => $subject['tenMonHoc'],
+                                'tbDiem' => null,
+                                'nhanXet' => null
+                            ];
+                        }
+                    }
+                    
+                    // Tính xếp loại cho từng học sinh
                     // Nếu chưa đủ điểm các môn → xếp "Chưa đạt"
                     if (isset($student['chuaDuDiem']) && $student['chuaDuDiem']) {
                         $student['ranking'] = [
@@ -98,7 +131,10 @@ class ControllerStudentClassification {
                     }
                 }
                 
-                return ['students' => $students];
+                return [
+                    'students' => $students,
+                    'subjects' => $subjects
+                ];
             } elseif ($type === 'conduct') {
                 // Lấy bảng hạnh kiểm chi tiết
                 $students = $this->model->getStudentConductDetail($maLop, $hocKy, $namHoc);
