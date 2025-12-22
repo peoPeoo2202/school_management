@@ -262,7 +262,7 @@ class mReport {
                 JOIN lophoc lh ON pc.maLop = lh.maLop
                 JOIN hocsinh hs ON hs.maLop = lh.maLop
                 JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
-                LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS 
+                JOIN bangdiem bd ON bd.maHS = hs.maHS 
                     AND bd.maMonHoc = pc.maMonHoc 
                     AND bd.hocKy = pc.hocKy 
                     AND bd.namHoc = pc.namHoc

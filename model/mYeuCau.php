@@ -516,16 +516,22 @@ class ModelYeuCau {
      */
     public function layMonHocCuaGV($maGV) {
         try {
-            // Lấy môn học từ bảng phancong_gvcn
+            // Lấy môn học từ cả phancong_gvcn và phancong_gvbm
             $sql = "SELECT DISTINCT 
                         pc.maMonHoc,
                         mh.tenMonHoc
                     FROM phancong_gvcn pc
                     JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
                     WHERE pc.maGV = ? AND pc.trangThai = 'active'
-                    ORDER BY mh.tenMonHoc";
-            
-            return $this->executeQuery($sql, [$maGV]);
+                    UNION
+                    SELECT DISTINCT 
+                        pbm.maMonHoc,
+                        mh.tenMonHoc
+                    FROM phancong_gvbm pbm
+                    JOIN monhoc mh ON pbm.maMonHoc = mh.maMonHoc
+                    WHERE pbm.maGV = ? AND pbm.trangThai = 'active'
+                    ORDER BY tenMonHoc";
+            return $this->executeQuery($sql, [$maGV, $maGV]);
         } catch (Exception $e) {
             error_log("Lỗi layMonHocCuaGV: " . $e->getMessage());
             return [];
@@ -537,7 +543,7 @@ class ModelYeuCau {
      */
     public function layHocSinhTheoMon($maGV, $maMonHoc, $hocKy, $namHoc) {
         try {
-            // Lấy học sinh từ các lớp mà giáo viên được phân công dạy
+            // Lấy học sinh từ cả phancong_gvcn và phancong_gvbm
             $sql = "SELECT DISTINCT 
                         hs.maHS,
                         hs.hoTen,
@@ -556,9 +562,28 @@ class ModelYeuCau {
                         AND pc.namHoc = ?
                         AND pc.trangThai = 'active'
                         AND bd.maBangDiem IS NOT NULL
-                    ORDER BY l.tenLop, hs.hoTen";
-            
-            return $this->executeQuery($sql, [$maGV, $maMonHoc, $hocKy, $namHoc]);
+                    UNION ALL
+                    SELECT DISTINCT 
+                        hs.maHS,
+                        hs.hoTen,
+                        l.tenLop,
+                        bd.maBangDiem
+                    FROM phancong_gvbm pbm
+                    INNER JOIN lophoc l ON pbm.maLop = l.maLop
+                    INNER JOIN hocsinh hs ON l.maLop = hs.maLop
+                    LEFT JOIN bangdiem bd ON bd.maHS = hs.maHS 
+                        AND bd.maMonHoc = pbm.maMonHoc
+                        AND bd.hocKy = pbm.hocKy 
+                        AND bd.namHoc = pbm.namHoc
+                    WHERE pbm.maGV = ? 
+                        AND pbm.maMonHoc = ?
+                        AND pbm.hocKy = ?
+                        AND pbm.namHoc = ?
+                        AND pbm.trangThai = 'active'
+                        AND bd.maBangDiem IS NOT NULL
+                    ORDER BY tenLop, hoTen";
+            $params = [$maGV, $maMonHoc, $hocKy, $namHoc, $maGV, $maMonHoc, $hocKy, $namHoc];
+            return $this->executeQuery($sql, $params);
         } catch (Exception $e) {
             error_log("Lỗi layHocSinhTheoMon: " . $e->getMessage());
             return [];
@@ -588,3 +613,5 @@ class ModelYeuCau {
     }
 }
 ?>
+
+
