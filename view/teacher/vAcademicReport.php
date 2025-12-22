@@ -147,11 +147,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         .stats-summary {
             background: #f8f9fa;
-            padding: 20px 25px;
+            padding: 8px 10px;
             border-top: 1px solid #eee;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
         }
 
         .stat-item {
@@ -161,7 +161,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         .stat-label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
 
         .stat-value {
@@ -322,7 +322,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                                         $xepLoai = '';
                                         $classXepLoai = '';
-                                        if ($diemTB >= 8.0) {
+                                        if ($diemTB >= 9.0) {
+                                            $xepLoai = 'Xuất sắc';
+                                            $classXepLoai = 'grade-excellent';
+                                        } elseif ($diemTB >= 8.0) {
                                             $xepLoai = 'Giỏi';
                                             $classXepLoai = 'grade-excellent';
                                         } elseif ($diemTB >= 6.5) {
@@ -367,12 +370,25 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <div class="stat-value"><?php echo $soHocSinh > 0 ? number_format($tongDiem / $soHocSinh, 2) : '0'; ?></div>
                             </div>
                             <div class="stat-item">
+                                <div class="stat-label">Số HS xuất sắc</div>
+                                <div class="stat-value grade-excellent">
+                                    <?php 
+                                    $soXuatSac = 0;
+                                    foreach ($duLieuBaoCao as $row) {
+                                        if (floatval($row['diemTrungBinh']) >= 9.0) $soXuatSac++;
+                                    }
+                                    echo $soXuatSac;
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="stat-item">
                                 <div class="stat-label">Số HS giỏi</div>
                                 <div class="stat-value grade-excellent">
                                     <?php 
                                     $soGioi = 0;
                                     foreach ($duLieuBaoCao as $row) {
-                                        if (floatval($row['diemTrungBinh']) >= 8.0) $soGioi++;
+                                        $diem = floatval($row['diemTrungBinh']);
+                                        if ($diem >= 8.0 && $diem < 9.0) $soGioi++;
                                     }
                                     echo $soGioi;
                                     ?>
