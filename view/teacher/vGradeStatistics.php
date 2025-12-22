@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../../config.php');
 // Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
@@ -10,7 +11,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thống kê điểm môn học - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="<?php echo VIEW_URL . '/teacher/style.css'; ?>">
     <style>
         * {
             margin: 0
@@ -545,6 +546,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <th>Điểm TB</th>
                                             <th>Điểm cao nhất</th>
                                             <th>Điểm thấp nhất</th>
+                                            <th>HS Xuất sắc</th>
                                             <th>HS Giỏi</th>
                                             <th>HS Khá</th>
                                             <th>HS TB</th>
@@ -561,6 +563,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <td><strong><?php echo number_format($row['diemTrungBinh'], 2); ?></strong></td>
                                             <td><?php echo number_format($row['diemCaoNhat'], 1); ?></td>
                                             <td><?php echo number_format($row['diemThapNhat'], 1); ?></td>
+                                            <td><span style="color: #20c997; font-weight: 600;"><?php echo $row['soHSXuatSac']; ?></span></td>
                                             <td><span style="color: #28a745; font-weight: 600;"><?php echo $row['soHSGioi']; ?></span></td>
                                             <td><span style="color: #17a2b8; font-weight: 600;"><?php echo $row['soHSKha']; ?></span></td>
                                             <td><span style="color: #ffc107; font-weight: 600;"><?php echo $row['soHSTB']; ?></span></td>
@@ -636,9 +639,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </div>
                             <div class="distribution-chart">
                                 <div class="grade-bar">
-                                    <div class="grade-label">Giỏi (≥ 8.0)</div>
+                                    <div class="grade-label">Xuất sắc (≥ 9.0)</div>
                                     <div class="bar-container">
-                                        <div class="bar excellent" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSGioi'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                        <div class="bar excellent" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSXuatSac'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                            <?php echo $row['soHSXuatSac']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="grade-count">
+                                        <?php echo $row['soHocSinh'] > 0 ? round($row['soHSXuatSac'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
+                                    </div>
+                                </div>
+
+                                <div class="grade-bar">
+                                    <div class="grade-label">Giỏi (8.0 - 8.9)</div>
+                                    <div class="bar-container">
+                                        <div class="bar good" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSGioi'] / $row['soHocSinh'] * 100) : 0; ?>%;">
                                             <?php echo $row['soHSGioi']; ?>
                                         </div>
                                     </div>
@@ -650,7 +665,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <div class="grade-bar">
                                     <div class="grade-label">Khá (6.5 - 7.9)</div>
                                     <div class="bar-container">
-                                        <div class="bar good" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSKha'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                        <div class="bar average" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSKha'] / $row['soHocSinh'] * 100) : 0; ?>%;">
                                             <?php echo $row['soHSKha']; ?>
                                         </div>
                                     </div>
@@ -673,14 +688,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                                 <div class="grade-bar">
                                     <div class="grade-label">Yếu (< 5.0)</div>
-                                            <div class="bar-container">
-                                                <div class="bar weak" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSYeu'] / $row['soHocSinh'] * 100) : 0; ?>%;">
-                                                    <?php echo $row['soHSYeu']; ?>
-                                                </div>
-                                            </div>
-                                            <div class="grade-count">
-                                                <?php echo $row['soHocSinh'] > 0 ? round($row['soHSYeu'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
-                                            </div>
+                                    <div class="bar-container">
+                                        <div class="bar weak" style="height: <?php echo ($row['soHocSinh'] > 0) ? ($row['soHSYeu'] / $row['soHocSinh'] * 100) : 0; ?>%;">
+                                            <?php echo $row['soHSYeu']; ?>
+                                        </div>
+                                    </div>
+                                    <div class="grade-count">
+                                        <?php echo $row['soHocSinh'] > 0 ? round($row['soHSYeu'] / $row['soHocSinh'] * 100, 1) : 0; ?>%
                                     </div>
                                 </div>
                             </div>

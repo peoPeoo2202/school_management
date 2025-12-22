@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../../config.php');
 // Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
@@ -9,7 +10,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo giảng dạy - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="<?php echo VIEW_URL . '/teacher/style.css'; ?>">
     <style>
         .container {
             max-width: 1400px;
