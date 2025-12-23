@@ -292,21 +292,13 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
                                 <th>Hạnh kiểm HK2</th>
                                 <th>Vi phạm</th>
                                 <th>Khen thưởng</th>
-                                <th>Danh hiệu đề xuất</th>
-                                <th>Danh hiệu hiện tại</th>
+                                <th>Danh hiệu</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php $stt = 1; ?>
                             <?php foreach ($ketQua as $hs): ?>
-                                <?php
-                                $danhHieuDeXuat = '';
-                                if (isset($hs['danhHieuDeXuat']) && $hs['danhHieuDeXuat']) {
-                                    $danhHieuDeXuat = $hs['danhHieuDeXuat']['tenDanhHieu'];
-                                }
-                                
-                                $danhHieuHienTai = $hs['tenDanhHieu'] ?? 'Chưa xét';
-                                ?>
+                                <?php $danhHieuHienTai = $hs['tenDanhHieu'] ?? ($hs['danhHieuHienTai'] ?? 'Chưa xét'); ?>
                                 <tr>
                                     <td><?= $stt++ ?></td>
                                     <td><?= htmlspecialchars($hs['maHS']) ?></td>
@@ -332,15 +324,6 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
                                     </td>
                                     <td><?= intval($hs['soViPham'] ?? 0) ?></td>
                                     <td><?= intval($hs['soKhenThuong'] ?? 0) ?></td>
-                                    <td>
-                                        <?php if ($danhHieuDeXuat): ?>
-                                            <span class="badge badge-danh-hieu">
-                                                <?= htmlspecialchars($danhHieuDeXuat) ?>
-                                            </span>
-                                        <?php else: ?>
-                                            <span style="color: #999;">Không đủ tiêu chuẩn</span>
-                                        <?php endif; ?>
-                                    </td>
                                     <td>
                                         <span class="badge badge-danh-hieu">
                                             <?= htmlspecialchars($danhHieuHienTai) ?>

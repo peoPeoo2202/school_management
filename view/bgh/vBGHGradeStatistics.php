@@ -56,12 +56,46 @@
 <body>
     <?php
     $tongMonHoc = 0; $monCaoDiem = ['ten' => '-', 'diem' => 0]; $monThapDiem = ['ten' => '-', 'diem' => 10];
+    $duLieuGopMon = [];
     if (!empty($duLieuThongKe)) {
-        $tongMonHoc = count($duLieuThongKe);
+        // Gộp các bản ghi trùng tên môn học, tính lại các thống kê
         foreach ($duLieuThongKe as $row) {
-            $dtb = $row['diemTrungBinh'] ?? 0;
-            if ($dtb > $monCaoDiem['diem']) $monCaoDiem = ['ten' => $row['tenMonHoc'], 'diem' => $dtb];
-            if ($dtb < $monThapDiem['diem'] && $dtb > 0) $monThapDiem = ['ten' => $row['tenMonHoc'], 'diem' => $dtb];
+            $tenMon = $row['tenMonHoc'];
+            if (!isset($duLieuGopMon[$tenMon])) {
+                $duLieuGopMon[$tenMon] = [
+                    'tenMonHoc' => $tenMon,
+                    'tongSoHocSinh' => 0,
+                    'tongDiem' => 0,
+                    'soBanGhi' => 0,
+                    'soHSXuatSac' => 0,
+                    'soHSGioi' => 0,
+                    'soHSKha' => 0,
+                    'soHSTrungBinh' => 0,
+                    'soHSYeu' => 0,
+                    'soHSKem' => 0
+                ];
+            }
+            $duLieuGopMon[$tenMon]['tongSoHocSinh'] += $row['tongSoHocSinh'] ?? 0;
+            $duLieuGopMon[$tenMon]['tongDiem'] += ($row['diemTrungBinh'] ?? 0);
+            $duLieuGopMon[$tenMon]['soBanGhi']++;
+            $duLieuGopMon[$tenMon]['soHSXuatSac'] += $row['soHSXuatSac'] ?? 0;
+            $duLieuGopMon[$tenMon]['soHSGioi'] += $row['soHSGioi'] ?? 0;
+            $duLieuGopMon[$tenMon]['soHSKha'] += $row['soHSKha'] ?? 0;
+            $duLieuGopMon[$tenMon]['soHSTrungBinh'] += $row['soHSTrungBinh'] ?? 0;
+            $duLieuGopMon[$tenMon]['soHSYeu'] += $row['soHSYeu'] ?? 0;
+            $duLieuGopMon[$tenMon]['soHSKem'] += $row['soHSKem'] ?? 0;
+        }
+        // Tính lại điểm trung bình cho từng môn
+        foreach ($duLieuGopMon as $mon => &$data) {
+            $data['diemTrungBinh'] = $data['soBanGhi'] > 0 ? $data['tongDiem'] / $data['soBanGhi'] : 0;
+        }
+        unset($data);
+        $tongMonHoc = count($duLieuGopMon);
+        // Tìm môn cao điểm/thấp điểm
+        foreach ($duLieuGopMon as $data) {
+            $dtb = $data['diemTrungBinh'];
+            if ($dtb > $monCaoDiem['diem']) $monCaoDiem = ['ten' => $data['tenMonHoc'], 'diem' => $dtb];
+            if ($dtb < $monThapDiem['diem'] && $dtb > 0) $monThapDiem = ['ten' => $data['tenMonHoc'], 'diem' => $dtb];
         }
     }
     ?>
@@ -80,12 +114,12 @@
                 <div class="subject-name">Môn học trong hệ thống</div>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-arrow-up"></i> Môn có điểm cao nhất</h3>
+                <h3><i class="fas fa-arrow-up"></i> Môn có điểm trung bình điểm cao nhất</h3>
                 <div class="number"><?php echo number_format($monCaoDiem['diem'], 2); ?></div>
                 <div class="subject-name"><?php echo htmlspecialchars($monCaoDiem['ten']); ?></div>
             </div>
             <div class="stat-card">
-                <h3><i class="fas fa-arrow-down"></i> Môn có điểm thấp nhất</h3>
+                <h3><i class="fas fa-arrow-down"></i> Môn có điểm trung bình thấp nhất</h3>
                 <div class="number"><?php echo number_format($monThapDiem['diem'], 2); ?></div>
                 <div class="subject-name"><?php echo htmlspecialchars($monThapDiem['ten']); ?></div>
             </div>
@@ -122,16 +156,15 @@
             <div style="overflow-x: auto;">
                 <table id="gradeStatsTable" class="display" style="width:100%">
                     <thead>
-                        <tr><th>STT</th><th>Môn học</th><th>Sĩ số</th><th>Điểm TB</th><th>Xuất sắc</th><th>Giỏi</th><th>Khá</th><th>Trung bình</th><th>Yếu</th><th>Kém</th></tr>
+                        <tr><th>STT</th><th>Môn học</th><th>Điểm TB</th><th>Xuất sắc</th><th>Giỏi</th><th>Khá</th><th>Trung bình</th><th>Yếu</th><th>Kém</th></tr>
                     </thead>
                     <tbody>
-                        <?php if (empty($duLieuThongKe)): ?>
-                            <tr><td colspan="10" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
-                        <?php else: $stt = 1; foreach ($duLieuThongKe as $row): ?>
+                        <?php if (empty($duLieuGopMon)): ?>
+                            <tr><td colspan="9" style="text-align: center; padding: 40px;">Không có dữ liệu</td></tr>
+                        <?php else: $stt = 1; foreach ($duLieuGopMon as $row): ?>
                             <tr>
                                 <td><?php echo $stt++; ?></td>
                                 <td><strong><?php echo htmlspecialchars($row['tenMonHoc']); ?></strong></td>
-                                <td><?php echo $row['tongSoHocSinh'] ?? 0; ?></td>
                                 <td><strong style="color: #667eea;"><?php echo $row['diemTrungBinh'] ? number_format($row['diemTrungBinh'], 2) : '-'; ?></strong></td>
                                 <td><span class="badge badge-purple"><?php echo $row['soHSXuatSac']; ?></span></td>
                                 <td><span class="badge badge-green"><?php echo $row['soHSGioi']; ?></span></td>
@@ -150,7 +183,7 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            <?php if (!empty($duLieuThongKe)): ?>
+            <?php if (!empty($duLieuGopMon)): ?>
             $('#gradeStatsTable').DataTable({
                 pageLength: 25, order: [[3, 'desc']], language: { "sProcessing": "Đang xử lý...", "sLengthMenu": "Hiển thị _MENU_ bản ghi", "sZeroRecords": "Không tìm thấy dữ liệu", "sInfo": "Hiển thị _START_ đến _END_ trong tổng số _TOTAL_ bản ghi", "sSearch": "Tìm kiếm:", "oPaginate": { "sFirst": "Đầu", "sPrevious": "Trước", "sNext": "Tiếp", "sLast": "Cuối" } }
             });
@@ -161,7 +194,7 @@
                     labels: ['Xuất sắc', 'Giỏi', 'Khá', 'Trung bình', 'Yếu', 'Kém'],
                     datasets: [{
                         data: [
-                            <?php $totals = ['xs' => 0, 'g' => 0, 'k' => 0, 'tb' => 0, 'y' => 0, 'km' => 0]; foreach ($duLieuThongKe as $row) { $totals['xs'] += $row['soHSXuatSac']; $totals['g'] += $row['soHSGioi']; $totals['k'] += $row['soHSKha']; $totals['tb'] += $row['soHSTrungBinh']; $totals['y'] += $row['soHSYeu']; $totals['km'] += $row['soHSKem']; } echo implode(',', [$totals['xs'], $totals['g'], $totals['k'], $totals['tb'], $totals['y'], $totals['km']]); ?>
+                            <?php $totals = ['xs' => 0, 'g' => 0, 'k' => 0, 'tb' => 0, 'y' => 0, 'km' => 0]; foreach ($duLieuGopMon as $row) { $totals['xs'] += $row['soHSXuatSac']; $totals['g'] += $row['soHSGioi']; $totals['k'] += $row['soHSKha']; $totals['tb'] += $row['soHSTrungBinh']; $totals['y'] += $row['soHSYeu']; $totals['km'] += $row['soHSKem']; } echo implode(',', [$totals['xs'], $totals['g'], $totals['k'], $totals['tb'], $totals['y'], $totals['km']]); ?>
                         ],
                         backgroundColor: ['#7c3aed', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280']
                     }]
@@ -172,10 +205,10 @@
             new Chart(ctx2, {
                 type: 'bar',
                 data: {
-                    labels: [<?php foreach ($duLieuThongKe as $row) echo "'" . addslashes($row['tenMonHoc']) . "',"; ?>],
+                    labels: [<?php foreach ($duLieuGopMon as $row) echo "'" . addslashes($row['tenMonHoc']) . "',"; ?>],
                     datasets: [{
                         label: 'Điểm trung bình',
-                        data: [<?php foreach ($duLieuThongKe as $row) echo ($row['diemTrungBinh'] ?? 0) . ','; ?>],
+                        data: [<?php foreach ($duLieuGopMon as $row) echo ($row['diemTrungBinh'] ?? 0) . ','; ?>],
                         backgroundColor: '#667eea'
                     }]
                 },
