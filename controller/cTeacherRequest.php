@@ -43,7 +43,7 @@ class ControllerTeacherRequest {
         $maGV = $this->layMaGV();
         if (!$maGV) {
             $_SESSION['error'] = "Không xác định được thông tin giáo viên";
-            header("Location: dashboard.php");
+            header("Location: index.php");
             exit();
         }
 
@@ -64,7 +64,7 @@ class ControllerTeacherRequest {
         $maGV = $this->layMaGV();
         if (!$maGV) {
             $_SESSION['error'] = "Không xác định được thông tin giáo viên";
-            header("Location: dashboard.php");
+            header("Location: index.php");
             exit();
         }
 
@@ -131,7 +131,7 @@ class ControllerTeacherRequest {
         $maGV = $this->layMaGV();
         if (!$maGV) {
             $_SESSION['error'] = "Không xác định được thông tin giáo viên";
-            header("Location: dashboard.php?action=yeucau");
+            header("Location: index.php?action=yeucau");
             exit();
         }
 
@@ -182,7 +182,7 @@ class ControllerTeacherRequest {
 
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
-            header("Location: dashboard.php?action=yeucau&type=suadiem");
+            header("Location: index.php?action=yeucau&type=suadiem");
             exit();
         }
 
@@ -205,10 +205,10 @@ class ControllerTeacherRequest {
         // Gửi yêu cầu
         if ($this->model->guiYeuCauSuaDiem($data)) {
             $_SESSION['success'] = "Yêu cầu sửa điểm đã được gửi thành công. Ban giám hiệu sẽ xem xét và xử lý.";
-            header("Location: dashboard.php?action=danhsachyeucau");
+            header("Location: index.php?action=danhsachyeucau");
         } else {
             $_SESSION['error'] = "Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.";
-            header("Location: dashboard.php?action=yeucau&type=suadiem");
+            header("Location: index.php?action=yeucau&type=suadiem");
         }
         exit();
     }
@@ -222,7 +222,7 @@ class ControllerTeacherRequest {
         $maGV = $this->layMaGV();
         if (!$maGV) {
             $_SESSION['error'] = "Không xác định được thông tin giáo viên";
-            header("Location: dashboard.php");
+            header("Location: index.php");
             exit();
         }
         
@@ -238,7 +238,7 @@ class ControllerTeacherRequest {
         $maGV = $this->layMaGV();
         if (!$maGV) {
             $_SESSION['error'] = "Không xác định được thông tin giáo viên";
-            header("Location: dashboard.php?action=yeucau");
+            header("Location: index.php?action=yeucau");
             exit();
         }
 
@@ -273,7 +273,7 @@ class ControllerTeacherRequest {
 
         if (!empty($errors)) {
             $_SESSION['error'] = implode('<br>', $errors);
-            header("Location: dashboard.php?action=yeucau&type=nghiphep");
+            header("Location: index.php?action=yeucau&type=nghiphep");
             exit();
         }
 
@@ -289,10 +289,10 @@ class ControllerTeacherRequest {
         // Gửi yêu cầu
         if ($this->model->guiYeuCauNghiPhep($data)) {
             $_SESSION['success'] = "Yêu cầu nghỉ phép đã được gửi thành công. Ban giám hiệu sẽ xem xét và xử lý.";
-            header("Location: dashboard.php?action=danhsachyeucau");
+            header("Location: index.php?action=danhsachyeucau");
         } else {
             $_SESSION['error'] = "Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.";
-            header("Location: dashboard.php?action=yeucau&type=nghiphep");
+            header("Location: index.php?action=yeucau&type=nghiphep");
         }
         exit();
     }

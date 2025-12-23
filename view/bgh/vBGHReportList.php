@@ -310,7 +310,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 <div class="report-card">
                     <h3>
                         <i class="fas fa-medal"></i>
-                        Báo cáo danh hiệu học sinh
+                        Báo cáo kết quả đánh giá
                     </h3>
                     <p>Xét và cập nhật danh hiệu học sinh dựa trên học lực, hạnh kiểm, vi phạm và khen thưởng.</p>
                     <a href="cBGHReport.php?action=ket-qua-danh-gia" class="btn btn-primary">

@@ -65,7 +65,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <h2 class="card-title"><i class="fa-solid fa-circle-info"></i> Thông tin môn học và học sinh</h2>
                 </div>
                 <form method="POST"
-                    action="dashboard.php?action=xulysuadiem"
+                    action="index.php?action=xulysuadiem"
                     enctype="multipart/form-data"
                     id="formSuaDiem">
 
@@ -171,6 +171,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <!-- Upload theo layout mẫu gửi đề thi -->
                             <div class="file-upload-wrapper">
                                 <input type="file" name="minhChung" id="minhChung" accept=".jpg,.jpeg,.png,.pdf">
+                                <div id="fileSizeError" style="display:none;color:#e74c3c;font-size:15px;font-weight:bold;margin-top:6px;">
+                                    <i class="fas fa-exclamation-triangle"></i> Dung lượng tệp vượt mức cho phép (tối đa 5MB)
+                                </div>
                                 <div style="font-size:42px;color:#5081BE;margin-bottom:8px;">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
@@ -192,6 +195,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                 <!-- Actions theo layout mẫu -->
                 
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+                        </button>
+                        <a href="index.php?action=danhsachyeucau" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy bỏ
+                        </a>
+                    </div>
                 </form>
 
                 <div id="loading" class="loading" style="display:none;">
@@ -199,31 +211,31 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <p>Đang xử lý...</p>
                 </div>
             </div>
-        <div>
-            <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-paper-plane"></i> Gửi yêu cầu
-                    </button>
-                    <a href="dashboard.php?action=danhsachyeucau" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Hủy bỏ
-                    </a>
-                </div>
-        </div>
         </div>
     </div>
 
     <script>
         // Hiển thị tên file giống layout mẫu gửi đề thi
         document.getElementById('minhChung').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || '';
+            const file = e.target.files[0];
             const fileSelected = document.getElementById('fileSelected');
             const fileNameSpan = document.getElementById('fileName');
-
-            if (fileName) {
-                fileNameSpan.textContent = fileName;
-                fileSelected.style.display = 'flex';
+            const fileSizeError = document.getElementById('fileSizeError');
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    fileSizeError.style.display = 'block';
+                    fileSelected.style.display = 'none';
+                    fileNameSpan.textContent = '';
+                    e.target.value = '';
+                } else {
+                    fileSizeError.style.display = 'none';
+                    fileNameSpan.textContent = file.name;
+                    fileSelected.style.display = 'flex';
+                }
             } else {
                 fileSelected.style.display = 'none';
+                fileSizeError.style.display = 'none';
+                fileNameSpan.textContent = '';
             }
         });
 
@@ -311,6 +323,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         document.getElementById('loaiDiem').addEventListener('change', updateDiemHienTai);
 
         document.getElementById('formSuaDiem').addEventListener('submit', function(e) {
+            const minhChungInput = document.getElementById('minhChung');
+            const fileSizeError = document.getElementById('fileSizeError');
+            if (minhChungInput.files[0] && minhChungInput.files[0].size > 5 * 1024 * 1024) {
+                fileSizeError.style.display = 'block';
+                e.preventDefault();
+                return false;
+            }
             if (!confirm('Bạn có chắc chắn muốn gửi yêu cầu sửa điểm này?')) {
                 e.preventDefault();
                 return false;

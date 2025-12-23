@@ -1,6 +1,17 @@
 <?php
 // Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
+
+// Xác định có lọc tìm kiếm chưa (ít nhất 1 bộ lọc được chọn)
+$daLoc = false;
+if (
+    (isset($_GET['maLop']) && $_GET['maLop'] !== '') ||
+    (isset($_GET['maMonHoc']) && $_GET['maMonHoc'] !== '') ||
+    (isset($_GET['hocKy']) && $_GET['hocKy'] !== '') ||
+    (isset($_GET['namHoc']) && $_GET['namHoc'] !== '' && $_GET['namHoc'] !== '2024-2025')
+) {
+    $daLoc = true;
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -420,7 +431,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     $diemTBToanTruong = 0;
     
     if (!empty($duLieuBaoCao)) {
-        $tongHocSinh = count($duLieuBaoCao);
+            $dsMaHS = array();
+            foreach ($duLieuBaoCao as $row) {
+                if (!empty($row['maHS'])) {
+                    $dsMaHS[$row['maHS']] = true;
+                }
+            }
+            $tongHocSinh = count($dsMaHS); // Số học sinh duy nhất có điểm
         $tongDiem = 0;
         foreach ($duLieuBaoCao as $row) {
             if (isset($row['xepLoai'])) {
@@ -454,6 +471,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
         </div>
 
         <!-- Statistics Cards -->
+        <?php if ($daLoc && !empty($duLieuBaoCao)): ?>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon purple">
@@ -464,7 +482,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     <div class="number"><?php echo number_format($tongHocSinh); ?></div>
                 </div>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon green">
                     <i class="fas fa-star"></i>
@@ -474,7 +491,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     <div class="number"><?php echo number_format($tongXuatSac + $tongGioi); ?></div>
                 </div>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon orange">
                     <i class="fas fa-chart-bar"></i>
@@ -484,7 +500,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     <div class="number"><?php echo number_format($diemTBToanTruong, 2); ?></div>
                 </div>
             </div>
-            
             <div class="stat-card">
                 <div class="stat-icon red">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -495,6 +510,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
         <!-- Main Content -->
         <div class="main-content">
@@ -507,7 +523,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 <div class="filter-header">
                     <i class="fas fa-filter"></i> Bộ lọc tìm kiếm
                 </div>
-                <form method="GET" action="cBGHReport.php">
+                <form method="GET" action="cBGHReport.php" id="filterForm">
                     <input type="hidden" name="action" value="hoc-tap">
                     <div class="filter-grid">
                         <div class="form-group">
@@ -560,111 +576,120 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                         <a href="cBGHReport.php?action=hoc-tap" class="btn btn-secondary">
                             <i class="fas fa-redo"></i> Đặt lại
                         </a>
+                        <div id="filterError" style="color: red; margin-top: 10px; display: none; font-weight: 600;">
+                            Vui lòng chọn đầy đủ Lớp, Môn học, Học kỳ và Năm học để tìm kiếm!
+                        </div>
                     </div>
                 </form>
             </div>
 
             <!-- Table Header with Export -->
-            <?php if (!empty($duLieuBaoCao)): ?>
-            <div class="table-header">
-                <div class="table-title">
-                    <i class="fas fa-table"></i> Danh sách kết quả (<?php echo number_format($tongHocSinh); ?> bản ghi)
+            <?php if ($daLoc): ?>
+                <?php if (!empty($duLieuBaoCao)): ?>
+                <div class="table-header">
+                    <div class="table-title">
+                        <i class="fas fa-table"></i> Danh sách kết quả (<?php echo number_format($tongHocSinh); ?> bản ghi)
+                    </div>
+                    <div class="export-section">
+                        <a href="cBGHReport.php?action=xuat-excel&loai=hoc-tap&maLop=<?php echo $_GET['maLop'] ?? ''; ?>&maMonHoc=<?php echo $_GET['maMonHoc'] ?? ''; ?>&hocKy=<?php echo $_GET['hocKy'] ?? ''; ?>&namHoc=<?php echo $_GET['namHoc'] ?? '2024-2025'; ?>" 
+                           class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Xuất Excel
+                        </a>
+                    </div>
                 </div>
-                <div class="export-section">
-                    <a href="cBGHReport.php?action=xuat-excel&loai=hoc-tap&maLop=<?php echo $_GET['maLop'] ?? ''; ?>&maMonHoc=<?php echo $_GET['maMonHoc'] ?? ''; ?>&hocKy=<?php echo $_GET['hocKy'] ?? ''; ?>&namHoc=<?php echo $_GET['namHoc'] ?? '2024-2025'; ?>" 
-                       class="btn btn-success">
-                        <i class="fas fa-file-excel"></i> Xuất Excel
-                    </a>
-                </div>
-            </div>
-            <?php endif; ?>
+                <?php endif; ?>
 
-            <!-- DataTable -->
-            <div class="table-container">
-                <table id="academicTable" class="display responsive nowrap" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã HS</th>
-                            <th>Họ tên</th>
-                            <th>Lớp</th>
-                            <th>Môn học</th>
-                            <th>HK</th>
-                            <th>TX1</th>
-                            <th>TX2</th>
-                            <th>TX3</th>
-                            <th>TX4</th>
-                            <th>Giữa kỳ</th>
-                            <th>Cuối kỳ</th>
-                            <th>TB</th>
-                            <th>Xếp loại</th>
-                            <th>Giáo viên</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($duLieuBaoCao)): ?>
+                <!-- DataTable -->
+                <div class="table-container">
+                    <table id="academicTable" class="display responsive nowrap" style="width:100%">
+                        <thead>
                             <tr>
-                                <td colspan="15" class="no-data">
-                                    <i class="fas fa-inbox"></i><br>
-                                    Không có dữ liệu để hiển thị.<br>
-                                    <small>Vui lòng chọn bộ lọc phù hợp.</small>
-                                </td>
+                                <th>STT</th>
+                                <th>Mã HS</th>
+                                <th>Họ tên</th>
+                                <th>Lớp</th>
+                                <th>Môn học</th>
+                                <th>HK</th>
+                                <th>TX1</th>
+                                <th>TX2</th>
+                                <th>TX3</th>
+                                <th>TX4</th>
+                                <th>Giữa kỳ</th>
+                                <th>Cuối kỳ</th>
+                                <th>TB</th>
+                                <th>Xếp loại</th>
+                                <th>Giáo viên</th>
                             </tr>
-                        <?php else: ?>
-                            <?php 
-                            $stt = 1; 
-                            foreach ($duLieuBaoCao as $row): 
-                                // Xác định class màu cho điểm TB
-                                $scoreClass = 'score-cell';
-                                if ($row['diemTrungBinh'] >= 8.0) {
-                                    $scoreClass .= ' score-excellent';
-                                } elseif ($row['diemTrungBinh'] >= 6.5) {
-                                    $scoreClass .= ' score-good';
-                                } elseif ($row['diemTrungBinh'] >= 5.0) {
-                                    $scoreClass .= ' score-average';
-                                } else {
-                                    $scoreClass .= ' score-poor';
-                                }
-                                
-                                // Xác định class cho badge xếp loại
-                                $badgeClass = 'grade-badge';
-                                switch ($row['xepLoai']) {
-                                    case 'Xuất sắc': $badgeClass .= ' grade-xuat-sac'; break;
-                                    case 'Giỏi': $badgeClass .= ' grade-gioi'; break;
-                                    case 'Khá': $badgeClass .= ' grade-kha'; break;
-                                    case 'Trung bình': $badgeClass .= ' grade-trung-binh'; break;
-                                    case 'Yếu': $badgeClass .= ' grade-yeu'; break;
-                                    default: $badgeClass .= ' grade-kem'; break;
-                                }
-                            ?>
-                            <tr>
-                                <td><?php echo $stt++; ?></td>
-                                <td><strong><?php echo htmlspecialchars($row['maHS']); ?></strong></td>
-                                <td style="text-align: left;"><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
-                                <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
-                                <td style="text-align: left;"><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
-                                <td><?php echo htmlspecialchars($row['hocKy']); ?></td>
-                                <td><?php echo $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
-                                <td><?php echo $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
-                                <td class="<?php echo $scoreClass; ?>">
-                                    <?php echo $row['diemTrungBinh'] !== null ? number_format($row['diemTrungBinh'], 1) : '-'; ?>
-                                </td>
-                                <td>
-                                    <span class="<?php echo $badgeClass; ?>">
-                                        <?php echo htmlspecialchars($row['xepLoai'] ?? '-'); ?>
-                                    </span>
-                                </td>
-                                <td style="text-align: left;"><?php echo htmlspecialchars($row['tenGiaoVien'] ?? 'Chưa phân công'); ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($duLieuBaoCao)): ?>
+                                <tr>
+                                    <td colspan="15" class="no-data">
+                                        <i class="fas fa-inbox"></i><br>
+                                        Không có dữ liệu để hiển thị.<br>
+                                        <small>Vui lòng chọn bộ lọc phù hợp.</small>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php 
+                                $stt = 1; 
+                                foreach ($duLieuBaoCao as $row): 
+                                    // Xác định class màu cho điểm TB
+                                    $scoreClass = 'score-cell';
+                                    if ($row['diemTrungBinh'] >= 8.0) {
+                                        $scoreClass .= ' score-excellent';
+                                    } elseif ($row['diemTrungBinh'] >= 6.5) {
+                                        $scoreClass .= ' score-good';
+                                    } elseif ($row['diemTrungBinh'] >= 5.0) {
+                                        $scoreClass .= ' score-average';
+                                    } else {
+                                        $scoreClass .= ' score-poor';
+                                    }
+                                    // Xác định class cho badge xếp loại
+                                    $badgeClass = 'grade-badge';
+                                    switch ($row['xepLoai']) {
+                                        case 'Xuất sắc': $badgeClass .= ' grade-xuat-sac'; break;
+                                        case 'Giỏi': $badgeClass .= ' grade-gioi'; break;
+                                        case 'Khá': $badgeClass .= ' grade-kha'; break;
+                                        case 'Trung bình': $badgeClass .= ' grade-trung-binh'; break;
+                                        case 'Yếu': $badgeClass .= ' grade-yeu'; break;
+                                        default: $badgeClass .= ' grade-kem'; break;
+                                    }
+                                ?>
+                                <tr>
+                                    <td><?php echo $stt++; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($row['maHS']); ?></strong></td>
+                                    <td style="text-align: left;"><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
+                                    <td style="text-align: left;"><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['hocKy']); ?></td>
+                                    <td><?php echo $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
+                                    <td><?php echo $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
+                                    <td><?php echo $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
+                                    <td><?php echo $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
+                                    <td><?php echo $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
+                                    <td><?php echo $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
+                                    <td class="<?php echo $scoreClass; ?>">
+                                        <?php echo $row['diemTrungBinh'] !== null ? number_format($row['diemTrungBinh'], 1) : '-'; ?>
+                                    </td>
+                                    <td>
+                                        <span class="<?php echo $badgeClass; ?>">
+                                            <?php echo htmlspecialchars($row['xepLoai'] ?? '-'); ?>
+                                        </span>
+                                    </td>
+                                    <td style="text-align: left;"><?php echo htmlspecialchars($row['tenGiaoVien'] ?? 'Chưa phân công'); ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div class="no-data" style="padding: 60px 0;">
+                    <i class="fas fa-search"></i><br>
+                    Vui lòng chọn bộ lọc để hiển thị dữ liệu.<br>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -674,6 +699,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Bắt buộc chọn đầy đủ tất cả bộ lọc mới cho submit
+            $('#filterForm').on('submit', function(e) {
+                var maLop = $('#maLop').val();
+                var maMonHoc = $('#maMonHoc').val();
+                var hocKy = $('#hocKy').val();
+                var namHoc = $('#namHoc').val();
+                if (maLop === '' || maMonHoc === '' || hocKy === '' || namHoc === '') {
+                    $('#filterError').show();
+                    e.preventDefault();
+                } else {
+                    $('#filterError').hide();
+                }
+            });
+
             <?php if (!empty($duLieuBaoCao)): ?>
             $('#academicTable').DataTable({
                 responsive: true,
