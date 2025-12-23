@@ -57,536 +57,7 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
     <title>Danh sách học sinh - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-        }
 
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .header-section {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .header-left {
-            display: flex;
-            justify-content: space-between;
-            flex-direction: column;
-        }
-
-        .header-left-icon {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #5081BE;
-            font-weight: 600;
-        }
-
-        .header-left h2 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .header-left p {
-            color: #999;
-            font-size: 14px;
-            margin: 0;
-        }
-
-        .header-right {
-            text-align: right;
-        }
-
-        .header-right .welcome-text {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        .header-right .user-name {
-            color: #5081BE;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-title i {
-            color: #5081BE;
-            font-size: 16px;
-        }
-
-        .class-info {
-            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #5081BE;
-            text-align: left;
-        }
-
-        .class-info h3 {
-            color: #5081BE;
-            margin-bottom: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            text-align: left;
-        }
-
-        .class-info p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .class-info strong {
-            color: #333;
-        }
-
-        .error-message {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c62828;
-        }
-
-        .students-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .students-table thead {
-            background-color: #5081BE;
-            color: white;
-        }
-
-        .students-table th {
-            padding: 15px 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .students-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 14px;
-        }
-
-        .students-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .students-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-block;
-        }
-
-        .status-active {
-            background-color: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .status-inactive {
-            background-color: #ffcdd2;
-            color: #c62828;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-
-        /* Pagination Styles */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 30px;
-            padding: 20px 0;
-        }
-
-        .pagination a,
-        .pagination span {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #5081BE;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .pagination a:hover {
-            background-color: #5081BE;
-            color: white;
-            border-color: #5081BE;
-        }
-
-        .pagination .current-page {
-            background-color: #5081BE;
-            color: white;
-            border-color: #5081BE;
-            cursor: default;
-        }
-
-        .pagination .disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .pagination-info {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-top: 15px;
-        }
-
-        /* Search Box Styles */
-        .search-container {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-box {
-            flex: 1;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
-            pointer-events: none;
-        }
-
-        .search-result-info {
-            color: #666;
-            font-size: 14px;
-            font-style: italic;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            padding: 20px 30px;
-            background: linear-gradient(135deg, #5081BE 0%, #4a6fa5 100%);
-            color: white;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 20px;
-        }
-
-        .close {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close:hover {
-            color: #ddd;
-            transform: scale(1.1);
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .info-section {
-            margin-bottom: 25px;
-        }
-
-        .info-section h3 {
-            color: #5081BE;
-            font-size: 16px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            font-size: 14px;
-        }
-
-        .info-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .info-label {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            color: #333;
-            font-weight: 500;
-        }
-
-        .grades-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-        .grades-table th,
-        .grades-table td {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-        }
-
-        .grades-table th {
-            background-color: #f5f5f5;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .list-item {
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-
-        .list-item-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .list-item-content {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .badge-warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .students-table tbody tr {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .students-table tbody tr:hover {
-            background-color: #e3f2fd !important;
-            transform: scale(1.01);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .loading i {
-            font-size: 32px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-wrapper {
-                flex-direction: column;
-            }
-
-            .content-area {
-                margin-left: 0;
-                padding: 15px;
-            }
-
-            .header-section {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
-
-            .header-right {
-                text-align: center;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -601,7 +72,7 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                 <div class="header-left">
                     <div class="header-left-icon">
                         <h2><i class="fas fa-users"></i></h2>
-                        <h2>Danh sách học sinh</h2>
+                        <h2>Danh sách lớp chủ nhiệm</h2>
                     </div>
                 </div>
             </div>
@@ -615,7 +86,6 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                         </h2>
                     </div>
                     <div class="error-message">
-                        <!-- <strong>⚠️ Lỗi:</strong>  -->
                         <?php echo htmlspecialchars($data['error']); ?>
                     </div>
                 <?php else: ?>
@@ -623,17 +93,17 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                         <h2 class="card-title">
                             <i class="fas fa-chalkboard-teacher"></i> Lớp <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?>
                         </h2>
+                        <div class="search-container">
+                            <span class="search-result-info" id="searchResult"></span>
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã học sinh" onkeyup="searchStudent()">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Thông tin lớp -->
-                    <div class="class-info">
-                        <h3><i class="fas fa-info-circle"></i> Thông tin lớp học</h3>
-                        <p><strong>Khối:</strong> <?php echo htmlspecialchars($data['classInfo']['khoiLop']); ?></p>
-                        <p><strong>Sĩ số:</strong> <?php echo $data['classInfo']['siSo']; ?> học sinh</p>
-                        <p><strong>Năm học:</strong> <?php echo htmlspecialchars($data['classInfo']['namHoc']); ?></p>
-                        <p><strong>Học kỳ:</strong> <?php echo $data['hocKy']; ?></p>
-                        <p><strong>Giáo viên chủ nhiệm:</strong> <?php echo htmlspecialchars($data['classInfo']['tenGVCN']); ?></p>
-                    </div>
+
 
                     <?php if (empty($data['students'])): ?>
                         <div class="empty-state">
@@ -642,52 +112,94 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                         </div>
                     <?php else: ?>
                         <!-- Search Box -->
-                        <div class="search-container">
-                            <div class="search-box">
-                                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã học sinh..." onkeyup="searchStudent()">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            <span class="search-result-info" id="searchResult"></span>
-                        </div>
 
-                        <table class="students-table">
+
+                        <table class="common-table">
                             <thead>
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Mã HS</th>
+                                    <th class="small-cell">STT</th>
+                                    <th class="small-cell">Mã HS</th>
                                     <th>Họ và tên</th>
-                                    <th>Ngày sinh</th>
-                                    <th>Giới tính</th>
-                                    <th>Điểm TB</th>
-                                    <th>Hạnh kiểm</th>
+                                    <th class="normal-cell">Ngày sinh</th>
+                                    <th class="small-cell">Giới tính</th>
+                                    <th class="center">Điểm TB</th>
+                                    <th class="center">Hạnh kiểm</th>
                                     <th>Phụ huynh</th>
-                                    <th>SĐT</th>
-                                    <th>Trạng thái</th>
+                                    <th class="normal-cell">SĐT</th>
+                                    <th class="center">Trạng thái</th>
+                                    <th class="center">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <?php foreach ($studentsToDisplay as $index => $student): 
+
+                            <tbody class="common-table-body">
+                                <?php foreach ($studentsToDisplay as $index => $student):
                                     $stt = $offset + $index + 1;
+
+                                    // Badge status theo mẫu (tuỳ ông xã đổi text/class)
+                                    $statusClass = ($student['trangThaiHocTap'] == 'danghoc') ? 'badge-success' : 'cancelled';
+                                    $statusText  = ($student['trangThaiHocTap'] == 'danghoc') ? 'Đang học' : 'Nghỉ học';
                                 ?>
-                                    <tr onclick="viewStudentDetail(<?php echo $student['maHS']; ?>)">
-                                        <td><?php echo $stt; ?></td>
-                                        <td><?php echo htmlspecialchars($student['maHS']); ?></td>
-                                        <td><strong><?php echo htmlspecialchars($student['hoTen']); ?></strong></td>
-                                        <td><?php echo date('d/m/Y', strtotime($student['ngaySinh'])); ?></td>
-                                        <td><?php echo htmlspecialchars($student['gioiTinh']); ?></td>
-                                        <td><?php echo $student['diemTB'] ? number_format($student['diemTB'], 1) : 'Chưa có'; ?></td>
-                                        <td><?php echo htmlspecialchars($student['hanhKiem']); ?></td>
-                                        <td><?php echo htmlspecialchars($student['tenPhuHuynh'] ?? 'N/A'); ?></td>
-                                        <td><?php echo htmlspecialchars($student['sdtPhuHuynh'] ?? 'N/A'); ?></td>
+                                    <tr>
+                                        <td class="small-cell">
+                                            <p><?php echo $stt; ?></p>
+                                        </td>
+
+                                        <td class="small-cell">
+                                            <p>#<?php echo htmlspecialchars($student['maHS']); ?></p>
+                                        </td>
+
                                         <td>
-                                            <span class="status-badge <?php echo $student['trangThaiHocTap'] == 'danghoc' ? 'status-active' : 'status-inactive'; ?>">
-                                                <?php echo $student['trangThaiHocTap'] == 'danghoc' ? 'Đang học' : 'Nghỉ học'; ?>
+                                            <div class="request-description">
+                                                <span class="request-des-title">
+                                                    <?php echo htmlspecialchars($student['hoTen']); ?>
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <td class="normal-cell">
+                                            <?php echo date('d/m/Y', strtotime($student['ngaySinh'])); ?>
+                                        </td>
+
+                                        <td class="small-cell">
+                                            <?php echo htmlspecialchars($student['gioiTinh']); ?>
+                                        </td>
+
+                                        <td class="small-cell">
+                                            <?php echo $student['diemTB'] ? number_format($student['diemTB'], 1) : '<span class="empty-info">Chưa có</span>'; ?>
+                                        </td>
+
+                                        <td class="center">
+                                            <?php echo htmlspecialchars($student['hanhKiem']); ?>
+                                        </td>
+
+                                        <td>
+                                            <?php echo htmlspecialchars($student['tenPhuHuynh'] ?? 'N/A'); ?>
+                                        </td>
+
+                                        <td class="nowrap">
+                                            <?php echo htmlspecialchars($student['sdtPhuHuynh'] ?? 'N/A'); ?>
+                                        </td>
+
+                                        <td class="center">
+                                            <span class="badge <?php echo $statusClass; ?>">
+                                                <?php echo $statusText; ?>
                                             </span>
+                                        </td>
+                                        <td class="action-cell">
+                                            <div class="action-buttons">
+                                                <button type="button"
+                                                    class="btn-view"
+                                                    onclick="viewStudentDetail(<?php echo (int)$student['maHS']; ?>)"
+                                                    title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
+
 
                         <!-- Pagination -->
                         <?php if ($totalPages > 1): ?>
@@ -705,7 +217,7 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                                 <?php
                                 $startPage = max(1, $currentPage - 2);
                                 $endPage = min($totalPages, $currentPage + 2);
-                                
+
                                 if ($startPage > 1): ?>
                                     <a href="?page=1<?php echo isset($_GET['maLop']) ? '&maLop=' . $_GET['maLop'] : ''; ?>">1</a>
                                     <?php if ($startPage > 2): ?>
@@ -740,7 +252,7 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
 
                             <!-- Pagination Info -->
                             <div class="pagination-info">
-                                Hiển thị <?php echo $offset + 1; ?> - <?php echo min($offset + $studentsPerPage, $totalStudents); ?> 
+                                Hiển thị <?php echo $offset + 1; ?> - <?php echo min($offset + $studentsPerPage, $totalStudents); ?>
                                 trong tổng số <?php echo $totalStudents; ?> học sinh
                             </div>
                         <?php endif; ?>
@@ -751,289 +263,370 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
     </div>
 
     <!-- Modal Chi tiết học sinh -->
-    <div id="studentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-user-graduate"></i> Thông tin chi tiết học sinh</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
+    <!-- MODAL CHI TIẾT HỌC SINH (THEO MODAL MẪU common-modal) -->
+    <div class="common-modal" id="studentModal">
+        <div class="assign-homework-modal-dialog">
+
+            <!-- Header -->
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
+                    <i class="fas fa-user-graduate"></i>
+                    Thông tin chi tiết học sinh
+                </h5>
+
+                <button type="button"
+                    class="btn-close-modal"
+                    onclick="closeModal()">
+                    <i class="fa-solid fa-x"></i>
+                </button>
             </div>
-            <div class="modal-body" id="modalBody">
+
+            <!-- Body -->
+            <div class="common-modal-body" id="modalBody">
                 <div class="loading">
                     <i class="fas fa-spinner"></i>
                     <p>Đang tải thông tin...</p>
                 </div>
             </div>
+
+            <!-- Footer -->
+            <div class="common-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // Search function
+        // =========================
+        // SEARCH (common-table)
+        // =========================
         function searchStudent() {
             const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase().trim();
-            const table = document.querySelector('.students-table');
-            const tbody = table.getElementsByTagName('tbody')[0];
-            const rows = tbody.getElementsByTagName('tr');
+            const filter = (input?.value || '').toLowerCase().trim();
+
+            const table = document.querySelector('.common-table');
+            if (!table) return;
+
+            const rows = table.querySelectorAll('tbody tr');
             let visibleCount = 0;
-            
-            for (let i = 0; i < rows.length; i++) {
-                const maHSCell = rows[i].getElementsByTagName('td')[1]; // Cột "Mã HS" (index 1)
-                const nameCell = rows[i].getElementsByTagName('td')[2]; // Cột "Họ và tên" (index 2)
-                
-                if (maHSCell && nameCell) {
-                    const maHSText = maHSCell.textContent || maHSCell.innerText;
-                    const nameText = nameCell.textContent || nameCell.innerText;
-                    
-                    // Tìm kiếm trong cả mã HS và tên
-                    if (maHSText.toLowerCase().indexOf(filter) > -1 || 
-                        nameText.toLowerCase().indexOf(filter) > -1) {
-                        rows[i].style.display = '';
-                        visibleCount++;
-                    } else {
-                        rows[i].style.display = 'none';
-                    }
+
+            rows.forEach(row => {
+                const tds = row.querySelectorAll('td');
+                const maHSCell = tds[1]; // Mã HS
+                const nameCell = tds[2]; // Họ và tên
+
+                const maHSText = (maHSCell?.textContent || '').toLowerCase();
+                const nameText = (nameCell?.textContent || '').toLowerCase();
+
+                if (!filter || maHSText.includes(filter) || nameText.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
                 }
-            }
-            
-            // Update search result info
+            });
+
             const searchResult = document.getElementById('searchResult');
-            if (filter) {
-                searchResult.textContent = `Tìm thấy ${visibleCount} kết quả`;
-            } else {
-                searchResult.textContent = '';
+            if (searchResult) {
+                searchResult.textContent = filter ? `Tìm thấy ${visibleCount} kết quả` : '';
             }
         }
 
-        function viewStudentDetail(maHS) {
+        // =========================
+        // MODAL: open + fetch detail
+        // =========================
+        function openModal() {
             const modal = document.getElementById('studentModal');
+            if (!modal) return;
+            modal.classList.add('show');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('studentModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function viewStudentDetail(maHS) {
             const modalBody = document.getElementById('modalBody');
-            
-            // Hiển thị modal và loading
-            modal.style.display = 'block';
-            modalBody.innerHTML = `
+
+            openModal();
+
+            if (modalBody) {
+                modalBody.innerHTML = `
                 <div class="loading">
                     <i class="fas fa-spinner"></i>
                     <p>Đang tải thông tin...</p>
                 </div>
             `;
-            
-            // Gọi API lấy thông tin chi tiết
-            fetch(`?action=getDetail&maHS=${maHS}`)
-                .then(response => response.json())
+            }
+
+            fetch(`?action=getDetail&maHS=${encodeURIComponent(maHS)}`)
+                .then(res => res.json())
                 .then(data => {
-                    if (data.error) {
-                        modalBody.innerHTML = `
+                    if (!data || data.error) {
+                        if (modalBody) {
+                            modalBody.innerHTML = `
                             <div class="error-message">
-                                <strong>⚠️ Lỗi:</strong> ${data.error}
+                                ${data?.error ? data.error : 'Không có dữ liệu trả về'}
                             </div>
                         `;
+                        }
                         return;
                     }
-                    
                     displayStudentDetail(data);
                 })
-                .catch(error => {
-                    modalBody.innerHTML = `
+                .catch(() => {
+                    if (modalBody) {
+                        modalBody.innerHTML = `
                         <div class="error-message">
-                            <strong>⚠️ Lỗi:</strong> Không thể tải thông tin học sinh
+                            Không thể tải thông tin học sinh
                         </div>
                     `;
+                    }
                 });
         }
 
+        // =========================
+        // RENDER DETAIL
+        // =========================
         function displayStudentDetail(data) {
-            const student = data.student;
-            const grades = data.grades;
-            const violations = data.violations;
-            const awards = data.awards;
-            
+            const modalBody = document.getElementById('modalBody');
+            if (!modalBody) return;
+
+            const student = data.student || {};
+            const grades = Array.isArray(data.grades) ? data.grades : [];
+            const violations = Array.isArray(data.violations) ? data.violations : [];
+            const awards = Array.isArray(data.awards) ? data.awards : [];
+
+            const statusHtml = `
+            <span class="badge ${student.trangThaiHocTap == 'danghoc' ? 'badge-success' : 'badge-danger'}">
+                ${student.trangThaiHocTap == 'danghoc' ? 'Đang học' : 'Nghỉ học'}
+            </span>
+        `;
+
             let html = `
-                <!-- Thông tin cá nhân -->
-                <div class="info-section">
-                    <h3><i class="fas fa-id-card"></i> Thông tin cá nhân</h3>
-                    <div class="info-grid">
+            <!-- Thông tin cá nhân -->
+                <div class="info-modal-section">
+                    <h3><i class="fas fa-id-card"></i> Thông tin cá nhân: </h3>
+                    <div class="info-grid detail-info-student">
                         <div class="info-item">
-                            <span class="info-label">Họ và tên</span>
-                            <span class="info-value">${student.hoTen}</span>
+                            <span class="info-label">Họ và tên: </span>
+                            <span class="info-value">${escapeHtml(student.hoTen || 'N/A')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Ngày sinh</span>
+                            <span class="info-label">Ngày sinh: </span>
                             <span class="info-value">${formatDate(student.ngaySinh)}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Giới tính</span>
-                            <span class="info-value">${student.gioiTinh}</span>
+                            <span class="info-label">Giới tính: </span>
+                            <span class="info-value">${escapeHtml(student.gioiTinh || 'N/A')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Lớp</span>
-                            <span class="info-value">${student.tenLop} - Khối ${student.khoiLop}</span>
+                            <span class="info-label">Lớp: </span>
+                            <span class="info-value">${escapeHtml(student.tenLop || 'N/A')} - Khối ${escapeHtml(student.khoiLop || 'N/A')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">GVCN</span>
-                            <span class="info-value">${student.tenGVCN}</span>
+                            <span class="info-label">GVCN: </span>
+                            <span class="info-value">${escapeHtml(student.tenGVCN || 'N/A')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Địa chỉ</span>
-                            <span class="info-value">${student.diaChi || 'N/A'}</span>
+                            <span class="info-label">Địa chỉ: </span>
+                            <span class="info-value">${escapeHtml(student.diaChi || 'N/A')}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">Trạng thái</span>
-                            <span class="info-value">
-                                <span class="status-badge ${student.trangThaiHocTap == 'danghoc' ? 'status-active' : 'status-inactive'}">
-                                    ${student.trangThaiHocTap == 'danghoc' ? 'Đang học' : 'Nghỉ học'}
-                                </span>
-                            </span>
+                            <span class="info-label">Trạng thái: </span>
+                            <span class="info-value">${statusHtml}</span>
                         </div>
                     </div>
-                </div>
+                </div>   
 
-                <!-- Thông tin phụ huynh -->
-                <div class="info-section">
-                    <h3><i class="fas fa-users"></i> Thông tin phụ huynh</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Họ tên</span>
-                            <span class="info-value">${student.tenPhuHuynh || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Số điện thoại</span>
-                            <span class="info-value">${student.sdtPhuHuynh || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Email</span>
-                            <span class="info-value">${student.emailPhuHuynh || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Địa chỉ</span>
-                            <span class="info-value">${student.diaChiPhuHuynh || 'N/A'}</span>
-                        </div>
+            <!-- Thông tin phụ huynh -->
+            <div class="info-modal-section">
+                <h3><i class="fas fa-users"></i> Thông tin phụ huynh</h3>
+                <div class="info-grid detail-info-student">
+                    <div class="info-item">
+                        <span class="info-label">Họ tên: </span>
+                        <span class="info-value">${escapeHtml(student.tenPhuHuynh || 'N/A')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Số điện thoại: </span>
+                        <span class="info-value">${escapeHtml(student.sdtPhuHuynh || 'N/A')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email: </span>
+                        <span class="info-value">${escapeHtml(student.emailPhuHuynh || 'N/A')}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Địa chỉ: </span>
+                        <span class="info-value">${escapeHtml(student.diaChiPhuHuynh || 'N/A')}</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Kết quả học tập -->
-                <div class="info-section">
-                    <h3><i class="fas fa-graduation-cap"></i> Kết quả học tập</h3>
-                    ${grades.length > 0 ? displayGrades(grades) : '<p class="info-value">Chưa có dữ liệu điểm</p>'}
-                </div>
+            <!-- Kết quả học tập -->
+            <div class="info-modal-section ">
+                <h3><i class="fas fa-graduation-cap"></i> Kết quả học tập</h3>
+                ${grades.length > 0 ? displayGrades(grades) : '<p class="info-value non-detail-grade">Chưa có dữ liệu điểm</p>'}
+            </div>
+        `;
 
-                <!-- Khen thưởng -->
-                ${awards.length > 0 ? `
-                <div class="info-section">
+            // Khen thưởng
+            if (awards.length > 0) {
+                html += `
+                <div class="info-modal-section">
                     <h3><i class="fas fa-award"></i> Khen thưởng (${awards.length})</h3>
+                    <div class="modal-note-list">
                     ${awards.map(award => `
                         <div class="list-item">
                             <div class="list-item-header">
-                                <span>${award.noiDung}</span>
-                                <span class="badge badge-success">${award.capKhenThuong}</span>
+                                <span>${escapeHtml(award.noiDung || 'N/A')}</span>
+                                <span class="badge badge-success">${escapeHtml(award.capKhenThuong || '')}</span>
                             </div>
                             <div class="list-item-content">
-                                <i class="fas fa-calendar"></i> ${formatDate(award.ngayKhenThuong)} | 
-                                <i class="fas fa-certificate"></i> ${award.hinhThuc} | 
-                                <i class="fas fa-tag"></i> ${award.linhVuc}
+                               <span> <i class="fas fa-calendar"></i> <strong>Ngày khen thưởng: </strong> <p>${formatDate(award.ngayKhenThuong)}</p></span>
+                                <span><i class="fas fa-certificate"></i> <strong>Hình thức khen thưởng: </strong> <p>${escapeHtml(award.hinhThuc || 'N/A')}</p></span>
+                                <span><i class="fas fa-tag"></i> <strong>Lĩnh vực: </strong> <p>${escapeHtml(award.linhVuc || 'N/A')}</p></span>
                             </div>
                         </div>
                     `).join('')}
                 </div>
-                ` : ''}
+            `;
+            }
 
-                <!-- Vi phạm -->
-                ${violations.length > 0 ? `
-                <div class="info-section">
+            // Vi phạm
+            if (violations.length > 0) {
+                html += `
+                <div class="info-modal-section">
                     <h3><i class="fas fa-exclamation-triangle"></i> Vi phạm (${violations.length})</h3>
+                    <div class="modal-note-list">
                     ${violations.map(vp => `
                         <div class="list-item">
                             <div class="list-item-header">
-                                <span>${vp.loaiViPham}</span>
+                                <span>${escapeHtml(vp.loaiViPham || 'N/A')}</span>
                                 <span class="badge ${vp.mucDoViPham === 'Nang' ? 'badge-danger' : 'badge-warning'}">
-                                    ${vp.mucDoViPham}
+                                    ${escapeHtml(vp.mucDoViPham || '')}
                                 </span>
                             </div>
                             <div class="list-item-content">
-                                <i class="fas fa-calendar"></i> ${formatDate(vp.ngayViPham)} | 
-                                <i class="fas fa-gavel"></i> ${vp.hinhThucXuLy}<br>
-                                <strong>Nội dung:</strong> ${vp.noiDungViPham || 'N/A'}<br>
-                                <strong>Người phát hiện:</strong> ${vp.nguoiPhatHien || 'N/A'}
+                               <span><i class="fas fa-calendar"></i> <strong>Ngày vi phạm: </strong> <p>${formatDate(vp.ngayViPham)}</p></span> 
+                                <span><i class="fas fa-gavel"></i><strong> Hình thức xử lý: </strong> <p>${escapeHtml(vp.hinhThucXuLy || 'N/A')}</p></span>
+                                <span><strong>Nội dung:</strong> <p>${escapeHtml(vp.noiDungViPham || 'N/A')}</p></span>
                             </div>
                         </div>
                     `).join('')}
+                    </div>
+                    
                 </div>
-                ` : ''}
             `;
-            
-            document.getElementById('modalBody').innerHTML = html;
+            }
+
+            modalBody.innerHTML = html;
         }
 
+        // =========================
+        // GRADES
+        // =========================
         function displayGrades(grades) {
-            // Group by semester
-            const hk1 = grades.filter(g => g.hocKy == 1);
-            const hk2 = grades.filter(g => g.hocKy == 2);
-            
+            const hk1 = grades.filter(g => String(g.hocKy) === '1');
+            const hk2 = grades.filter(g => String(g.hocKy) === '2');
+
             let html = '';
-            
+
             if (hk1.length > 0) {
                 html += '<h4 style="margin: 15px 0 10px 0;">Học kỳ 1</h4>';
                 html += generateGradesTable(hk1);
             }
-            
+
             if (hk2.length > 0) {
                 html += '<h4 style="margin: 15px 0 10px 0;">Học kỳ 2</h4>';
                 html += generateGradesTable(hk2);
             }
-            
-            return html;
+
+            return html || '<p class="info-value">Chưa có dữ liệu điểm</p>';
         }
 
         function generateGradesTable(grades) {
             return `
-                <table class="grades-table">
-                    <thead>
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>Môn học</th>
+                        <th>TX1</th>
+                        <th>TX2</th>
+                        <th>TX3</th>
+                        <th>TX4</th>
+                        <th>Giữa kỳ</th>
+                        <th>Cuối kỳ</th>
+                        <th>TB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${grades.map(grade => `
                         <tr>
-                            <th>Môn học</th>
-                            <th>TX1</th>
-                            <th>TX2</th>
-                            <th>TX3</th>
-                            <th>TX4</th>
-                            <th>Giữa kỳ</th>
-                            <th>Cuối kỳ</th>
-                            <th>TB</th>
+                            <td style="text-align:left;">${escapeHtml(grade.tenMonHoc || '')}</td>
+                            <td>${toDash(grade.diemTX1)}</td>
+                            <td>${toDash(grade.diemTX2)}</td>
+                            <td>${toDash(grade.diemTX3)}</td>
+                            <td>${toDash(grade.diemTX4)}</td>
+                            <td>${toDash(grade.diemGiuaKy)}</td>
+                            <td>${toDash(grade.diemCuoiKy)}</td>
+                            <td><strong>${toDash(grade.tbDiem)}</strong></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${grades.map(grade => `
-                            <tr>
-                                <td style="text-align: left;">${grade.tenMonHoc}</td>
-                                <td>${grade.diemTX1 || '-'}</td>
-                                <td>${grade.diemTX2 || '-'}</td>
-                                <td>${grade.diemTX3 || '-'}</td>
-                                <td>${grade.diemTX4 || '-'}</td>
-                                <td>${grade.diemGiuaKy || '-'}</td>
-                                <td>${grade.diemCuoiKy || '-'}</td>
-                                <td><strong>${grade.tbDiem || '-'}</strong></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
         }
 
+        // =========================
+        // HELPERS
+        // =========================
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
             return date.toLocaleDateString('vi-VN');
         }
 
-        function closeModal() {
-            document.getElementById('studentModal').style.display = 'none';
+        function toDash(val) {
+            return (val === null || val === undefined || val === '') ? '-' : escapeHtml(String(val));
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('studentModal');
-            if (event.target == modal) {
-                closeModal();
-            }
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
+
+        // =========================
+        // Close when click outside dialog
+        // =========================
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('studentModal');
+            const dialog = modal?.querySelector('.assign-homework-modal-dialog');
+            if (!modal || !dialog) return;
+
+            if (event.target === modal) closeModal();
+        });
+
+        // Close with ESC
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
+
+
 </body>
 
 </html>

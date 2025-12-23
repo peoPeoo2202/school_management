@@ -147,7 +147,7 @@ class cReport {
         $danhSachLop = $this->model->getDanhSachLopCuaGiaoVien($maGV);
         $duLieuBaoCao = $this->model->getThongKeSoLieuHocSinh($maGV, $maLop);
         
-        include '../view/teacher/vStudentStatistics.php';
+        include '../view/teacher/vGradeStatistics.php';
     }
     
     // Nộp báo cáo

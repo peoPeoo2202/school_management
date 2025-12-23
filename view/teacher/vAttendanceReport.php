@@ -114,7 +114,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 
                     <div class="stats-assign-row">
                         <div class="stat-item">
-                            <div class="stat-value exam-sup-total">
+                            <div class="stat-value exam-sup-primary">
                                 <?php echo $soHocSinh; ?>
                             </div>
                             <div class="stat-label">Tổng số học sinh</div>
@@ -176,7 +176,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                         <table class="common-table">
                             <thead>
-                                <tr>
+                                <tr >
                                     <th class="small-cell">STT</th>
                                     <th class="large-cell">Họ tên</th>
                                     <th>Lớp</th>
@@ -184,21 +184,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                                     <th class="normal-cell">Nghỉ có phép</th>
 
-                                    <th class="normal-cell">Nghỉ không phép</th>
+                                    <th>Nghỉ không phép</th>
                                     <th>Lý do</th>
                                 </tr>
                             </thead>
                             <tbody class="common-table-body">
                                 <?php $stt = 1; ?>
                                 <?php foreach ($duLieuBaoCao as $row): ?>
-                                    <tr>
+                                    <tr class="table-normal-text">
                                         <td class="small-cell"><?php echo $stt++; ?></td>
                                         <td class="large-cell"><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
                                         <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
                                         <td class="normal-cell"><strong><?php echo intval($row['tongSoNghi'] ?? 0); ?></strong></td>
                                         <td class="normal-cell"><?php echo intval($row['soNghiCoPhep'] ?? 0); ?></td>
 
-                                        <td class="normal-cell"><?php echo intval($row['soNghiKhongPhep'] ?? 0); ?></td>
+                                        <td ><?php echo intval($row['soNghiKhongPhep'] ?? 0); ?></td>
 
                                         <?php
                                         $lyDo = trim($row['lyDoNghiCoPhep'] ?? '');

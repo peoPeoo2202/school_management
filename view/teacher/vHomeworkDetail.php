@@ -283,28 +283,28 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 <!-- Thông tin bài tập (giữ nội dung cũ, chỉ đổi wrapper) -->
 
 
-                <div class="info-details-box">
-                    <div class="info-item">
+                <div class="info-details-box homework-assign">
+                    <div class="info-item homework-assign">
                         <p class="info-label">Tên bài tập:</p>
                         <p class="info-value"><?= htmlspecialchars($homework['tenBaiTap']) ?></p>
                     </div>
 
-                    <div class="info-item">
+                    <div class="info-item homework-assign">
                         <p class="info-label">Lớp:</p>
                         <p class="info-value"><?= htmlspecialchars($homework['tenLop']) ?></p>
                     </div>
 
-                    <div class="info-item">
+                    <div class="info-item homework-assign">
                         <p class="info-label">Môn học:</p>
                         <p class="info-value"><?= htmlspecialchars($homework['tenMonHoc']) ?></p>
                     </div>
 
-                    <div class="info-item">
+                    <div class="info-item homework-assign">
                         <p class="info-label">Hạn nộp:</p>
                         <p class="info-value"><?= date('d/m/Y H:i', strtotime($homework['thoiGianNop'])) ?></p>
                     </div>
 
-                    <div class="info-item">
+                    <div class="info-item homework-assign">
                         <p class="info-label">Cho phép nộp trễ:</p>
                         <span class="info-value">
                             <?= $homework['choPhepNopTre'] == 1
@@ -314,7 +314,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
 
                     <?php if (!empty($homework['yeuCauBaiTap'])): ?>
-                        <div class="info-item info-item-full">
+                        <div class="info-item info-item-full homework-assign">
                             <p class="info-label">Yêu cầu:</p>
                             <p class="info-value">
                                 <?= nl2br(htmlspecialchars($homework['yeuCauBaiTap'])) ?>
@@ -532,18 +532,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         </tbody>
                     </table>
 
-                    <!-- Phân trang (giữ) -->
-                    <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:20px;">
-                        <button type="button" id="prevBtn" onclick="changePage(-1)" class="btn btn-secondary btn-sm">
-                            <i class="fas fa-chevron-left"></i> Trước
-                        </button>
-                        <span style="padding: 8px 15px; color: #666; font-weight: 600;">
-                            Trang <span id="currentPage">1</span> / <span id="totalPages">1</span>
-                        </span>
-                        <button type="button" id="nextBtn" onclick="changePage(1)" class="btn btn-secondary btn-sm">
-                            Sau <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
+                    <!-- Phân trang -->
+                    <div id="paginationContainer"></div>
 
                 <?php else: ?>
                     <div class="empty-state">
@@ -608,9 +598,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             totalRows = allRows.length;
 
             const totalPages = Math.ceil(totalRows / rowsPerPage);
-            document.getElementById('totalPages').textContent = totalPages;
-
             showPage(1);
+            renderPagination();
         }
 
         function showPage(page) {
@@ -633,13 +622,77 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 allRows[i].style.display = '';
             }
 
-            document.getElementById('currentPage').textContent = page;
-            document.getElementById('prevBtn').disabled = (page === 1);
-            document.getElementById('nextBtn').disabled = (page === totalPages || totalPages === 0);
+            renderPagination();
         }
 
-        function changePage(delta) {
-            showPage(currentPage + delta);
+        function changePage(page) {
+            showPage(page);
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            const container = document.getElementById('paginationContainer');
+            
+            if (!container) return;
+            
+            if (totalPages === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            let html = '<div class="pagination">';
+            
+            // Nút "Trước"
+            if (currentPage > 1) {
+                html += `<a href="javascript:changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i> Trước</a>`;
+            } else {
+                html += `<span class="disabled"><i class="fas fa-chevron-left"></i> Trước</span>`;
+            }
+            
+            // Số trang (hiển thị current ±2)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) {
+                html += '<a href="javascript:changePage(1)">1</a>';
+                if (startPage > 2) {
+                    html += '<span>...</span>';
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<span class="current-page">${i}</span>`;
+                } else {
+                    html += `<a href="javascript:changePage(${i})">${i}</a>`;
+                }
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += '<span>...</span>';
+                }
+                html += `<a href="javascript:changePage(${totalPages})">${totalPages}</a>`;
+            }
+            
+            // Nút "Sau"
+            if (currentPage < totalPages) {
+                html += `<a href="javascript:changePage(${currentPage + 1})">
+                    Sau <i class="fas fa-chevron-right"></i></a>`;
+            } else {
+                html += `<span class="disabled">Sau <i class="fas fa-chevron-right"></i></span>`;
+            }
+            
+            html += '</div>';
+            
+            // Thêm thông tin trang
+            const offset = (currentPage - 1) * rowsPerPage;
+            html += `<div class="pagination-info">
+                Hiển thị ${offset + 1} - ${Math.min(offset + rowsPerPage, totalRows)} 
+                trong tổng số ${totalRows} bài nộp</div>`;
+            
+            container.innerHTML = html;
         }
 
         function openGradeModal(maBaiNop) {

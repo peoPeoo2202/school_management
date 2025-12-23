@@ -69,7 +69,7 @@ if (!isset($data)) {
             <?php if ($data['examSupervision']['success']): ?>
                 <div class="stats-assign-row">
                     <div class="stat-item">
-                        <div class="stat-value exam-sup-total"><?php echo $data['examSupervision']['total']; ?></div>
+                        <div class="stat-value exam-sup-primary"><?php echo $data['examSupervision']['total']; ?></div>
                         <div class="stat-label">Tổng số ca thi</div>
                     </div>
                     <div class="stat-item">
@@ -114,10 +114,10 @@ if (!isset($data)) {
                             <label>Trạng thái</label>
                             <select name="trangThai">
                                 <option value="">Tất cả</option>
-                                <option value="scheduled" <?php echo ($data['filters']['trangThai'] == 'scheduled') ? 'selected' : ''; ?>>Đã lên lịch</option>
-                                <option value="in_progress" <?php echo ($data['filters']['trangThai'] == 'in_progress') ? 'selected' : ''; ?>>Đang diễn ra</option>
-                                <option value="completed" <?php echo ($data['filters']['trangThai'] == 'completed') ? 'selected' : ''; ?>>Đã hoàn thành</option>
-                                <option value="cancelled" <?php echo ($data['filters']['trangThai'] == 'cancelled') ? 'selected' : ''; ?>>Đã hủy</option>
+                                <option value="scheduled" <?php echo (!empty($data['filters']['trangThai']) && $data['filters']['trangThai'] == 'scheduled') ? 'selected' : ''; ?>>Đã lên lịch</option>
+                                <option value="in_progress" <?php echo (!empty($data['filters']['trangThai']) && $data['filters']['trangThai'] == 'in_progress') ? 'selected' : ''; ?>>Đang diễn ra</option>
+                                <option value="completed" <?php echo (!empty($data['filters']['trangThai']) && $data['filters']['trangThai'] == 'completed') ? 'selected' : ''; ?>>Đã hoàn thành</option>
+                                <option value="cancelled" <?php echo (!empty($data['filters']['trangThai']) && $data['filters']['trangThai'] == 'cancelled') ? 'selected' : ''; ?>>Đã hủy</option>
                             </select>
                         </div>
 
@@ -125,9 +125,9 @@ if (!isset($data)) {
                             <label>Loại kỳ thi</label>
                             <select name="loaiKyThi">
                                 <option value="">Tất cả</option>
-                                <option value="Giữa kỳ" <?php echo ($data['filters']['loaiKyThi'] == 'Giữa kỳ') ? 'selected' : ''; ?>>Giữa kỳ</option>
-                                <option value="Cuối kỳ" <?php echo ($data['filters']['loaiKyThi'] == 'Cuối kỳ') ? 'selected' : ''; ?>>Cuối kỳ</option>
-                                <option value="Kiểm tra 15 phút" <?php echo ($data['filters']['loaiKyThi'] == 'Kiểm tra 15 phút') ? 'selected' : ''; ?>>Kiểm tra 15 phút</option>
+                                <option value="Giữa kỳ" <?php echo (!empty($data['filters']['loaiKyThi']) && $data['filters']['loaiKyThi'] == 'Giữa kỳ') ? 'selected' : ''; ?>>Giữa kỳ</option>
+                                <option value="Cuối kỳ" <?php echo (!empty($data['filters']['loaiKyThi']) && $data['filters']['loaiKyThi'] == 'Cuối kỳ') ? 'selected' : ''; ?>>Cuối kỳ</option>
+                                <option value="Kiểm tra 15 phút" <?php echo (!empty($data['filters']['loaiKyThi']) && $data['filters']['loaiKyThi'] == 'Kiểm tra 15 phút') ? 'selected' : ''; ?>>Kiểm tra 15 phút</option>
                             </select>
                         </div>
 
@@ -135,8 +135,8 @@ if (!isset($data)) {
                             <label>Học kỳ</label>
                             <select name="hocKy">
                                 <option value="">Tất cả</option>
-                                <option value="1" <?php echo ($data['filters']['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                <option value="2" <?php echo ($data['filters']['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                                <option value="1" <?php echo (isset($data['filters']['hocKy']) && (string)$data['filters']['hocKy'] === '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo (isset($data['filters']['hocKy']) && (string)$data['filters']['hocKy'] === '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
                             </select>
                         </div>
 

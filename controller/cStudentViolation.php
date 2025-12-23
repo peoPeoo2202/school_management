@@ -85,6 +85,25 @@ class ControllerStudentViolation {
     }
     
     /**
+     * Lấy chi tiết một vi phạm
+     */
+    public function getViolationDetail($maViPham) {
+        $maGV = $this->checkTeacherAccess();
+        
+        if (!$maGV) {
+            return ['error' => 'Không tìm thấy thông tin giáo viên'];
+        }
+        
+        $violation = $this->model->getViolationById($maViPham);
+        
+        if (!$violation) {
+            return ['error' => 'Không tìm thấy vi phạm'];
+        }
+        
+        return ['violation' => $violation];
+    }
+    
+    /**
      * Thêm vi phạm
      */
     public function addViolation($data) {
@@ -168,9 +187,23 @@ $controller = new ControllerStudentViolation($conn);
 if (isset($_GET['action']) || isset($_POST['action'])) {
     header('Content-Type: application/json; charset=utf-8');
     
+    // Enable error display as JSON
+    error_reporting(E_ALL);
+    set_error_handler(function($errno, $errstr, $errfile, $errline) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'PHP Error: ' . $errstr,
+            'file' => $errfile,
+            'line' => $errline
+        ], JSON_UNESCAPED_UNICODE);
+        exit();
+    });
+    
     // GET requests
     if (isset($_GET['action'])) {
-        switch ($_GET['action']) {
+        $action = trim($_GET['action']);
+        
+        switch ($action) {
             case 'getViolations':
                 $maLop = intval($_GET['maLop'] ?? 0);
                 $hocKy = intval($_GET['hocKy'] ?? 1);
@@ -180,8 +213,14 @@ if (isset($_GET['action']) || isset($_POST['action'])) {
                 echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 break;
                 
+            case 'getDetail':
+                $maViPham = intval($_GET['maViPham'] ?? 0);
+                $result = $controller->getViolationDetail($maViPham);
+                echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                break;
+                
             default:
-                echo json_encode(['error' => 'Action không hợp lệ'], JSON_UNESCAPED_UNICODE);
+                echo json_encode(['error' => 'Action không hợp lệ: ' . $action], JSON_UNESCAPED_UNICODE);
                 break;
         }
         exit(); // Exit sau GET requests

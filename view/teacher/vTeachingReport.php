@@ -160,7 +160,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <th class="small-cell">STT</th>
                                         <th class="small-cell">Lớp</th>
                                         <th>Môn học</th>
-                                        <th class="small-cell">Học kỳ</th>
+                                        <th>Học kỳ</th>
                                         <th class="table-small-text">Năm học</th>
                                         <th class="small-cell">Tổng tiết</th>
                                         <th class="small-cell">Đã dạy</th>
@@ -196,7 +196,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <td class="small-cell"><?php echo $stt++; ?></td>
                                             <td class="small-cell"><?php echo htmlspecialchars($row['tenLop']); ?></td>
                                             <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
-                                            <td class="small-cell"><?php echo intval($row['hocKy']); ?></td>
+                                            <td class="normal-cell"><?php echo intval($row['hocKy']); ?></td>
                                             <td ><?php echo htmlspecialchars($row['namHoc']); ?></td>
                                             <td class="normal-cell"><strong><?php echo $tong; ?></strong></td>
                                             <td class="normal-cell">

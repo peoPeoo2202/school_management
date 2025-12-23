@@ -257,7 +257,7 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                     <i class="fas fa-edit"></i>
                     Sửa đề thi
                 </h5>
-                <button type="button" class="btn-close-modal-assign-homework" onclick="closeEditExamModal()">&times;</button>
+                <button type="button" class="btn-close-modal" onclick="closeEditExamModal()">&times;</button>
             </div>
 
             <!-- BODY giống modal mẫu -->

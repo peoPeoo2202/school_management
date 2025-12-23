@@ -35,43 +35,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 
-    <style>
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .pagination button {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            background: white;
-            color: #333;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: #5081BE;
-            color: white;
-            border-color: #5081BE;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination .page-info {
-            padding: 8px 15px;
-            color: #666;
-            font-weight: 600;
-        }
-
-    </style>
 </head>
 
 <body>
@@ -282,17 +245,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         </div>
 
                         <!-- Phân trang -->
-                        <div class="pagination">
-                            <button type="button" id="prevBtn" onclick="changePage(-1)">
-                                <i class="fas fa-chevron-left"></i> Trước
-                            </button>
-                            <span class="page-info">
-                                Trang <span id="currentPage">1</span> / <span id="totalPages">1</span>
-                            </span>
-                            <button type="button" id="nextBtn" onclick="changePage(1)">
-                                Sau <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
+                        <div id="paginationContainer"></div>
 
                         <p class="notice-grade">
                             <i class="fas fa-info-circle"></i>
@@ -320,7 +273,126 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         </div>
     </div>
 
-   
+    <script>
+        const studentsPerPage = 10;
+        let currentPage = 1;
+        let allRows = [];
+        let totalRows = 0;
+
+        function initPagination() {
+            const tbody = document.querySelector('.common-table tbody');
+            if (!tbody) return;
+
+            allRows = Array.from(tbody.querySelectorAll('tr'));
+            totalRows = allRows.length;
+
+            if (totalRows <= studentsPerPage) {
+                document.getElementById('paginationContainer').innerHTML = '';
+                return;
+            }
+
+            renderPagination();
+            showPage(1);
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(totalRows / studentsPerPage);
+            const container = document.getElementById('paginationContainer');
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="pagination">';
+
+            // Previous Button
+            if (currentPage > 1) {
+                html += `<a href="javascript:showPage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i> Trước
+                </a>`;
+            } else {
+                html += `<span class="disabled"><i class="fas fa-chevron-left"></i> Trước</span>`;
+            }
+
+            // Page Numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                html += `<a href="javascript:showPage(1)">1</a>`;
+                if (startPage > 2) {
+                    html += `<span>...</span>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<span class="current-page">${i}</span>`;
+                } else {
+                    html += `<a href="javascript:showPage(${i})">${i}</a>`;
+                }
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span>...</span>`;
+                }
+                html += `<a href="javascript:showPage(${totalPages})">${totalPages}</a>`;
+            }
+
+            // Next Button
+            if (currentPage < totalPages) {
+                html += `<a href="javascript:showPage(${currentPage + 1})">
+                    Sau <i class="fas fa-chevron-right"></i>
+                </a>`;
+            } else {
+                html += `<span class="disabled">Sau <i class="fas fa-chevron-right"></i></span>`;
+            }
+
+            html += '</div>';
+
+            // Pagination Info
+            const offset = (currentPage - 1) * studentsPerPage;
+            html += `<div class="pagination-info">
+                Hiển thị ${offset + 1} - ${Math.min(offset + studentsPerPage, totalRows)} 
+                trong tổng số ${totalRows} học sinh
+            </div>`;
+
+            container.innerHTML = html;
+        }
+
+        function showPage(page) {
+            const totalPages = Math.ceil(totalRows / studentsPerPage);
+
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            currentPage = page;
+
+            // Hide all rows
+            allRows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            // Show rows for current page
+            const start = (page - 1) * studentsPerPage;
+            const end = start + studentsPerPage;
+
+            for (let i = start; i < end && i < totalRows; i++) {
+                allRows[i].style.display = '';
+            }
+
+            // Update pagination
+            renderPagination();
+
+            // Scroll to table
+            document.querySelector('.grade-table-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Initialize pagination when page loads
+        document.addEventListener('DOMContentLoaded', initPagination);
+    </script>
 
 </body>
 
