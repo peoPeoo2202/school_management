@@ -308,6 +308,51 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
             margin-top: 15px;
         }
 
+        /* Search Box Styles */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #5081BE;
+            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            pointer-events: none;
+        }
+
+        .search-result-info {
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -596,6 +641,15 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
                             <p style="font-size: 18px; color: #999;">Lớp chưa có học sinh nào.</p>
                         </div>
                     <?php else: ?>
+                        <!-- Search Box -->
+                        <div class="search-container">
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã học sinh..." onkeyup="searchStudent()">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <span class="search-result-info" id="searchResult"></span>
+                        </div>
+
                         <table class="students-table">
                             <thead>
                                 <tr>
@@ -713,6 +767,43 @@ $studentsToDisplay = isset($data['students']) ? array_slice($data['students'], $
     </div>
 
     <script>
+        // Search function
+        function searchStudent() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase().trim();
+            const table = document.querySelector('.students-table');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = tbody.getElementsByTagName('tr');
+            let visibleCount = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const maHSCell = rows[i].getElementsByTagName('td')[1]; // Cột "Mã HS" (index 1)
+                const nameCell = rows[i].getElementsByTagName('td')[2]; // Cột "Họ và tên" (index 2)
+                
+                if (maHSCell && nameCell) {
+                    const maHSText = maHSCell.textContent || maHSCell.innerText;
+                    const nameText = nameCell.textContent || nameCell.innerText;
+                    
+                    // Tìm kiếm trong cả mã HS và tên
+                    if (maHSText.toLowerCase().indexOf(filter) > -1 || 
+                        nameText.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = '';
+                        visibleCount++;
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+            
+            // Update search result info
+            const searchResult = document.getElementById('searchResult');
+            if (filter) {
+                searchResult.textContent = `Tìm thấy ${visibleCount} kết quả`;
+            } else {
+                searchResult.textContent = '';
+            }
+        }
+
         function viewStudentDetail(maHS) {
             const modal = document.getElementById('studentModal');
             const modalBody = document.getElementById('modalBody');
