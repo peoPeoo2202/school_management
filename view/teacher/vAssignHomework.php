@@ -463,14 +463,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         const fileSize = document.getElementById('fileSize');
         const removeFileBtn = document.getElementById('removeFile');
 
-        // Click to upload
-        fileUploadWrapper.addEventListener('click', () => {
+        // Click to upload - fixed double-click issue
+        fileUploadWrapper.addEventListener('click', (e) => {
+            // Don't trigger if already clicking on the input itself or remove button
+            if (e.target === fileInput || e.target.closest('.remove-file') || e.target.closest('input[type="file"]')) {
+                return;
+            }
+            e.preventDefault();
             fileInput.click();
         });
 
         // File selected
         fileInput.addEventListener('change', (e) => {
-            handleFile(e.target.files[0]);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
         });
 
         // Drag and drop
@@ -528,14 +535,21 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         const editFileSize = document.getElementById('editFileSize');
         const editRemoveFileBtn = document.getElementById('editRemoveFile');
 
-        // Click to upload - Edit assign-homework-modal
-        editFileUploadWrapper.addEventListener('click', () => {
+        // Click to upload - Edit assign-homework-modal - fixed double-click issue
+        editFileUploadWrapper.addEventListener('click', (e) => {
+            // Don't trigger if already clicking on the input itself or remove button
+            if (e.target === editFileInput || e.target.closest('.remove-file') || e.target.closest('input[type="file"]')) {
+                return;
+            }
+            e.preventDefault();
             editFileInput.click();
         });
 
         // File selected - Edit assign-homework-modal
         editFileInput.addEventListener('change', (e) => {
-            handleEditFile(e.target.files[0]);
+            if (e.target.files && e.target.files.length > 0) {
+                handleEditFile(e.target.files[0]);
+            }
         });
 
         // Drag and drop - Edit assign-homework-modal
