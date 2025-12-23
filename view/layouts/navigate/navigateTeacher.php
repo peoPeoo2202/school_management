@@ -58,12 +58,12 @@ $maGV = $_SESSION['maGV'] ?? '';
         <!-- Lớp chủ nhiệm (với dropdown) -->
         <?php if ($maNhom == 3006): ?>
             <li class="menu-parent">
-                <a href="#" class="menu-item menu-toggle" data-submenu="requests">
+                <a href="#" class="menu-item menu-toggle" data-submenu="class-management">
                     <i class="fas fa-chalkboard-teacher"></i>
                     <span>Lớp chủ nhiệm</span>
                     <i class="fas fa-chevron-right"></i>
                 </a>
-                <ul class="submenu" id="requests-submenu">
+                <ul class="submenu" id="class-management-submenu">
                     <li>
                         <a href="../../view/teacher/vListofStudents.php" class="submenu-item">
                             <i class="fas fa-users"></i>
@@ -219,36 +219,42 @@ $maGV = $_SESSION['maGV'] ?? '';
 </nav>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle submenu
-        const menuToggles = document.querySelectorAll('.menu-toggle');
-        menuToggles.forEach(toggle => {
-            toggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                const submenuId = this.dataset.submenu + '-submenu';
-                const submenu = document.getElementById(submenuId);
+    // Flag để chắc chắn script chỉ run 1 lần
+    if (!window.__navigateTeacherInitialized) {
+        window.__navigateTeacherInitialized = true;
 
-                this.classList.toggle('open');
-                submenu.classList.toggle('open');
+        document.addEventListener('DOMContentLoaded', function() {            
+            const menuToggles = document.querySelectorAll('.menu-toggle');
+            // Toggle submenu
+            menuToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const dataSubmenu = this.dataset.submenu;
+                    const submenuId = dataSubmenu + '-submenu';
+                    const submenu = document.getElementById(submenuId);
+                    this.classList.toggle('open');
+                    submenu.classList.toggle('open');
+                });
+            });
+
+            // Mobile navbar toggle
+            const navbarToggle = document.getElementById('navbarToggle');
+            if (navbarToggle) {
+                navbarToggle.addEventListener('click', function() {
+                    document.querySelector('.teacher-navbar').classList.toggle('open');
+                });
+            }
+
+            // Close navbar on mobile when menu item clicked
+            const menuItems = document.querySelectorAll('.menu-item:not(.menu-toggle)');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        document.querySelector('.teacher-navbar').classList.remove('open');
+                    }
+                });
             });
         });
-
-        // Mobile navbar toggle
-        const navbarToggle = document.getElementById('navbarToggle');
-        if (navbarToggle) {
-            navbarToggle.addEventListener('click', function() {
-                document.querySelector('.teacher-navbar').classList.toggle('open');
-            });
-        }
-
-        // Close navbar on mobile when menu item clicked
-        const menuItems = document.querySelectorAll('.menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.querySelector('.teacher-navbar').classList.remove('open');
-                }
-            });
-        });
-    });
+    }
 </script>
