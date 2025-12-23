@@ -48,36 +48,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <title>Danh sách lớp - Giáo viên</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
- 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 400;
-        }
-
-        .badge.primary {
-            background: #e3e8ff;
-            color: #667eea;
-        }
-
-        .badge.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge.info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-    </style>
 </head>
 
 <body>
@@ -155,50 +125,90 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 <!-- Table -->
 
             </div>
-            <div >
+            <div>
                 <?php if ($data['classes']['success'] && count($data['classes']['data']) > 0): ?>
-                    <table class="table-responsive">
+                    <table class="common-table">
                         <thead>
                             <tr>
-                                <th>STT</th>
+                                <th class="small-cell">STT</th>
                                 <th>Tên lớp</th>
-                                <th>Khối</th>
+                                <th class="center">Khối</th>
                                 <th>Môn học</th>
-                                <th>Sĩ số</th>
+                                <th class="center">Sĩ số</th>
                                 <th>Phòng học</th>
                                 <th>GVCN</th>
-                                <th>Số tiết/tuần</th>
-                                <th>Học kỳ</th>
-                                <th>Năm học</th>
+                                <th class="center">Số tiết / tuần</th>
+                                <th class="center">Học kỳ</th>
+                                <th class="nowrap">Năm học</th>
                             </tr>
                         </thead>
-                        <tbody>
+
+                        <tbody class="common-table-body">
                             <?php foreach ($data['classes']['data'] as $index => $class): ?>
                                 <tr>
-                                    <td><?php echo $index + 1; ?></td>
-                                    <td>
-                                        <strong><?php echo htmlspecialchars($class['tenLop']); ?></strong>
+                                    <!-- STT -->
+                                    <td class="small-cell">
+                                        <p><?php echo $index + 1; ?></p>
                                     </td>
+
+                                    <!-- Tên lớp -->
                                     <td>
-                                        <span class="badge primary">Khối <?php echo htmlspecialchars($class['khoiLop']); ?></span>
+                                        <div class="request-description">
+                                            <span class="request-des-title">
+                                                <?php echo htmlspecialchars($class['tenLop']); ?>
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td><?php echo htmlspecialchars($class['tenMonHoc']); ?></td>
+
+                                    <!-- Khối -->
+                                    <td class="center">
+                                        <span class="badge info">
+                                            Khối <?php echo htmlspecialchars($class['khoiLop']); ?>
+                                        </span>
+                                    </td>
+
+                                    <!-- Môn học -->
                                     <td>
-                                        <i class="fas fa-users"></i> <?php echo htmlspecialchars($class['siSo']); ?>
+                                        <?php echo htmlspecialchars($class['tenMonHoc']); ?>
                                     </td>
+
+                                    <!-- Sĩ số -->
+                                    <td class="center">
+                                        <i class="fas fa-users"></i>
+                                        <?php echo htmlspecialchars($class['siSo']); ?>
+                                    </td>
+
+                                    <!-- Phòng học -->
                                     <td>
-                                        <i class="fas fa-door-open"></i> <?php echo htmlspecialchars($class['tenPhong'] ?? 'Chưa xếp'); ?>
+                                        <?php echo htmlspecialchars($class['tenPhong'] ?? 'Chưa xếp'); ?>
                                     </td>
-                                    <td><?php echo htmlspecialchars($class['giaoVienChuNhiem'] ?? 'Chưa có'); ?></td>
+
+                                    <!-- GVCN -->
                                     <td>
-                                        <span class="badge info"><?php echo htmlspecialchars($class['soTietTrongTuan']); ?> tiết</span>
+                                        <?php echo htmlspecialchars($class['giaoVienChuNhiem'] ?? 'Chưa có'); ?>
                                     </td>
-                                    <td>HK <?php echo htmlspecialchars($class['hocKy']); ?></td>
-                                    <td><?php echo htmlspecialchars($class['namHoc']); ?></td>
+
+                                    <!-- Số tiết -->
+                                    <td class="center">
+                                        <span class="badge completed">
+                                            <?php echo htmlspecialchars($class['soTietTrongTuan']); ?> tiết
+                                        </span>
+                                    </td>
+
+                                    <!-- Học kỳ -->
+                                    <td class="center">
+                                        HK <?php echo htmlspecialchars($class['hocKy']); ?>
+                                    </td>
+
+                                    <!-- Năm học -->
+                                    <td class="nowrap">
+                                        <?php echo htmlspecialchars($class['namHoc']); ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+
                 <?php else: ?>
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>

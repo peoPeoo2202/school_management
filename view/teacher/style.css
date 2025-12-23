@@ -430,7 +430,6 @@ body {
 .stat-label {
 	font-size: 12px;
 	color: #666;
-	margin-top: 5px;
 }
 
 /* -----------------------------------------CARD---------------------------------- */
@@ -441,8 +440,7 @@ body {
 	padding: 24px;
 	display: grid;
 	grid-template-rows: auto 1fr;
-	/* header tự cao, phần dưới chiếm hết */
-	gap: 24px;
+	gap: 16px;
 }
 
 .card-header {
@@ -686,6 +684,18 @@ select {
 .btn-view {
 	background: #EDEFF5;
 	color: #212121;
+
+}
+.btn-edit{
+	background-color: #5081BE;
+	color: white;
+}
+.btn-edit:hover {
+	background: #4a6fa5;
+}
+
+.btn-delete,
+.btn-view, .btn-edit {
 	border-radius: 50%;
 	width: 36px;
 	height: 36px;
@@ -693,14 +703,31 @@ select {
 	align-items: center;
 	justify-content: center;
 	text-decoration: none;
+	outline: none;
+	border: none;
+}
+
+.btn-delete {
+	color: #ff0000;
+	background-color: #FFF5F5;
+}
+
+.btn-view:hover,
+.btn-delete:hover,.btn-edit:hover {
+	transition: all 0.3s ease;
+	cursor: pointer;
 }
 
 .btn-view:hover {
 	background: #CBCEDD;
-	transition: all 0.3s ease;
 }
 
-.btn-view i {
+.btn-delete:hover {
+	background: #FFDDDD;
+}
+
+.btn-view i,
+.btn-delete i {
 	line-height: 1;
 	font-size: 13px;
 }
@@ -775,9 +802,9 @@ select {
 
 .form-select {
 	width: 100%;
-	padding: 12px 14px;
-	border: 2px solid #e0e0e0;
-	border-radius: 10px;
+	padding: 8px 16px;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
 	font-size: 14px;
 	transition: all 0.3s;
 	background: white;
@@ -962,6 +989,23 @@ td {
 	color: white;
 	font-weight: 600;
 	font-size: 14px;
+}
+
+.small-cell {
+	width: 60px;
+	font-size: 14px !important;
+}
+
+.range-cell {
+	width: 110px;
+}
+
+.normal-cell {
+	width: 110px;
+}
+
+.large-cell {
+	min-width: 150px;
 }
 
 .common-table .day-header {
@@ -1175,6 +1219,11 @@ td {
 	color: #2563EB;
 }
 
+.badge-default {
+	background: #666666;
+	color: #f0f0f0;
+}
+
 .exam-sup-primary,
 .exam-sup-default,
 .exam-sup-upcoming,
@@ -1299,23 +1348,6 @@ td {
 	background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%);
 }
 
-.small-cell {
-	width: 60px;
-	font-size: 14px !important;
-}
-
-.range-cell {
-	width: 110px;
-}
-
-.normal-cell {
-	width: 110px;
-}
-
-.large-cell {
-	min-width: 150px;
-}
-
 .assign-table-body td {
 	height: 40px;
 	font-size: 13px;
@@ -1438,16 +1470,16 @@ td {
 	background-color: #eef7ff;
 }
 
-.btn-delete {
+/* .btn-delete {
 	background-color: #e60808;
 	color: #fff5f5;
 }
 
 .btn-delete:hover {
 	background-color: #d81212;
-}
+} */
 
-.btn-close-modal-assign-homework {
+.btn-close-modal {
 	background: rgba(255, 255, 255, 0.2);
 	border: none;
 	padding: 16px !important;
@@ -1463,11 +1495,11 @@ td {
 	transition: all 0.3s;
 }
 
-.btn-close-modal-assign-homework i {
+.btn-close-modal i {
 	font-size: 12px;
 }
 
-.btn-close-modal-assign-homework:hover {
+.btn-close-modal:hover {
 	background: rgba(255, 255, 255, 0.3);
 }
 
@@ -1500,6 +1532,7 @@ td {
 .assign-homework-modal-dialog {
 	background: white;
 	border-radius: 16px;
+	max-width: 600px;
 	min-width: 600px;
 	animation: slideDown 0.3s;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -1767,6 +1800,177 @@ textarea.form-control {
 	margin-left: 4px;
 }
 
+/* Pagination Styles */
+.pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	padding: 24px 0 8px 0px;
+}
+
+.pagination a,
+.pagination span {
+	padding: 8px 16px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	text-decoration: none;
+	color: #5081BE;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s;
+}
+
+.pagination a:hover {
+	background-color: #5081BE;
+	color: white;
+	border-color: #5081BE;
+}
+
+.pagination .current-page {
+	background-color: #5081BE;
+	color: white;
+	border-color: #5081BE;
+	cursor: default;
+}
+
+.pagination .disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.pagination-info {
+	text-align: center;
+	color: #666;
+	font-size: 14px;
+}
+
+/* Pagination with buttons (for JavaScript-based pagination) */
+.pagination button {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	background: white;
+	color: #5081BE;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s;
+}
+
+.pagination button:hover:not(:disabled) {
+	background: #5081BE;
+	color: white;
+	border-color: #5081BE;
+}
+
+.pagination button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.pagination button.active {
+	background: #5081BE;
+	color: white;
+	border-color: #5081BE;
+}
+
+/* Pagination with custom button styles (for vStudentAward, etc.) */
+.page-btn {
+	padding: 8px 14px;
+	border: 2px solid #e9ecef;
+	background: white;
+	color: #495057;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	min-width: 40px;
+	text-align: center;
+}
+
+.page-btn:hover:not(:disabled) {
+	background: #667eea;
+	color: white;
+	border-color: #667eea;
+	transform: translateY(-2px);
+}
+
+.page-btn.active {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: white;
+	border-color: #667eea;
+}
+
+.page-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: #f8f9fa;
+	pointer-events: none;
+}
+
+.page-ellipsis {
+	padding: 8px;
+	color: #6c757d;
+	font-weight: 600;
+}
+
+.pagination-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 25px;
+	padding: 20px;
+	background: #f8f9fa;
+	border-radius: 12px;
+}
+
+/* Search Box Styles */
+.search-container {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+}
+
+.search-box {
+	min-width: 300px;
+	position: relative;
+}
+
+.search-box input {
+	width: 100%;
+	padding: 8px 32px 8px 8px;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 14px;
+	transition: all 0.3s;
+	outline: none;
+
+}
+
+.search-box input:focus {
+	outline: none;
+	border-color: #5081BE;
+}
+
+.search-box i {
+	position: absolute;
+	right: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #999;
+	pointer-events: none;
+}
+
+.search-result-info {
+	color: #666;
+	font-size: 14px;
+	font-style: italic;
+}
+
 /* -------------------------------------------------  INSERT GRADE  -------------------------------- */
 .grade-input {
 	width: 60px;
@@ -1869,6 +2073,16 @@ textarea.form-control {
 }
 
 .empty-info {
+	font-size: 14px;
+}
+
+.table-strong-text {
+	font-weight: 600;
+	font-size: 14px;
+	color: #212121;
+}
+
+.table-normal-text {
 	font-size: 14px;
 }
 
@@ -2114,9 +2328,20 @@ textarea.form-control {
 }
 
 .info-details-box {
+	padding-top: 10px;
 	display: flex;
+	justify-content: space-between;
+}
+
+.info-details-box.homework-assign {
+	justify-content: none;
 	flex-direction: column;
-	gap: 16px;
+	padding-top: 0px;
+	gap: 8px;
+}
+
+.info-item.homework-assign {
+	align-items: center;
 }
 
 /* ===== Khung file đính kèm ===== */
@@ -2313,7 +2538,7 @@ textarea.form-control {
 	text-align: center;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 }
 
 .gender-bar {
@@ -2343,7 +2568,6 @@ textarea.form-control {
 
 /* ===== Xếp loại điểm – style tối giản ===== */
 .performance-section {
-	margin-top: 16px;
 	padding: 16px 18px;
 	background: #ffffff;
 	border: 1px solid #e5e7eb;
@@ -2382,8 +2606,12 @@ textarea.form-control {
 	display: grid;
 	grid-template-columns: 1fr 90px;
 	align-items: center;
-	padding: 10px 0;
+	padding: 8px 0;
 	border-bottom: 1px dashed #e5e7eb;
+}
+
+.performance-item:last-child {
+	padding-bottom: 0px;
 }
 
 .performance-item:last-child {
@@ -2430,6 +2658,62 @@ textarea.form-control {
 
 	.performance-item span:last-child {
 		font-size: 18px;
+	}
+}
+
+/* ===== Class Block Layout (Grade Statistics) ===== */
+.class-block {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	align-items: stretch;
+}
+
+.class-block>.class-block-info {
+	grid-column: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.class-block>.performance-section {
+	grid-column: 2;
+}
+
+.section-card {
+	background: white;
+	border-radius: 8px;
+	padding: 20px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.class-block-info .status-grid-2 {
+	margin-top: auto;
+}
+
+.section-card .section-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #e0e0e0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.section-card .section-title i {
+	color: #5081BE;
+	font-size: 18px;
+}
+
+@media (max-width: 1024px) {
+	.class-block {
+		grid-template-columns: 1fr;
+	}
+
+	.class-block>.performance-section {
+		grid-column: 1;
+		grid-row: auto;
 	}
 }
 
@@ -2555,6 +2839,9 @@ textarea.form-control {
 	gap: 16px;
 }
 
+/* =========================================================
+   SUBMIT REPORTS
+   ========================================================= */
 .instructions {
 	background: #fff3cd;
 	border: 1px solid #ffeaa7;
@@ -2568,3 +2855,247 @@ textarea.form-control {
 	color: #856404;
 }
 
+.instructions ul {
+	margin: 0;
+	padding-left: 24px;
+	color: #555;
+	line-height: 1.8;
+}
+
+/* =========================================================
+   LIST REPORTS
+   ========================================================= */
+.reports-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 24px;
+}
+
+.report-card {
+	background: white;
+	border-radius: 8px;
+	padding: 24px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	text-align: center;
+	transition: transform 0.3s, box-shadow 0.3s;
+	cursor: pointer;
+}
+
+.report-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.report-icon {
+	width: 80px;
+	height: 80px;
+	background: linear-gradient(135deg, #5081BE, #2d5a8c);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 16px;
+	color: white;
+	font-size: 32px;
+}
+
+.report-title {
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+	margin-bottom: 8px;
+}
+
+.report-description {
+	color: #666;
+	font-size: 14px;
+	margin-bottom: 16px;
+	line-height: 1.5;
+}
+
+/* =========================================================
+   Danh sách học sinh gvcn
+   ========================================================= */
+.info-grid.detail-info-student {
+	gap: 16px;
+	padding: 0px 16px;
+}
+
+.info-modal-section {
+	margin-bottom: 16px;
+}
+
+.info-modal-section:last-child {
+	margin-bottom: 0;
+}
+
+.info-modal-section h3 {
+	color: #5081BE;
+	font-size: 16px;
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #e0e0e0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.non-detail-grade {
+	padding: 0px 16px;
+}
+
+.grades-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.grades-table th,
+.grades-table td {
+	padding: 8px;
+	text-align: center;
+	border: 1px solid #e0e0e0;
+}
+
+.grades-table th {
+	background-color: #f5f5f5;
+	font-weight: 600;
+	color: #555;
+}
+
+.list-item {
+	padding: 8px 16px;
+	background: #f9f9f9;
+	border-radius: 6px;
+
+}
+
+.list-item-header {
+	display: flex;
+	justify-content: space-between;
+	font-weight: 600;
+	color: #212121;
+	font-size: 15px;
+}
+
+.list-item-content {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	color: #666;
+	line-height: 1.6;
+	font-size: 13px;
+}
+
+.list-item-content span {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-weight: 500;
+}
+
+.list-item-content p {
+	color: #212121;
+}
+
+.students-table tbody tr {
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.students-table tbody tr:hover {
+	background-color: #e3f2fd !important;
+	transform: scale(1.01);
+}
+
+.students-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 16px;
+}
+
+.students-table thead {
+	background-color: #5081BE;
+	color: white;
+}
+
+.students-table th {
+	padding: 15px 12px;
+	text-align: left;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.students-table td {
+	padding: 12px;
+	border-bottom: 1px solid #e0e0e0;
+	font-size: 14px;
+}
+
+.students-table tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+.students-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.class-info {
+	background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
+	padding: 20px;
+	border-radius: 8px;
+	margin-bottom: 25px;
+	border-left: 4px solid #5081BE;
+	text-align: left;
+}
+
+.class-info h3 {
+	color: #5081BE;
+	margin-bottom: 10px;
+	font-size: 16px;
+	font-weight: 600;
+	text-align: left;
+}
+
+.class-info p {
+	margin: 8px 0;
+	color: #555;
+	font-size: 14px;
+	text-align: left;
+}
+
+.class-info strong {
+	color: #333;
+}
+
+.modal-note-list {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.detail-info-student .info-label {
+	font-size: 15px;
+}
+
+.detail-info-student .info-value {
+	font-size: 14px;
+}
+
+#awardContent {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.pagi-award {
+	padding: 16px 0 8px 0px
+}
+
+.action-buttons {
+	display: flex;
+	gap: 8px;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
+}

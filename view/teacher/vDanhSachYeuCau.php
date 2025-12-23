@@ -103,7 +103,7 @@ $trangThai = $_GET['trangThai'] ?? 'all';
                             <select name="trangThai">
                                 <option value="all" <?php echo $trangThai == 'all' ? 'selected' : ''; ?>>Tất cả</option>
                                 <option value="Choxuly" <?php echo $trangThai == 'Choxuly' ? 'selected' : ''; ?>>Chờ xử lý</option>
-                                <option value="Dachapnhan" <?php echo $trangThai == 'Dachapnhan' ? 'selected' : ''; ?>>Đã chấp nhận</option>
+                                <option value="Dachapnhan" <?php echo $trangThai == 'Dachapnhan' ? 'selected' : ''; ?>>Đã duyệt</option>
                                 <option value="Tuchoi" <?php echo $trangThai == 'Tuchoi' ? 'selected' : ''; ?>>Từ chối</option>
                             </select>
                         </div>
@@ -145,7 +145,7 @@ $trangThai = $_GET['trangThai'] ?? 'all';
                                 <th>Mô tả</th>
                                 <th>Ngày gửi</th>
                                 <th class="center">Trạng thái</th>
-                                <th class="center">Minh chứng</th>
+                                <th class="small-cell">Minh chứng</th>
                                 <th>Ngày xử lý</th>
                                 <th>Người xử lý</th>
                                 <th class="action-cell">Thao tác</th>
@@ -162,7 +162,7 @@ $trangThai = $_GET['trangThai'] ?? 'all';
                                 ];
                                 $statusText = [
                                     'Choxuly' => 'Chờ xử lý',
-                                    'Dachapnhan' => 'Đã chấp nhận',
+                                    'Dachapnhan' => 'Đã duyệt',
                                     'Tuchoi' => 'Từ chối'
                                 ];
 
@@ -215,7 +215,7 @@ $trangThai = $_GET['trangThai'] ?? 'all';
                                         </span>
                                     </td>
 
-                                    <td class="center">
+                                    <td class="small-cell">
                                         <?php if (!empty($minhChungFile)): ?>
                                             <a href="<?php echo CONTROLLER_URL; ?>/download.php?maYeuCau=<?php echo $yeuCau['maYeuCau']; ?>"
                                                 class="btn-download-file "

@@ -214,9 +214,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <i class="fas fa-clipboard-list"></i>
                     <h3>Chưa có bài tập nào</h3>
                     <p>Hãy bắt đầu bằng cách giao bài tập mới cho học sinh</p>
-                    <button class="btn btn-primary" onclick="openAddModal()">
-                        <i class="fas fa-plus-circle"></i> Giao Bài Tập Đầu Tiên
-                    </button>
                 </div>
             <?php endif; ?>
             </div>
@@ -232,7 +229,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <i class="fas fa-plus-circle"></i>
                     Giao Bài Tập Mới
                 </h5>
-                <button type="button" class="btn-close-modal-assign-homework" onclick="closeAddModal()"><i class="fa-solid fa-x"></i></button>
+                <button type="button" class="btn-close-modal" onclick="closeAddModal()"><i class="fa-solid fa-x"></i></button>
             </div>
             <div class="common-modal-body">
                 <form id="addHomeworkForm" enctype="multipart/form-data">
@@ -328,7 +325,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <i class="fas fa-edit"></i>
                     Sửa Bài Tập
                 </h5>
-                <button type="button" class="btn-close-modal-assign-homework" onclick="closeEditModal()"><i class="fa-solid fa-x"></i></button>
+                <button type="button" class="btn-close-modal" onclick="closeEditModal()"><i class="fa-solid fa-x"></i></button>
             </div>
             <div class="common-modal-body">
                 <form id="editHomeworkForm" enctype="multipart/form-data">
@@ -828,91 +825,65 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 return;
             }
 
-            console.log('Rendering pagination - Total pages:', totalPages, 'Current page:', currentPage);
-
-            // Chỉ ẩn khi không có items, vẫn hiển thị khi có 1 trang để user thấy
             if (totalPages === 0) {
                 container.style.display = 'none';
-                console.log('No items, hiding pagination');
                 return;
             }
 
-            // Nếu chỉ có 1 trang, vẫn hiển thị pagination để rõ ràng
             container.style.display = 'flex';
-            let html = '';
-
+            let html = '<div class="pagination">';
+            
             // Nút "Trước"
-            const prevDisabled = currentPage === 1;
-            html += `
-                <button onclick="changePage(${currentPage - 1})" 
-                        ${prevDisabled ? 'disabled' : ''}
-                        style="
-                            padding: 10px 16px;
-                            border: 1px solid ${prevDisabled ? '#e0e0e0' : '#d0d0d0'};
-                            background: white;
-                            color: ${prevDisabled ? '#999' : '#5081BE'};
-                            border-radius: 6px;
-                            cursor: ${prevDisabled ? 'not-allowed' : 'pointer'};
-                            font-size: 14px;
-                            transition: all 0.2s;
-                        "
-                        ${prevDisabled ? '' : 'onmouseover="this.style.borderColor=\'#5081BE\'; this.style.background=\'#f5f8fa\'" onmouseout="this.style.borderColor=\'#d0d0d0\'; this.style.background=\'white\'"'}>
-                    <i class="fas fa-chevron-left"></i> Trước
-                </button>
-            `;
-
-            // Hiển thị các nút số trang (tối đa 5 nút)
-            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
-                html += createPageButton(i);
+            if (currentPage > 1) {
+                html += `<a href="javascript:changePage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i> Trước</a>`;
+            } else {
+                html += `<span class="disabled"><i class="fas fa-chevron-left"></i> Trước</span>`;
             }
-
+            
+            // Số trang (hiển thị current ±2)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) {
+                html += '<a href="javascript:changePage(1)">1</a>';
+                if (startPage > 2) {
+                    html += '<span>...</span>';
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<span class="current-page">${i}</span>`;
+                } else {
+                    html += `<a href="javascript:changePage(${i})">${i}</a>`;
+                }
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += '<span>...</span>';
+                }
+                html += `<a href="javascript:changePage(${totalPages})">${totalPages}</a>`;
+            }
+            
             // Nút "Sau"
-            const nextDisabled = currentPage === totalPages;
-            html += `
-                <button onclick="changePage(${currentPage + 1})" 
-                        ${nextDisabled ? 'disabled' : ''}
-                        style="
-                            padding: 10px 16px;
-                            border: 1px solid ${nextDisabled ? '#e0e0e0' : '#d0d0d0'};
-                            background: white;
-                            color: ${nextDisabled ? '#999' : '#5081BE'};
-                            border-radius: 6px;
-                            cursor: ${nextDisabled ? 'not-allowed' : 'pointer'};
-                            font-size: 14px;
-                            transition: all 0.2s;
-                        "
-                        ${nextDisabled ? '' : 'onmouseover="this.style.borderColor=\'#5081BE\'; this.style.background=\'#f5f8fa\'" onmouseout="this.style.borderColor=\'#d0d0d0\'; this.style.background=\'white\'"'}>
-                    Sau <i class="fas fa-chevron-right"></i>
-                </button>
-            `;
-
+            if (currentPage < totalPages) {
+                html += `<a href="javascript:changePage(${currentPage + 1})">
+                    Sau <i class="fas fa-chevron-right"></i></a>`;
+            } else {
+                html += `<span class="disabled">Sau <i class="fas fa-chevron-right"></i></span>`;
+            }
+            
+            html += '</div>';
+            
+            // Thêm thông tin trang
+            const offset = (currentPage - 1) * itemsPerPage;
+            html += `<div class="pagination-info">
+                Hiển thị ${offset + 1} - ${Math.min(offset + itemsPerPage, totalItems)} 
+                trong tổng số ${totalItems} bài tập</div>`;
+            
             container.innerHTML = html;
-        }
-
-        function createPageButton(pageNum) {
-            const isActive = pageNum === currentPage;
-            return `
-                <button onclick="changePage(${pageNum})" 
-                        style="
-                            min-width: 42px;
-                            height: 42px;
-                            padding: 0;
-                            border: 1px solid ${isActive ? '#5081BE' : '#d0d0d0'};
-                            background: ${isActive ? '#5081BE' : 'white'};
-                            color: ${isActive ? 'white' : '#333'};
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 15px;
-                            font-weight: 500;
-                            transition: all 0.2s;
-                            display: inline-flex;
-                            align-items: center;
-                            justify-content: center;
-                        "
-                        ${isActive ? '' : 'onmouseover="this.style.background=\'#f5f8fa\'; this.style.borderColor=\'#5081BE\'" onmouseout="this.style.background=\'white\'; this.style.borderColor=\'#d0d0d0\'"'}>
-                    ${pageNum}
-                </button>
-            `;
         }
 
         // Khởi tạo phân trang khi trang được tải

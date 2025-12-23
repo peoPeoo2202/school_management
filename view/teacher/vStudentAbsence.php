@@ -15,32 +15,33 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
     exit();
 }
 
-// Check if $data is not set, load from controller
+// Check if $data is not set, load from controller/model
 if (!isset($data)) {
     require_once(__DIR__ . '/../../model/mStudentAbsence.php');
     require_once(__DIR__ . '/../../model/mConnect.php');
-    
+
     $mConnect = new mConnect();
     $conn = $mConnect->mConnect();
-    
+
     if (!$conn) {
         die("Kết nối thất bại!");
     }
-    
+
     $model = new ModelStudentAbsence($conn);
-    
+
     // Kiểm tra quyền truy cập
     if (!isset($_SESSION['maTaiKhoan']) || $_SESSION['loaiTaiKhoan'] != 'giaovien') {
         header('Location: ../../public/index.php');
         exit();
     }
-    
+
     $maGV = $_SESSION['maGV'] ?? null;
-    
-    // Kiểm tra nếu là AJAX request
+
+    // AJAX POST requests
     if (isset($_POST['action'])) {
+        header('Content-Type: application/json; charset=utf-8');
         $action = $_POST['action'] ?? '';
-        
+
         switch ($action) {
             case 'add':
                 $maHS = $_POST['maHS'] ?? null;
@@ -49,65 +50,64 @@ if (!isset($data)) {
                 $namHoc = $_POST['namHoc'] ?? null;
                 $loaiNghi = $_POST['loaiNghi'] ?? 'cophep';
                 $lyDo = $_POST['lyDo'] ?? '';
-                
+
                 if (!$maHS || !$ngayNghi || !$hocKy || !$namHoc) {
-                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc']);
+                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc'], JSON_UNESCAPED_UNICODE);
                 } else {
                     $result = $model->addAbsence($maHS, $ngayNghi, $hocKy, $namHoc, $loaiNghi, $lyDo, $maGV);
-                    echo json_encode($result);
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 }
                 break;
-                
+
             case 'update':
                 $maNghiHoc = $_POST['maNghiHoc'] ?? null;
                 $ngayNghi = $_POST['ngayNghi'] ?? null;
                 $loaiNghi = $_POST['loaiNghi'] ?? 'cophep';
                 $lyDo = $_POST['lyDo'] ?? '';
-                
+
                 if (!$maNghiHoc || !$ngayNghi) {
-                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc']);
+                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc'], JSON_UNESCAPED_UNICODE);
                 } else {
                     $result = $model->updateAbsence($maNghiHoc, $ngayNghi, $loaiNghi, $lyDo);
-                    echo json_encode($result);
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 }
                 break;
-                
+
             case 'delete':
                 $maNghiHoc = $_POST['maNghiHoc'] ?? null;
-                
+
                 if (!$maNghiHoc) {
-                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc']);
+                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc'], JSON_UNESCAPED_UNICODE);
                 } else {
                     $result = $model->deleteAbsence($maNghiHoc);
-                    echo json_encode($result);
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
                 }
                 break;
-                
+
             case 'getDetails':
                 $maHS = $_POST['maHS'] ?? null;
                 $hocKy = $_POST['hocKy'] ?? null;
                 $namHoc = $_POST['namHoc'] ?? null;
-                
+
                 if (!$maHS || !$hocKy || !$namHoc) {
-                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc']);
+                    echo json_encode(['success' => false, 'message' => 'Thiếu thông tin bắt buộc'], JSON_UNESCAPED_UNICODE);
                 } else {
                     $details = $model->getAbsenceDetails($maHS, $hocKy, $namHoc);
-                    echo json_encode(['success' => true, 'data' => $details]);
+                    echo json_encode(['success' => true, 'data' => $details], JSON_UNESCAPED_UNICODE);
                 }
                 break;
-                
+
             default:
-                echo json_encode(['success' => false, 'message' => 'Invalid action']);
+                echo json_encode(['success' => false, 'message' => 'Invalid action'], JSON_UNESCAPED_UNICODE);
         }
-        
+
         $conn->close();
         exit();
     }
-    
-    // Lấy danh sách lớp chủ nhiệm của giáo viên
+
+    // Load page data
     $classes = $model->getClassesByTeacher($maGV);
-    
-    // Lấy maLop
+
     $maLop = $_GET['maLop'] ?? null;
     if (!$maLop) {
         if (empty($classes)) {
@@ -116,29 +116,23 @@ if (!isset($data)) {
             $maLop = $classes[0]['maLop'];
         }
     }
-    
+
     if ($maLop) {
-        // Lấy thông tin lớp
         $classInfo = $model->getClassInfo($maLop);
-        
-        // Kiểm tra quyền
+
         if (!$classInfo || $classInfo['maGV'] != $maGV) {
             $data = ['error' => 'Bạn không có quyền xem thông tin của lớp này'];
         } else {
-            // Lấy thông tin học kỳ và năm học
             $currentYear = date('Y');
             $defaultNamHoc = ($currentYear - 1) . '-' . $currentYear;
             $defaultHocKy = (date('m') <= 6) ? 2 : 1;
-            
+
             $namHoc = $_GET['namHoc'] ?? $defaultNamHoc;
             $hocKy = $_GET['hocKy'] ?? $defaultHocKy;
-            
-            // Lấy danh sách học sinh
+
             $students = $model->getStudentAbsences($maLop, $hocKy, $namHoc);
-            
-            // Lấy danh sách năm học có dữ liệu
             $availableYears = $model->getAvailableYears();
-            
+
             $data = [
                 'classes' => $classes,
                 'classInfo' => $classInfo,
@@ -151,820 +145,502 @@ if (!isset($data)) {
             ];
         }
     }
-    
+
     $conn->close();
 }
 
-// Lấy thông tin từ session
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý nghỉ học - Hệ thống Quản lý Giáo dục</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 32px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .header-section {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-left-icon {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #5081BE;
-            font-weight: 600;
-        }
-
-        .header-left h2 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        .class-info {
-            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #5081BE;
-        }
-
-        .class-info h3 {
-            color: #5081BE;
-            margin-bottom: 10px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .class-info p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-title i {
-            color: #5081BE;
-            font-size: 20px;
-        }
-
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1000px;
-        }
-
-        th {
-            background: linear-gradient(135deg, #5081BE 0%, #4a6fa5 100%);
-            color: white;
-            padding: 15px 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 14px;
-        }
-
-        tr:hover {
-            background-color: #f5f9fc;
-        }
-
-        /* Button Styles */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #5081BE 0%, #4a6fa5 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(80, 129, 190, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 2% auto;
-            padding: 0;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            animation: slideDown 0.3s;
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #5081BE 0%, #4a6fa5 100%);
-            color: white;
-            padding: 20px 24px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close:hover {
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        /* Badge Styles */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .pagination button {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: #5081BE;
-            color: white;
-            border-color: #5081BE;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination span {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Details List */
-        .absence-details {
-            margin-top: 15px;
-        }
-
-        .absence-item {
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .absence-info {
-            flex: 1;
-        }
-
-        .absence-date {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .absence-reason {
-            font-size: 13px;
-            color: #666;
-        }
-
-        .absence-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .error-message {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #c62828;
-        }
-
-        /* Filter Group Styles */
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .filter-group label {
-            font-size: 13px;
-            color: #666;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .filter-group label i {
-            font-size: 12px;
-            color: #5081BE;
-        }
-
-        .filter-group select {
-            padding: 10px 35px 10px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            min-width: 140px;
-            background-color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 12px;
-        }
-
-        .filter-group select:hover {
-            border-color: #5081BE;
-            box-shadow: 0 2px 8px rgba(80, 129, 190, 0.15);
-        }
-
-        .filter-group select:focus {
-            outline: none;
-            border-color: #5081BE;
-            box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            .content-area {
-                padding: 15px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            th,
-            td {
-                padding: 8px;
-            }
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý nghỉ học - Hệ thống Quản lý</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
     <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
         <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
 
-        <!-- Main Content -->
         <div class="content-area">
-            <!-- Header -->
             <div class="header-section">
-                <div class="header-left-icon">
-                    <h2><i class="fas fa-calendar-times"></i></h2>
-                    <h2>Quản lý nghỉ học</h2>
+                <div class="header-left">
+                    <div class="header-left-icon">
+                        <h2><i class="fas fa-calendar-times"></i></h2>
+                        <h2>Quản lý nghỉ học</h2>
+                    </div>
+                    <p>Quản lý nghỉ học cho học sinh</p>
+                </div>
+
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
                 </div>
             </div>
 
             <?php if (isset($data['error'])): ?>
                 <div class="card">
-                    <div class="error-message">
-                        <strong>⚠️ Lỗi:</strong> <?php echo htmlspecialchars($data['error']); ?>
-                    </div>
-                </div>
-            <?php elseif (empty($data['students'])): ?>
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-info-circle"></i> Thông báo
-                        </div>
-                    </div>
-                    <div style="padding: 40px; text-align: center;">
-                        <i class="fas fa-inbox" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
-                        <h3 style="color: #666; margin-bottom: 10px;">Không có dữ liệu</h3>
-                        <p style="color: #999;">Không có thông tin nghỉ học cho lớp <strong><?php echo htmlspecialchars($data['classInfo']['tenLop'] ?? ''); ?></strong> trong học kỳ <strong><?php echo $data['hocKy']; ?></strong> năm học <strong><?php echo htmlspecialchars($data['namHoc']); ?></strong></p>
-                        <p style="color: #999; margin-top: 10px;"><em>Vui lòng chọn năm học và học kỳ có dữ liệu (Ví dụ: 2024-2025)</em></p>
+                    <div class="alert alert-error show">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <?php echo htmlspecialchars($data['error']); ?>
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Danh sách học sinh -->
+
+                <!-- CARD FILTER -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <i class="fas fa-users"></i> Danh sách học sinh và nghỉ học - 
-                            Lớp <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?>
+                            <i class="fas fa-filter"></i> Bộ lọc
                         </h2>
-                        <div style="display: flex; gap: 15px; align-items: center;">
-                            <div class="filter-group">
-                                <label><i class="fas fa-book"></i> Học kỳ</label>
-                                <select id="hocKyFilter" onchange="filterByPeriod()">
-                                    <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                    <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label><i class="fas fa-graduation-cap"></i> Năm học</label>
-                                <select id="namHocFilter" onchange="filterByPeriod()">
-                                    <?php
-                                    if (!empty($data['availableYears'])) {
-                                        foreach ($data['availableYears'] as $year) {
-                                            $selected = ($data['namHoc'] == $year) ? 'selected' : '';
-                                            echo "<option value='$year' $selected>$year</option>";
-                                        }
-                                    } else {
-                                        // Fallback nếu không có dữ liệu
-                                        $currentYear = date('Y');
-                                        for ($i = 0; $i < 5; $i++) {
-                                            $startYear = $currentYear - $i - 1;
-                                            $endYear = $currentYear - $i;
-                                            $yearValue = $startYear . '-' . $endYear;
-                                            $selected = ($data['namHoc'] == $yearValue) ? 'selected' : '';
-                                            echo "<option value='$yearValue' $selected>$yearValue</option>";
-                                        }
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label>Học kỳ</label>
+                            <select id="hocKyFilter" class="form-select" onchange="filterByPeriod()">
+                                <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Năm học</label>
+                            <select id="namHocFilter" class="form-select" onchange="filterByPeriod()">
+                                <?php
+                                if (!empty($data['availableYears'])) {
+                                    foreach ($data['availableYears'] as $year) {
+                                        $selected = ($data['namHoc'] == $year) ? 'selected' : '';
+                                        echo "<option value='$year' $selected>$year</option>";
                                     }
-                                    ?>
-                                </select>
-                            </div>
+                                } else {
+                                    $currentYear = date('Y');
+                                    for ($i = 0; $i < 5; $i++) {
+                                        $startYear = $currentYear - $i - 1;
+                                        $endYear = $currentYear - $i;
+                                        $yearValue = $startYear . '-' . $endYear;
+                                        $selected = ($data['namHoc'] == $yearValue) ? 'selected' : '';
+                                        echo "<option value='$yearValue' $selected>$yearValue</option>";
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions-button">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-primary" onclick="filterByPeriod()">
+                                <i class="fas fa-filter"></i> Lọc
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <div class="table-container">
-                        <table id="studentTable">
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Họ và tên</th>
-                                    <th>Nghỉ có phép</th>
-                                    <th>Nghỉ không phép</th>
-                                    <th>Tổng nghỉ</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <!-- Data will be filled by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
+                <input type="hidden" id="maLop" value="<?php echo htmlspecialchars($data['currentClassId']); ?>" />
 
-                    <div class="pagination">
-                        <button id="prevBtn" onclick="changePage(-1)">
-                            <i class="fas fa-chevron-left"></i> Trước
-                        </button>
-                        <span id="pageInfo"></span>
-                        <button id="nextBtn" onclick="changePage(1)">
-                            Sau <i class="fas fa-chevron-right"></i>
-                        </button>
+                <!-- CARD TABLE -->
+                <div id="absenceContent">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Đang tải dữ liệu...</p>
                     </div>
                 </div>
+
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- Add Absence Modal -->
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-plus-circle"></i> Thêm nghỉ học</h3>
-                <span class="close" onclick="closeAddModal()">&times;</span>
+    <!-- MODAL ADD -->
+    <div id="addModal" class="common-modal">
+        <div class="assign-homework-modal-dialog">
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
+                    <i class="fas fa-plus-circle"></i> Thêm nghỉ học
+                </h5>
+                <button type="button" class="btn-close-modal" onclick="closeAddModal()">
+                    <i class="fa-solid fa-x"></i>
+                </button>
             </div>
-            <div class="modal-body">
+
+            <div class="common-modal-body">
                 <form id="addForm">
                     <input type="hidden" id="addMaHS" name="maHS">
-                    <input type="hidden" id="addHocKy" name="hocKy" value="<?php echo $data['hocKy'] ?? ''; ?>">
-                    <input type="hidden" id="addNamHoc" name="namHoc" value="<?php echo $data['namHoc'] ?? ''; ?>">
+                    <input type="hidden" id="addHocKy" name="hocKy" value="<?php echo htmlspecialchars($data['hocKy'] ?? 1); ?>">
+                    <input type="hidden" id="addNamHoc" name="namHoc" value="<?php echo htmlspecialchars($data['namHoc'] ?? ''); ?>">
 
-                    <div class="form-group">
-                        <label>Học sinh</label>
-                        <input type="text" id="addHoTen" readonly>
+                    <div class="mb-3">
+                        <label class="form-label">Học sinh</label>
+                        <input type="text" id="addHoTen" class="form-control" readonly style="background:#f8f9fa;font-weight:600;">
                     </div>
 
-                    <div class="form-group">
-                        <label>Ngày nghỉ <span style="color: red;">*</span></label>
-                        <input type="date" name="ngayNghi" required>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày nghỉ <span style="color:red">*</span></label>
+                        <input type="date" name="ngayNghi" class="form-control" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Loại nghỉ <span style="color: red;">*</span></label>
-                        <select name="loaiNghi" required>
+                    <div class="mb-3">
+                        <label class="form-label">Loại nghỉ <span style="color:red">*</span></label>
+                        <select name="loaiNghi" class="form-select" required>
                             <option value="cophep">Có phép</option>
                             <option value="khongphep">Không phép</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label>Lý do</label>
-                        <textarea name="lyDo" placeholder="Nhập lý do nghỉ..."></textarea>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do</label>
+                        <textarea name="lyDo" class="form-control" placeholder="Nhập lý do nghỉ..."></textarea>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+
+            <div class="common-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddModal()">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
                 <button type="button" class="btn btn-primary" onclick="addAbsence()">
                     <i class="fas fa-save"></i> Lưu
-                </button>
-                <button type="button" class="btn btn-danger" onclick="closeAddModal()">
-                    <i class="fas fa-times"></i> Hủy
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Details Modal -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-list"></i> Chi tiết nghỉ học</h3>
-                <span class="close" onclick="closeDetailsModal()">&times;</span>
+    <!-- MODAL DETAILS -->
+    <div id="detailsModal" class="common-modal">
+        <div class="assign-homework-modal-dialog">
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
+                    <i class="fas fa-list"></i> Chi tiết nghỉ học
+                </h5>
+                <button type="button" class="btn-close-modal" onclick="closeDetailsModal()">
+                    <i class="fa-solid fa-x"></i>
+                </button>
             </div>
-            <div class="modal-body">
-                <h4 id="detailsStudentName"></h4>
-                <div id="detailsList" class="absence-details">
-                    <!-- Details will be filled by JavaScript -->
-                </div>
+
+            <div class="common-modal-body">
+                <h4 id="detailsStudentName" style="margin:0 0 12px 0;"></h4>
+                <div id="detailsList"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="closeDetailsModal()">
+
+            <div class="common-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDetailsModal()">
                     <i class="fas fa-times"></i> Đóng
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Edit Absence Modal -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Sửa nghỉ học</h3>
-                <span class="close" onclick="closeEditModal()">&times;</span>
+    <!-- MODAL EDIT -->
+    <div id="editModal" class="common-modal">
+        <div class="assign-homework-modal-dialog">
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
+                    <i class="fas fa-edit"></i> Sửa nghỉ học
+                </h5>
+                <button type="button" class="btn-close-modal" onclick="closeEditModal()">
+                    <i class="fa-solid fa-x"></i>
+                </button>
             </div>
-            <div class="modal-body">
+
+            <div class="common-modal-body">
                 <form id="editForm">
                     <input type="hidden" id="editMaNghiHoc" name="maNghiHoc">
 
-                    <div class="form-group">
-                        <label>Ngày nghỉ <span style="color: red;">*</span></label>
-                        <input type="date" id="editNgayNghi" name="ngayNghi" required>
+                    <div class="mb-3">
+                        <label class="form-label">Ngày nghỉ <span style="color:red">*</span></label>
+                        <input type="date" id="editNgayNghi" name="ngayNghi" class="form-control" required>
                     </div>
 
-                    <div class="form-group">
-                        <label>Loại nghỉ <span style="color: red;">*</span></label>
-                        <select id="editLoaiNghi" name="loaiNghi" required>
+                    <div class="mb-3">
+                        <label class="form-label">Loại nghỉ <span style="color:red">*</span></label>
+                        <select id="editLoaiNghi" name="loaiNghi" class="form-select" required>
                             <option value="cophep">Có phép</option>
                             <option value="khongphep">Không phép</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label>Lý do</label>
-                        <textarea id="editLyDo" name="lyDo" placeholder="Nhập lý do nghỉ..."></textarea>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do</label>
+                        <textarea id="editLyDo" name="lyDo" class="form-control" placeholder="Nhập lý do nghỉ..."></textarea>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
+
+            <div class="common-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
                 <button type="button" class="btn btn-primary" onclick="updateAbsence()">
                     <i class="fas fa-save"></i> Cập nhật
-                </button>
-                <button type="button" class="btn btn-danger" onclick="closeEditModal()">
-                    <i class="fas fa-times"></i> Hủy
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        const students = <?php echo json_encode($data['students'] ?? []); ?>;
-        
-        // Lấy học kỳ và năm học từ URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const hocKy = urlParams.get('hocKy') || <?php echo json_encode($data['hocKy'] ?? 1); ?>;
-        const namHoc = urlParams.get('namHoc') || <?php echo json_encode($data['namHoc'] ?? ''); ?>;
-        
-        let currentPage = 1;
-        const studentsPerPage = 5;
+        // Data from PHP
+        const students = <?php echo json_encode($data['students'] ?? [], JSON_UNESCAPED_UNICODE); ?>;
+        let filteredStudents = [...students];
+        const maLop = <?php echo json_encode($data['currentClassId'] ?? ''); ?>;
 
-        function displayStudents() {
-            const tbody = document.getElementById('tableBody');
-            
-            // Kiểm tra nếu không có học sinh nào
-            if (!students || students.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px;">
-                            <i class="fas fa-inbox" style="font-size: 48px; color: #ddd; display: block; margin-bottom: 15px;"></i>
-                            <h3 style="color: #666; margin-bottom: 10px;">Không có dữ liệu</h3>
-                            <p style="color: #999;">Không có thông tin nghỉ học cho năm học <strong>${namHoc}</strong> - Học kỳ <strong>${hocKy}</strong></p>
-                            <p style="color: #999; margin-top: 10px;"><em>Vui lòng chọn năm học và học kỳ có dữ liệu (Ví dụ: 2024-2025)</em></p>
-                        </td>
-                    </tr>
-                `;
-                document.getElementById('prevBtn').disabled = true;
-                document.getElementById('nextBtn').disabled = true;
-                document.getElementById('pageInfo').textContent = 'Trang 0 / 0';
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        // giữ keyword search khi render lại (do innerHTML)
+        window.__searchKeyword = '';
+
+        // ============ RENDER TABLE + PAGINATION ============
+        function renderAbsenceTable() {
+            const container = document.getElementById('absenceContent');
+            if (!container) return;
+
+            // Header + search (luôn hiển thị)
+            const headerHtml = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-users"></i> Danh sách nghỉ học - Lớp <?php echo htmlspecialchars($data['classInfo']['tenLop'] ?? ''); ?>
+                    </h2>
+
+                    <div class="search-container">
+                        <span class="search-result-info" id="searchResult"></span>
+                        <div class="search-box">
+                            <input type="text"
+                                id="searchInput"
+                                placeholder="Tìm kiếm theo tên hoặc mã học sinh"
+                                onkeyup="searchStudent()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+        `;
+
+            // Nếu không có dữ liệu sau filter/search
+            if (!filteredStudents || filteredStudents.length === 0) {
+                container.innerHTML = headerHtml + `
+                <div style="padding:40px;text-align:center;">
+                    <i class="fas fa-inbox" style="font-size:56px;color:#ddd;margin-bottom:14px;"></i>
+                    <h3 style="color:#666;margin:0 0 8px 0;">Không có dữ liệu</h3>
+                    <p style="color:#999;margin:0;">Không có học sinh phù hợp trong học kỳ/năm học đã chọn.</p>
+                </div>
+            </div>`;
+
+                // restore keyword
+                const input = document.getElementById('searchInput');
+                if (input) input.value = window.__searchKeyword || '';
+
+                // info
+                const info = document.getElementById('searchResult');
+                if (info && window.__searchKeyword) {
+                    info.textContent = `Tìm thấy 0 học sinh`;
+                }
                 return;
             }
-            
-            const start = (currentPage - 1) * studentsPerPage;
-            const end = start + studentsPerPage;
-            const pageStudents = students.slice(start, end);
 
-            tbody.innerHTML = '';
-            pageStudents.forEach((student, index) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${start + index + 1}</td>
-                    <td>${student.hoTen}</td>
-                    <td><span class="badge badge-success">${student.soNghiCoPhep}</span></td>
-                    <td><span class="badge badge-danger">${student.soNghiKhongPhep}</span></td>
-                    <td><strong>${student.tongNghi}</strong></td>
+            const totalItems = filteredStudents.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+            // đảm bảo currentPage hợp lệ
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            const pageItems = filteredStudents.slice(startIndex, endIndex);
+
+            let html = headerHtml + `
+           
+                <table class="common-table">
+                    <thead>
+                        <tr>
+                            <th class="small-cell">STT</th>
+                            <th >Mã học sinh</th>
+                            <th class="large-cell">Họ và tên</th>
+                            <th>Nghỉ có phép</th>
+                            <th>Nghỉ không phép</th>
+                            <th>Tổng nghỉ</th>
+                            <th class="center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="common-table-body">
+        `;
+
+            pageItems.forEach((st, idx) => {
+                const rowIndex = startIndex + idx + 1;
+                html += `
+                <tr class="table-normal-text">
+                    <td class="small-cell"><p>${rowIndex}</p></td>
+                    <td ><p>${escapeHtml(st.maHS ?? '')}</p></td>
                     <td>
-                        <button class="btn btn-primary btn-sm" onclick="openAddModal(${student.maHS}, '${student.hoTen}')">
-                            <i class="fas fa-plus"></i> Thêm
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="viewDetails(${student.maHS}, '${student.hoTen}')">
-                            <i class="fas fa-eye"></i> Chi tiết
-                        </button>
+                        <div class="request-description">
+                            <span class="request-des-title">${escapeHtml(st.hoTen || '')}</span>
+                        </div>
                     </td>
-                `;
+
+                    <td><span class="badge badge-success">${st.soNghiCoPhep ?? 0}</span></td>
+                    <td><span class="badge badge-danger">${st.soNghiKhongPhep ?? 0}</span></td>
+                    <td><strong>${st.tongNghi ?? 0}</strong></td>
+
+                    <td class="action-cell">
+                        <div class="action-buttons">
+                            <button type="button" class="btn-edit"
+                                onclick="openAddModal(${st.maHS}, '${escapeJs(st.hoTen || '')}')"
+                                title="Thêm nghỉ học">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn-view"
+                                onclick="viewDetails(${st.maHS}, '${escapeJs(st.hoTen || '')}')"
+                                title="Chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
             });
 
-            updatePagination();
-        }
+            html += `
+                    </tbody>
+                </table>
+        `;
 
-        function updatePagination() {
-            const totalPages = Math.ceil(students.length / studentsPerPage);
-            document.getElementById('pageInfo').textContent = `Trang ${currentPage} / ${totalPages}`;
-            document.getElementById('prevBtn').disabled = currentPage === 1;
-            document.getElementById('nextBtn').disabled = currentPage === totalPages;
-        }
-
-        function changePage(direction) {
-            const totalPages = Math.ceil(students.length / studentsPerPage);
-            currentPage += direction;
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            displayStudents();
-        }
-
-        function openAddModal(maHS, hoTen) {
-            // ƯU TIÊN: Lấy từ dropdown filter trước (giá trị người dùng đang chọn)
-            const filterHocKy = document.getElementById('hocKyFilter');
-            const filterNamHoc = document.getElementById('namHocFilter');
-            
-            // Lấy giá trị từ dropdown (ưu tiên cao nhất)
-            let hocKyValue = filterHocKy ? filterHocKy.value : null;
-            let namHocValue = filterNamHoc ? filterNamHoc.value : null;
-            
-            // Nếu dropdown không có giá trị, thử lấy từ URL
-            if (!hocKyValue || !namHocValue) {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (!hocKyValue) hocKyValue = urlParams.get('hocKy');
-                if (!namHocValue) namHocValue = urlParams.get('namHoc');
+            // pagination
+            if (totalPages > 1) {
+                html += renderPagination(totalPages, totalItems, startIndex, endIndex);
+            } else {
+                html += `<div class="pagination-info">Hiển thị 1 - ${totalItems} trong tổng số ${totalItems} học sinh</div>`;
             }
-            
-            // Nếu vẫn không có, dùng biến JS
-            if (!hocKyValue) hocKyValue = hocKy;
-            if (!namHocValue) namHocValue = namHoc;
-            
-            // Đảm bảo không bao giờ để trống (fallback cuối cùng)
-            if (!hocKyValue) hocKyValue = '1';
-            if (!namHocValue) namHocValue = '2024-2025';
-            
-            // Reset form
+
+            html += `</div>`; // close card
+            container.innerHTML = html;
+
+            // restore keyword sau khi render
+            const input = document.getElementById('searchInput');
+            if (input) input.value = window.__searchKeyword || '';
+
+            // search result text
+            const resultInfo = document.getElementById('searchResult');
+            if (resultInfo) {
+                if (window.__searchKeyword) {
+                    resultInfo.textContent = `Tìm thấy ${filteredStudents.length} học sinh`;
+                } else {
+                    resultInfo.textContent = '';
+                }
+            }
+        }
+
+        function renderPagination(totalPages, totalItems, startIndex, endIndex) {
+            let html = `<div class="pagination pagi-absence">`;
+
+            // Prev
+            if (currentPage > 1) {
+                html += `<a href="javascript:changePage(${currentPage - 1})"><i class="fas fa-chevron-left"></i> Trước</a>`;
+            } else {
+                html += `<span class="disabled"><i class="fas fa-chevron-left"></i> Trước</span>`;
+            }
+
+            // Numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                html += `<a href="javascript:changePage(1)">1</a>`;
+                if (startPage > 2) html += `<span>...</span>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) html += `<span class="current-page">${i}</span>`;
+                else html += `<a href="javascript:changePage(${i})">${i}</a>`;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<span>...</span>`;
+                html += `<a href="javascript:changePage(${totalPages})">${totalPages}</a>`;
+            }
+
+            // Next
+            if (currentPage < totalPages) {
+                html += `<a href="javascript:changePage(${currentPage + 1})">Sau <i class="fas fa-chevron-right"></i></a>`;
+            } else {
+                html += `<span class="disabled">Sau <i class="fas fa-chevron-right"></i></span>`;
+            }
+
+            html += `</div>`;
+            html += `<div class="pagination-info">
+            Hiển thị ${startIndex + 1} - ${endIndex} trong tổng số ${totalItems} học sinh
+        </div>`;
+
+            return html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderAbsenceTable();
+            document.getElementById('absenceContent')?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // ============ SEARCH ============
+        function searchStudent() {
+            const input = document.getElementById('searchInput');
+            const filter = (input?.value || '').toLowerCase().trim();
+
+            const table = document.querySelector('.common-table');
+            if (!table) return;
+
+            const rows = table.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const tds = row.querySelectorAll('td');
+                const nameCell = tds[1]; // Họ và tên
+                const maCell = tds[2]; // Mã HS
+
+                const nameText = (nameCell?.textContent || '').toLowerCase();
+                const maText = (maCell?.textContent || '').toLowerCase();
+
+                if (!filter || nameText.includes(filter) || maText.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const searchResult = document.getElementById('searchResult');
+            if (searchResult) {
+                searchResult.textContent = filter ? `Tìm thấy ${visibleCount} kết quả` : '';
+            }
+        }
+
+        // ============ FILTER ============
+        function filterByPeriod() {
+            const hocKy = document.getElementById('hocKyFilter')?.value || '1';
+            const namHoc = document.getElementById('namHocFilter')?.value || '';
+            window.location.href = `vStudentAbsence.php?maLop=${maLop}&hocKy=${hocKy}&namHoc=${encodeURIComponent(namHoc)}`;
+        }
+
+        // ============ MODALS ============
+        function openAddModal(maHS, hoTen) {
             document.getElementById('addForm').reset();
-            
-            // Set lại TẤT CẢ các giá trị sau khi reset
             document.getElementById('addMaHS').value = maHS;
             document.getElementById('addHoTen').value = hoTen;
+
+            const hocKyValue = document.getElementById('hocKyFilter')?.value || '<?php echo htmlspecialchars($data['hocKy'] ?? 1); ?>';
+            const namHocValue = document.getElementById('namHocFilter')?.value || '<?php echo htmlspecialchars($data['namHoc'] ?? ''); ?>';
             document.getElementById('addHocKy').value = hocKyValue;
             document.getElementById('addNamHoc').value = namHocValue;
-            
-            // Debug: Log để kiểm tra giá trị
-            console.log('=== OPEN ADD MODAL ===');
-            console.log('Học kỳ từ filter dropdown:', filterHocKy ? filterHocKy.value : 'NULL');
-            console.log('Năm học từ filter dropdown:', filterNamHoc ? filterNamHoc.value : 'NULL');
-            console.log('Học kỳ cuối cùng được set:', hocKyValue);
-            console.log('Năm học cuối cùng được set:', namHocValue);
-            console.log('Form addHocKy value:', document.getElementById('addHocKy').value);
-            console.log('Form addNamHoc value:', document.getElementById('addNamHoc').value);
-            
-            document.getElementById('addModal').style.display = 'block';
+
+            document.getElementById('addModal').classList.add('show');
         }
 
         function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('addModal').classList.remove('show');
         }
 
         async function addAbsence() {
@@ -972,36 +648,29 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const formData = new FormData(form);
             formData.append('action', 'add');
 
-            // Debug: Kiểm tra dữ liệu được gửi đi
-            console.log('=== DỮ LIỆU GỬI ĐI ===');
-            console.log('hocKy input value:', document.getElementById('addHocKy').value);
-            console.log('namHoc input value:', document.getElementById('addNamHoc').value);
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
             try {
-                const response = await fetch('vStudentAbsence.php', {
+                const res = await fetch('vStudentAbsence.php', {
                     method: 'POST',
                     body: formData
                 });
-
-                const result = await response.json();
+                const result = await res.json();
 
                 if (result.success) {
                     alert(result.message);
                     closeAddModal();
                     location.reload();
                 } else {
-                    alert('Lỗi: ' + result.message);
+                    alert('Lỗi: ' + (result.message || 'Không thể thêm'));
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Đã xảy ra lỗi khi thêm nghỉ học');
+            } catch (e) {
+                alert('Lỗi: ' + e.message);
             }
         }
 
         async function viewDetails(maHS, hoTen) {
+            const hocKy = document.getElementById('hocKyFilter')?.value || '<?php echo htmlspecialchars($data['hocKy'] ?? 1); ?>';
+            const namHoc = document.getElementById('namHocFilter')?.value || '<?php echo htmlspecialchars($data['namHoc'] ?? ''); ?>';
+
             const formData = new FormData();
             formData.append('action', 'getDetails');
             formData.append('maHS', maHS);
@@ -1009,55 +678,60 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             formData.append('namHoc', namHoc);
 
             try {
-                const response = await fetch('vStudentAbsence.php', {
+                const res = await fetch('vStudentAbsence.php', {
                     method: 'POST',
                     body: formData
                 });
+                const result = await res.json();
 
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('detailsStudentName').textContent = hoTen;
-                    const detailsList = document.getElementById('detailsList');
-                    
-                    if (result.data.length === 0) {
-                        detailsList.innerHTML = '<p style="text-align: center; color: #999;">Chưa có nghỉ học</p>';
-                    } else {
-                        detailsList.innerHTML = result.data.map(item => `
-                            <div class="absence-item">
-                                <div class="absence-info">
-                                    <div class="absence-date">
-                                        ${new Date(item.ngayNghi).toLocaleDateString('vi-VN')} - 
-                                        <span class="badge ${item.loaiNghi === 'cophep' ? 'badge-success' : 'badge-danger'}">
-                                            ${item.loaiNghi === 'cophep' ? 'Có phép' : 'Không phép'}
-                                        </span>
-                                    </div>
-                                    <div class="absence-reason">${item.lyDo || 'Không có lý do'}</div>
-                                </div>
-                                <div class="absence-actions">
-                                    <button class="btn btn-warning btn-sm" onclick="editAbsence(${item.maNghiHoc}, '${item.ngayNghi}', '${item.loaiNghi}', '${(item.lyDo || '').replace(/'/g, "\\'")}')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteAbsence(${item.maNghiHoc})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-
-                    document.getElementById('detailsModal').style.display = 'block';
-                } else {
-                    alert('Lỗi: ' + result.message);
+                if (!result.success) {
+                    alert('Lỗi: ' + (result.message || 'Không tải được chi tiết'));
+                    return;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Đã xảy ra lỗi khi tải chi tiết');
+
+                document.getElementById('detailsStudentName').textContent = hoTen;
+
+                const list = document.getElementById('detailsList');
+                const data = result.data || [];
+
+                if (data.length === 0) {
+                    list.innerHTML = `<p style="text-align:center;color:#999;margin:0;">Chưa có nghỉ học</p>`;
+                } else {
+                    list.innerHTML = data.map(item => {
+                        const badgeClass = item.loaiNghi === 'cophep' ? 'badge-success' : 'badge-danger';
+                        const badgeText = item.loaiNghi === 'cophep' ? 'Có phép' : 'Không phép';
+                        return `
+                        <div class="absence-item" style="display:flex;justify-content:space-between;align-items:center;background:#f9f9f9;padding:12px;border-radius:8px;margin-bottom:10px;">
+                            <div style="flex:1;">
+                                <div style="font-weight:600;color:#333;margin-bottom:6px;">
+                                    ${new Date(item.ngayNghi).toLocaleDateString('vi-VN')}
+                                    <span class="badge ${badgeClass}" style="margin-left:8px;">${badgeText}</span>
+                                </div>
+                                <div style="font-size:13px;color:#666;">${escapeHtml(item.lyDo || 'Không có lý do')}</div>
+                            </div>
+                            <div class="action-buttons" style="display:flex;gap:8px;">
+                                <button type="button" class="btn-view" title="Sửa"
+                                    onclick="editAbsence(${item.maNghiHoc}, '${item.ngayNghi}', '${item.loaiNghi}', '${escapeJs(item.lyDo || '')}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn-delete" title="Xóa"
+                                    onclick="deleteAbsence(${item.maNghiHoc})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+                }
+
+                document.getElementById('detailsModal').classList.add('show');
+            } catch (e) {
+                alert('Lỗi: ' + e.message);
             }
         }
 
         function closeDetailsModal() {
-            document.getElementById('detailsModal').style.display = 'none';
+            document.getElementById('detailsModal').classList.remove('show');
         }
 
         function editAbsence(maNghiHoc, ngayNghi, loaiNghi, lyDo) {
@@ -1065,13 +739,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             document.getElementById('editNgayNghi').value = ngayNghi;
             document.getElementById('editLoaiNghi').value = loaiNghi;
             document.getElementById('editLyDo').value = lyDo;
-            
+
             closeDetailsModal();
-            document.getElementById('editModal').style.display = 'block';
+            document.getElementById('editModal').classList.add('show');
         }
 
         function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
+            document.getElementById('editModal').classList.remove('show');
         }
 
         async function updateAbsence() {
@@ -1080,80 +754,75 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             formData.append('action', 'update');
 
             try {
-                const response = await fetch('vStudentAbsence.php', {
+                const res = await fetch('vStudentAbsence.php', {
                     method: 'POST',
                     body: formData
                 });
-
-                const result = await response.json();
+                const result = await res.json();
 
                 if (result.success) {
                     alert(result.message);
                     closeEditModal();
                     location.reload();
                 } else {
-                    alert('Lỗi: ' + result.message);
+                    alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Đã xảy ra lỗi khi cập nhật');
+            } catch (e) {
+                alert('Lỗi: ' + e.message);
             }
         }
 
         async function deleteAbsence(maNghiHoc) {
-            if (!confirm('Bạn có chắc chắn muốn xóa nghỉ học này?')) {
-                return;
-            }
+            if (!confirm('Bạn có chắc chắn muốn xóa nghỉ học này?')) return;
 
             const formData = new FormData();
             formData.append('action', 'delete');
             formData.append('maNghiHoc', maNghiHoc);
 
             try {
-                const response = await fetch('vStudentAbsence.php', {
+                const res = await fetch('vStudentAbsence.php', {
                     method: 'POST',
                     body: formData
                 });
-
-                const result = await response.json();
+                const result = await res.json();
 
                 if (result.success) {
                     alert(result.message);
                     location.reload();
                 } else {
-                    alert('Lỗi: ' + result.message);
+                    alert('Lỗi: ' + (result.message || 'Không thể xóa'));
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Đã xảy ra lỗi khi xóa');
+            } catch (e) {
+                alert('Lỗi: ' + e.message);
             }
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
+        // close modal when click outside
+        window.onclick = function(e) {
+            const modals = ['addModal', 'detailsModal', 'editModal'].map(id => document.getElementById(id));
+            modals.forEach(m => {
+                if (m && e.target === m) m.classList.remove('show');
+            });
+        };
+
+        // helpers
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", "&#039;");
         }
 
-        // Filter by period function
-        function filterByPeriod() {
-            const hocKy = document.getElementById('hocKyFilter').value;
-            const namHoc = document.getElementById('namHocFilter').value;
-            const maLop = <?php echo json_encode($data['currentClassId'] ?? ''); ?>;
-            
-            console.log('=== FILTER BY PERIOD ===');
-            console.log('Học kỳ từ dropdown:', hocKy);
-            console.log('Năm học từ dropdown:', namHoc);
-            console.log('Năm học sau encode:', encodeURIComponent(namHoc));
-            
-            // Reload page with new parameters - encode namHoc to preserve special characters
-            window.location.href = `vStudentAbsence.php?maLop=${maLop}&hocKy=${hocKy}&namHoc=${encodeURIComponent(namHoc)}`;
+        function escapeJs(str) {
+            return String(str ?? '').replaceAll('\\', '\\\\').replaceAll("'", "\\'");
         }
 
-        // Initialize display
-        displayStudents();
+        // init
+        renderAbsenceTable();
     </script>
+
 </body>
 
 </html>

@@ -144,45 +144,15 @@ if ($maLop && $maGV) {
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 24px;
         }
 
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 24px;
-            border-radius: 12px;
-            color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
 
-        .stat-card.success {
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-        }
-
-        .stat-card.warning {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .stat-card.info {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
 
         .stat-card h4 {
             margin: 0 0 15px 0;
             font-size: 14px;
             font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 13px;
             opacity: 0.9;
         }
 
@@ -194,10 +164,13 @@ if ($maLop && $maGV) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 8px 16px;
             background: #f9f9f9;
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .conduct-item:last-child {
+            margin-bottom: 0;
         }
 
         .conduct-label {
@@ -646,40 +619,61 @@ if ($maLop && $maGV) {
                     <?php endif; ?>
                 </div>
 
-                <!-- Thống kê Hạnh kiểm -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-star"></i> Thống kê Hạnh kiểm
-                        </h2>
+                <!-- Thống kê Hạnh kiểm và Học lực -->
+                <div class="stats-grid">
+                    <!-- Thống kê Hạnh kiểm -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-star"></i> Thống kê Hạnh kiểm
+                            </h2>
+                        </div>
+                        <div class="chart-container">
+                            <?php if (empty($data['conductStats'])): ?>
+                                <p style="text-align: center; color: #999;">Chưa có dữ liệu hạnh kiểm</p>
+                            <?php else: ?>
+                                <?php foreach ($data['conductStats'] as $conduct): ?>
+                                    <div class="conduct-item">
+                                        <div class="conduct-label">
+
+                                            <span>Hạnh kiểm <?php echo htmlspecialchars($conduct['loaiHK']); ?></span>
+                                        </div>
+                                        <div class="conduct-stats">
+                                            <span class="conduct-count"><?php echo $conduct['soLuong']; ?></span>
+                                            <span class="conduct-percent">(<?php echo number_format($conduct['tyLe'], 1); ?>%)</span>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill" style="width: <?php echo $conduct['tyLe']; ?>%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <?php if (empty($data['conductStats'])): ?>
-                            <p style="text-align: center; color: #999;">Chưa có dữ liệu hạnh kiểm</p>
-                        <?php else: ?>
-                            <?php foreach ($data['conductStats'] as $conduct): ?>
+
+                    <!-- Thống kê Học lực -->
+                    <?php if (!empty($data['academicStats'])): ?>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-book"></i> Thống kê Học lực
+                            </h2>
+                        </div>
+                        <div class="chart-container">
+                            <?php foreach ($data['academicStats'] as $academic): ?>
                                 <div class="conduct-item">
                                     <div class="conduct-label">
-                                        <div class="conduct-icon <?php echo strtolower($conduct['loaiHK']); ?>">
-                                            <i class="fas fa-<?php 
-                                                echo $conduct['loaiHK'] == 'Tot' ? 'smile' : 
-                                                    ($conduct['loaiHK'] == 'Kha' ? 'meh' : 
-                                                    ($conduct['loaiHK'] == 'TB' ? 'frown' : 'sad-tear')); 
-                                            ?>"></i>
-                                        </div>
-                                        <span>Hạnh kiểm <?php echo htmlspecialchars($conduct['loaiHK']); ?></span>
+                                        <span>Học lực <?php echo htmlspecialchars($academic['xepLoai']); ?></span>
                                     </div>
                                     <div class="conduct-stats">
-                                        <span class="conduct-count"><?php echo $conduct['soLuong']; ?></span>
-                                        <span class="conduct-percent">(<?php echo number_format($conduct['tyLe'], 1); ?>%)</span>
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: <?php echo $conduct['tyLe']; ?>%"></div>
-                                        </div>
+                                        <span class="conduct-count"><?php echo $academic['soLuong']; ?></span>
+                                        <span class="conduct-percent">học sinh</span>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                        <?php endif; ?>
+                        </div>
                     </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Khen thưởng và Vi phạm -->
@@ -736,7 +730,7 @@ if ($maLop && $maGV) {
                                                 <?php endif; ?>
                                             </div>
                                         </div>
-                                        <span class="badge badge-success"><?php echo $award['soLuong']; ?> lượt</span>
+                                        <span class="badge badge-success"><?php echo $award['soLuong']; ?> giải</span>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -789,7 +783,7 @@ if ($maLop && $maGV) {
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <span class="badge badge-warning"><?php echo $data['violationsCount']['viPhamNhe'] ?? 0; ?> lượt</span>
+                                    <span class="badge badge-warning"><?php echo $data['violationsCount']['viPhamNhe'] ?? 0; ?> vi phạm</span>
                                 </div>
 
                                 <!-- Vi phạm trung bình -->
@@ -825,7 +819,7 @@ if ($maLop && $maGV) {
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <span class="badge badge-warning"><?php echo $data['violationsCount']['viPhamTB'] ?? 0; ?> lượt</span>
+                                    <span class="badge badge-warning"><?php echo $data['violationsCount']['viPhamTB'] ?? 0; ?> vi phạm</span>
                                 </div>
 
                                 <!-- Vi phạm nặng -->
@@ -861,7 +855,7 @@ if ($maLop && $maGV) {
                                             <?php endif; ?>
                                         </div>
                                     </div>
-                                    <span class="badge badge-danger"><?php echo $data['violationsCount']['viPhamNang'] ?? 0; ?> lượt</span>
+                                    <span class="badge badge-danger"><?php echo $data['violationsCount']['viPhamNang'] ?? 0; ?> vi phạm</span>
                                 </div>
                             <?php else: ?>
                                 <p style="text-align: center; color: #999;">Không có vi phạm</p>
@@ -902,30 +896,6 @@ if ($maLop && $maGV) {
                                 <span style="font-size: 12px; color: #999;">ngày</span>
                             </div>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Thống kê Học lực (nếu cần) -->
-                <?php if (!empty($data['academicStats'])): ?>
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-book"></i> Thống kê Học lực
-                        </h2>
-                    </div>
-                    <div class="chart-container">
-                        <?php foreach ($data['academicStats'] as $academic): ?>
-                            <div class="conduct-item">
-                                <div class="conduct-label">
-                                    <span>Học lực <?php echo htmlspecialchars($academic['xepLoai']); ?></span>
-                                </div>
-                                <div class="conduct-stats">
-                                    <span class="conduct-count"><?php echo $academic['soLuong']; ?></span>
-                                    <span class="conduct-percent">học sinh</span>
-                                </div>
-                            </div>
                         <?php endforeach; ?>
                     </div>
                 </div>

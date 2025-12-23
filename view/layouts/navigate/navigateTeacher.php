@@ -195,12 +195,6 @@ $maGV = $_SESSION['maGV'] ?? '';
                     </a>
                 </li>
                 <li>
-                    <a href="<?php echo url('controller/cReport.php?action=student_stats'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'student_stats') ? 'active' : ''; ?>">
-                        <i class="fas fa-users"></i>
-                        <span>Thống kê học sinh</span>
-                    </a>
-                </li>
-                <li>
                     <a href="<?php echo url('controller/cReport.php?action=submit'); ?>" class="submenu-item <?php echo (isset($_GET['action']) && $_GET['action'] == 'submit') ? 'active' : ''; ?>">
                         <i class="fas fa-upload"></i>
                         <span>Nộp báo cáo</span>

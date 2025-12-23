@@ -61,7 +61,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-info-circle"></i> Lưu ý khi gửi yêu cầu nghỉ phép</h2>
                 </div>
-                <ul style="margin:0; padding-left:24px; color:#555; line-height:1.8;">
+                <ul >
                     <li>Yêu cầu nên được gửi trước thời gian nghỉ ít nhất 3 ngày (trừ trường hợp khẩn cấp)</li>
                     <li>Cung cấp đầy đủ thông tin và lý do rõ ràng</li>
                     <li>Đính kèm minh chứng nếu có (giấy khám bệnh, giấy mời...)</li>

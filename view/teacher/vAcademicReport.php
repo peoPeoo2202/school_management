@@ -113,7 +113,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                 <div class="stats-assign-row">
                     <div class="stat-item">
-                        <div class="stat-value exam-sup-total">
+                        <div class="stat-value exam-sup-primary">
                             <?php echo $soHocSinh; ?>
                         </div>
                         <div class="stat-label">Tổng số học sinh</div>
