@@ -55,6 +55,7 @@ class mSubmitExam
      */
     public function getTeacherMainSubject($maGV)
     {
+        // Ưu tiên lấy từ GVBM (giáo viên bộ môn)
         $sql = "SELECT maMonHoc 
                 FROM phancong_gvbm 
                 WHERE maGV = ? AND trangThai = 'active' 
@@ -63,6 +64,29 @@ class mSubmitExam
         $stmt = mysqli_prepare($this->conn, $sql);
         if (!$stmt) {
             error_log("SQL Error in getTeacherMainSubject: " . mysqli_error($this->conn));
+            return null;
+        }
+        
+        mysqli_stmt_bind_param($stmt, "i", $maGV);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($row = mysqli_fetch_assoc($result)) {
+            mysqli_stmt_close($stmt);
+            return $row['maMonHoc'];
+        }
+        
+        mysqli_stmt_close($stmt);
+        
+        // Nếu không phải GVBM, thử lấy từ GVCN (giáo viên chủ nhiệm)
+        $sql = "SELECT maMonHoc 
+                FROM phancong_gvcn 
+                WHERE maGV = ? AND trangThai = 'active' 
+                LIMIT 1";
+        
+        $stmt = mysqli_prepare($this->conn, $sql);
+        if (!$stmt) {
+            error_log("SQL Error in getTeacherMainSubject (GVCN): " . mysqli_error($this->conn));
             return null;
         }
         

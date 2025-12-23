@@ -215,19 +215,19 @@ $exams = $controller->getTeacherExams($maGV, $filters);
                                         <td class="action-cell">
                                             <div class="action-buttons">
                                                 <?php if ($exam['trangThai'] == 'Chuaduyet'): ?>
-                                                    <button"
+                                                    <button class="btn-action-edit"
                                                         onclick='editExam(<?php echo json_encode($exam, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'
                                                         title="Sửa">
                                                         <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button"
-                                                            onclick="deleteExam(<?php echo $exam['maDeThi']; ?>)"
-                                                            title="Xóa">
-                                                            <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        <?php else: ?>
-                                                            <span class="empty-info">-</span>
-                                                        <?php endif; ?>
+                                                    </button>
+                                                    <button class="btn-action-delete"
+                                                        onclick="deleteExam(<?php echo $exam['maDeThi']; ?>)"
+                                                        title="Xóa">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <span class="empty-info">-</span>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
