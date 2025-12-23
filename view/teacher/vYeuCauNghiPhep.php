@@ -57,7 +57,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             <?php endif; ?>
 
             <!-- Card: Lưu ý -->
-            <div class="card">
+            <div class="card instructions">
                 <div class="card-header">
                     <h2 class="card-title"><i class="fas fa-info-circle"></i> Lưu ý khi gửi yêu cầu nghỉ phép</h2>
                 </div>

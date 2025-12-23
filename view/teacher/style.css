@@ -7,14 +7,16 @@
 	padding: 0;
 }
 
-html, body {
+html,
+body {
 	height: 100%;
 }
 
 body {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 	background-color: white;
-	overflow: hidden;     /* body không scroll */
+	overflow: hidden;
+	/* body không scroll */
 }
 
 /* =========================================================
@@ -91,7 +93,7 @@ body {
 	overflow-y: auto;
 }
 
-.navbar-menu > li {
+.navbar-menu>li {
 	margin: 0;
 }
 
@@ -280,8 +282,10 @@ body {
 .content-area {
 	flex: 1;
 	display: grid;
-	grid-auto-rows: max-content;     /* ⭐ CHỐT LỖI */
-	align-content: start;     /* ⭐ QUAN TRỌNG */
+	grid-auto-rows: max-content;
+	/* ⭐ CHỐT LỖI */
+	align-content: start;
+	/* ⭐ QUAN TRỌNG */
 	overflow-y: auto;
 	box-sizing: border-box;
 	padding: 24px 5%;
@@ -436,7 +440,8 @@ body {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	padding: 24px;
 	display: grid;
-	grid-template-rows: auto 1fr;     /* header tự cao, phần dưới chiếm hết */
+	grid-template-rows: auto 1fr;
+	/* header tự cao, phần dưới chiếm hết */
 	gap: 24px;
 }
 
@@ -502,7 +507,8 @@ body {
 	padding-left: 2px;
 }
 
-.filter-group input[type='text'], select {
+.filter-group input[type='text'],
+select {
 	padding: 8px;
 	border: 1px solid #ddd;
 	border-radius: 8px;
@@ -567,7 +573,9 @@ body {
 	margin-left: 3px;
 }
 
-.form-group input[type='text'], .form-group select, .form-group textarea {
+.form-group input[type='text'],
+.form-group select,
+.form-group textarea {
 	width: 100%;
 	padding: 8px 16px;
 	border: 1px solid #ddd;
@@ -578,7 +586,9 @@ body {
 	box-sizing: border-box;
 }
 
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
 	outline: none;
 	border-color: #5081be;
 	box-shadow: 0 0 0 3px rgba(80, 129, 190, 0.1);
@@ -645,7 +655,8 @@ body {
 	background: #5a6268;
 }
 
-.btn-edit {
+.btn-edit,
+.btn-warning {
 	background: #ffc107;
 	color: #000;
 }
@@ -694,21 +705,6 @@ body {
 	font-size: 13px;
 }
 
-.view-link {
-	color: #5081be;
-	text-decoration: none;
-	font-size: 14px;
-	transition: all 0.3s;
-	display: flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.view-link:hover {
-	color: #2d5a8c;
-	gap: 10px;
-}
-
 .btn-download-file {
 	background: #5081BE;
 	color: white;
@@ -729,7 +725,10 @@ body {
 }
 
 /* -------------------------------------------      TEXT      ------------------------------ */
-.text-danger, .text-primary, .text-success, .text-warning {
+.text-danger,
+.text-primary,
+.text-success,
+.text-warning {
 	--value-size: 17px;
 	--value-weight: 700;
 }
@@ -942,10 +941,12 @@ body {
 
 .common-table {
 	width: 100%;
-	border-collapse: collapse;     /* table-layout: fixed; */
+	border-collapse: collapse;
+	/* table-layout: fixed; */
 }
 
-.common-table th, td {
+.common-table th,
+td {
 	border: 1px solid #e0e0e0;
 	padding: 8px;
 	text-align: center;
@@ -967,7 +968,8 @@ body {
 	background: #4a6fa5;
 }
 
-.common-table th.time-cell, .common-table td.time-cell {
+.common-table th.time-cell,
+.common-table td.time-cell {
 	width: 90px;
 	min-width: 90px;
 	max-width: 90px;
@@ -1173,11 +1175,19 @@ body {
 	color: #2563EB;
 }
 
-.exam-sup-total, .exam-sup-upcoming, .exam-sup-finish, .exam-sup-danger {
+.exam-sup-primary,
+.exam-sup-default,
+.exam-sup-upcoming,
+.exam-sup-finish,
+.exam-sup-danger {
 	font-size: 36px;
 }
 
-.stats-assign-row .stat-value.exam-sup-total {
+.stats-assign-row .stat-value.exam-sup-default {
+	color: #333;
+}
+
+.stats-assign-row .stat-value.exam-sup-primary {
 	color: #5081BE;
 }
 
@@ -1224,7 +1234,10 @@ body {
 /* =========================================================
    5) GRANDING ASSIGNMENT
    ========================================================= */
-.assign-total, .assign-pending, .assign-inprogress, .assign-finish {
+.assign-total,
+.assign-pending,
+.assign-inprogress,
+.assign-finish {
 	font-size: 36px;
 }
 
@@ -1556,7 +1569,9 @@ textarea.form-control {
 	font-size: 48px;
 }
 
-.file-upload-icon, .file-upload-text, .file-upload-hint {
+.file-upload-icon,
+.file-upload-text,
+.file-upload-hint {
 	pointer-events: none;
 }
 
@@ -1849,7 +1864,8 @@ textarea.form-control {
 
 .exam-semester-year {
 	font-size: 14px;
-	font-weight: 400;     /* color: #666; */
+	font-weight: 400;
+	/* color: #666; */
 }
 
 .empty-info {
@@ -2103,11 +2119,58 @@ textarea.form-control {
 	gap: 16px;
 }
 
+/* ===== Khung file đính kèm ===== */
+.teacher-attachment {
+	margin-top: 20px;
+	padding: 15px;
+	background: #e8f5e9;
+	border-left: 4px solid #4caf50;
+	border-radius: 8px;
+}
+
+/* Label */
+.attachment-label {
+	font-weight: 600;
+	color: #2e7d32;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Content */
+.attachment-content {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* File info */
+.attachment-info {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 220px;
+}
+
+.attachment-icon {
+	font-size: 24px;
+}
+
+.attachment-filename {
+	color: #2e7d32;
+	font-weight: 500;
+	word-break: break-word;
+}
+
+/* ===== Nút file (CSS có sẵn của em) ===== */
 .file-attachment {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 10px 15px;
+	padding: 8px 16px;
 	background: #00C94B0F;
 	border-radius: 6px;
 	color: #00C94B;
@@ -2119,6 +2182,44 @@ textarea.form-control {
 .file-attachment:hover {
 	background: #c8e6c9;
 }
+
+/* Nút xem */
+.file-attachment.view {
+	color: #1976d2;
+	background: #e3f2fd;
+}
+
+.file-attachment.view:hover {
+	background: #bbdefb;
+}
+
+/* ===== Không có file đính kèm ===== */
+.attachment-empty {
+	padding: 10px 16px;
+	background: #fff3cd;
+	border-left: 4px solid #ffc107;
+	border-radius: 8px;
+	width: 100%;
+}
+
+.attachment-empty-label {
+	font-weight: 600;
+	color: #856404;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+	.attachment-content {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
 
 .timeline {
 	position: relative;
@@ -2239,3 +2340,231 @@ textarea.form-control {
 .gender-female {
 	background: rgb(235, 112, 198);
 }
+
+/* ===== Xếp loại điểm – style tối giản ===== */
+.performance-section {
+	margin-top: 16px;
+	padding: 16px 18px;
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+}
+
+.performance-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: #111827;
+	margin-bottom: 14px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.performance-title i {
+	color: #5081BE;
+	font-size: 15px;
+}
+
+/* bỏ khung thừa */
+.performance-bars,
+.performance-category {
+	background: none;
+	border: none;
+	padding: 0;
+}
+
+.category-title {
+	display: none;
+}
+
+/* mỗi dòng */
+.performance-item {
+	display: grid;
+	grid-template-columns: 1fr 90px;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 1px dashed #e5e7eb;
+}
+
+.performance-item:last-child {
+	border-bottom: none;
+}
+
+/* tên loại */
+.performance-item span:first-child {
+	font-size: 14px;
+	color: #374151;
+	font-weight: 500;
+}
+
+/* số lượng */
+.performance-item span:last-child {
+	text-align: right;
+	font-size: 20px;
+	font-weight: 700;
+	color: #111827;
+}
+
+/* nhấn nhẹ theo mức */
+.perf-excellent {
+	color: #15803d;
+}
+
+.perf-good {
+	color: #1d4ed8;
+}
+
+.perf-average {
+	color: #b45309;
+}
+
+.perf-weak {
+	color: #b91c1c;
+}
+
+/* mobile */
+@media (max-width:576px) {
+	.performance-item {
+		grid-template-columns: 1fr 70px;
+	}
+
+	.performance-item span:last-child {
+		font-size: 18px;
+	}
+}
+
+/* =========================================================
+   DETAIL HOMEWORK ASSIGNMENT
+   ========================================================= */
+.icon-sucess,
+.icon-danger {
+	display: flex;
+	gap: 6px;
+	font-weight: 700px;
+	align-items: center;
+	line-height: 1;
+}
+
+.icon-sucess {
+	color: #00C94B;
+
+}
+
+.icon-danger {
+	color: #ff0000;
+}
+
+/* ===== Bộ lọc trạng thái ===== */
+.filter-status {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Label */
+.filter-status-label {
+	font-weight: 600;
+	color: #555;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+/* Select */
+.filter-status-select {
+	padding: 8px;
+	width: 150px;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 14px;
+	background: #fff;
+	cursor: pointer;
+	outline: none;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover */
+.filter-status-select:hover {
+	border-color: #bdbdbd;
+}
+
+
+/* Mobile */
+@media (max-width: 576px) {
+	.filter-status {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.filter-status-label {
+		margin-bottom: 4px;
+	}
+
+	.filter-status-select {
+		width: 100%;
+	}
+}
+
+.stat-icon {
+	width: 50px;
+	height: 50px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	color: white;
+}
+
+.stat-icon.green {
+	background: #28a745;
+}
+
+.stat-icon.blue {
+	background: #5081BE;
+}
+
+.stat-icon.orange {
+	background: #ffc107;
+}
+
+.stat-info h3 {
+	color: #666;
+	font-size: 13px;
+	margin: 0 0 5px 0;
+}
+
+.stat-info .number {
+	font-size: 24px;
+	font-weight: 700;
+	color: #333;
+}
+
+.stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 24px;
+}
+
+.stat-card {
+	background: white;
+	padding: 16px;
+	border-radius: 16px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.instructions {
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+}
+
+.instructions,
+.instructions h2,
+.instructions ul,
+.instructions li,
+.instructions i {
+	color: #856404;
+}
+

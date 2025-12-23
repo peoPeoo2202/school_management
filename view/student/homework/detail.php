@@ -165,9 +165,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             }
             ?>
 
-            <h2 class="detail-row homework-detail-title"><i class="fas fa-info-circle"></i>Chi tiết bài nộp</h2>
 
             <?php if ($submission): ?>
+                <h2 class="detail-row homework-detail-title"><i class="fas fa-info-circle"></i>Chi tiết bài nộp</h2>
+
                 <div class="submitted-section">
 
                     <div class="detail-row">
@@ -257,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 <h2 class="detail-row homework-detail-title"><i class="fa-solid fa-circle-up"></i><?php echo $submission ? 'Nộp lại bài tập' : 'Nộp bài tập'; ?></h2>
                 <div class="form-section">
 
-                    <form method="POST" enctype="multipart/form-data" id="submitForm">
+                    <form class="form-submit-homework" method="POST" enctype="multipart/form-data" id="submitForm">
                         <div class="form-group">
                             <label><i class="fas fa-align-left"></i> Nội dung bài làm (tùy chọn)</label>
                             <textarea name="noiDung" id="noiDung" rows="4" placeholder="Nhập nội dung bài làm của bạn..."><?php echo isset($submission['noiDung']) ? htmlspecialchars($submission['noiDung']) : ''; ?></textarea>
