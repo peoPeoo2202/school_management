@@ -22,6 +22,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <title>Chi tiết yêu cầu - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .info-value {
+            word-break: break-all;
+            white-space: pre-line;
+        }
+    </style>
 </head>
 
 <body>

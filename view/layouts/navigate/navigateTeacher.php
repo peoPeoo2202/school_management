@@ -141,21 +141,21 @@ $maGV = $_SESSION['maGV'] ?? '';
             </a>
             <ul class="submenu" id="requests-submenu">
                 <li>
-                    <a href="index.php?action=yeucau&type=suadiem" class="submenu-item">
+                    <a href="<?php echo url('view/teacher/index.php?action=yeucau&type=suadiem'); ?>" class="submenu-item">
                         <i class="fas fa-edit"></i>
                         <span>Yêu cầu sửa điểm</span>
                     </a>
                 </li>
                 <li>
-                    <a href="index.php?action=yeucau&type=nghiphep" class="submenu-item">
+                    <a href="<?php echo url('view/teacher/index.php?action=yeucau&type=nghiphep'); ?>" class="submenu-item">
                         <i class="fas fa-calendar-times"></i>
                         <span>Xin nghỉ phép</span>
                     </a>
                 </li>
                 <li>
-                    <a href="index.php?action=danhsachyeucau" class="submenu-item">
+                    <a href="<?php echo url('view/teacher/index.php?action=danhsachyeucau'); ?>" class="submenu-item">
                         <i class="fas fa-list-alt"></i>
-                        <span>Danh sách yêu cầu</span>
+                        <span>Lịch sử yêu cầu đã gửi</span>
                     </a>
                 </li>
             </ul>

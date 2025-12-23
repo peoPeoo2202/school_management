@@ -121,7 +121,7 @@ class mBGHReport {
                 LEFT JOIN (
                     SELECT DISTINCT maLop, maMonHoc, maGV, hocKy, namHoc
                     FROM v_phancong_giangday
-                    WHERE trangThai = 'Hoan_thanh'
+                    WHERE trangThai = 'active'
                 ) pc ON pc.maLop = lh.maLop 
                     AND pc.maMonHoc = bd.maMonHoc 
                     AND pc.hocKy = bd.hocKy 
@@ -579,63 +579,65 @@ class mBGHReport {
             hs.hoTen,
             hs.ngaySinh,
             hs.gioiTinh,
-            hs.maDanhHieu,
             l.maLop,
             l.tenLop,
             l.maKhoi,
             k.khoiLop as tenKhoi,
-            
             hl.diemTBHK1,
             hl.diemTBHK2,
             hl.diemTBCaNam,
             hl.loaiHocLuc,
             hl.soMonDuoi5,
-            
             hk1.loaiHK as hanhKiemHK1,
             hk1.soBuoiNghiCoPhep as nghiCoPhepHK1,
             hk1.soBuoiNghiKhongPhep as nghiKhongPhepHK1,
-            
             hk2.loaiHK as hanhKiemHK2,
             hk2.soBuoiNghiCoPhep as nghiCoPhepHK2,
             hk2.soBuoiNghiKhongPhep as nghiKhongPhepHK2,
-            
             (IFNULL(hk1.soBuoiNghiCoPhep, 0) + IFNULL(hk2.soBuoiNghiCoPhep, 0)) as tongNghiCoPhep,
             (IFNULL(hk1.soBuoiNghiKhongPhep, 0) + IFNULL(hk2.soBuoiNghiKhongPhep, 0)) as tongNghiKhongPhep,
-            
             dh.tenDanhHieu as danhHieuHienTai
-            
         FROM hocsinh hs
         LEFT JOIN lophoc l ON hs.maLop = l.maLop
         LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
         LEFT JOIN hocluc hl ON hs.maHS = hl.maHS AND hl.namHoc = ?
         LEFT JOIN hanhkiem hk1 ON hs.maHS = hk1.maHS AND hk1.hocKy = 1 AND hk1.namHoc = ?
         LEFT JOIN hanhkiem hk2 ON hs.maHS = hk2.maHS AND hk2.hocKy = 2 AND hk2.namHoc = ?
-        LEFT JOIN danhhieu dh ON hs.maDanhHieu = dh.maDanhHieu
+        LEFT JOIN (
+            SELECT hdd.maHS, hdd.maDanhHieu, hdd.namHoc
+            FROM hocsinh_danhhieu hdd
+            INNER JOIN (
+                SELECT maHS, MAX(namHoc) as maxNamHoc
+                FROM hocsinh_danhhieu
+                GROUP BY maHS
+            ) latest ON hdd.maHS = latest.maHS AND hdd.namHoc = latest.maxNamHoc
+        ) hdd ON hs.maHS = hdd.maHS
+        LEFT JOIN danhhieu dh ON hdd.maDanhHieu = dh.maDanhHieu
         WHERE hs.trangThaiHocTap = 'danghoc'";
-        
+
         $params = [$namHoc, $namHoc, $namHoc];
-        
+
         if ($maLop) {
             $sql .= " AND hs.maLop = ?";
             $params[] = $maLop;
         }
-        
+
         if ($maKhoi) {
             $sql .= " AND l.maKhoi = ?";
             $params[] = $maKhoi;
         }
-        
-        $sql .= " ORDER BY l.tenLop, hs.hoTen";
-        
+
+        $sql .= " ORDER BY l.tenLop, hs.maHS, hs.hoTen";
+
         $ketQua = $this->executeQuery($sql, $params);
-        
+
         // Thêm thông tin vi phạm, khen thưởng và đề xuất danh hiệu
         foreach ($ketQua as &$hs) {
             // Đếm vi phạm
             $sqlVP = "SELECT COUNT(*) as soViPham FROM vipham WHERE maHS = ? AND namHoc = ?";
             $vp = $this->executeQuery($sqlVP, [$hs['maHS'], $namHoc]);
             $hs['soViPham'] = $vp[0]['soViPham'] ?? 0;
-            
+
             // Đếm khen thưởng
             $sqlKT = "SELECT COUNT(*) as soKhenThuong,
                       MAX(CASE 
@@ -649,14 +651,14 @@ class mBGHReport {
             $kt = $this->executeQuery($sqlKT, [$hs['maHS'], $namHoc]);
             $hs['soKhenThuong'] = $kt[0]['soKhenThuong'] ?? 0;
             $hs['capKhenThuongCaoNhat'] = $kt[0]['capKhenThuongCaoNhat'] ?? 0;
-            
+
             // Xác định hạnh kiểm cả năm
             $hs['hanhKiemCaNam'] = $hs['hanhKiemHK2'] ? $hs['hanhKiemHK2'] : $hs['hanhKiemHK1'];
-            
+
             // Đề xuất danh hiệu
             $hs['danhHieuDeXuat'] = $this->xetDanhHieu($hs);
         }
-        
+
         return $ketQua;
     }
     
@@ -797,27 +799,23 @@ class mBGHReport {
         ];
         
         foreach ($hocSinhs as $hs) {
-            // Thống kê danh hiệu
-            if ($hs['danhHieuDeXuat']) {
-                $tenDH = $hs['danhHieuDeXuat']['tenDanhHieu'];
+            // Thống kê danh hiệu hiện tại (ưu tiên trường tenDanhHieu hoặc danhHieuHienTai)
+            $tenDH = $hs['tenDanhHieu'] ?? ($hs['danhHieuHienTai'] ?? null);
+            if ($tenDH) {
                 $thongKe['danhHieu'][$tenDH] = ($thongKe['danhHieu'][$tenDH] ?? 0) + 1;
             }
-            
             // Thống kê học lực
             if ($hs['loaiHocLuc']) {
                 $thongKe['hocLuc'][$hs['loaiHocLuc']] = ($thongKe['hocLuc'][$hs['loaiHocLuc']] ?? 0) + 1;
             }
-            
             // Thống kê hạnh kiểm
             if ($hs['hanhKiemCaNam']) {
                 $thongKe['hanhKiem'][$hs['hanhKiemCaNam']] = ($thongKe['hanhKiem'][$hs['hanhKiemCaNam']] ?? 0) + 1;
             }
-            
             // Đếm học sinh có khen thưởng
             if ($hs['soKhenThuong'] > 0) {
                 $thongKe['coKhenThuong']++;
             }
-            
             // Đếm học sinh có vi phạm
             if ($hs['soViPham'] > 0) {
                 $thongKe['coViPham']++;

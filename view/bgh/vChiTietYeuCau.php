@@ -460,7 +460,7 @@ if (!isset($_SESSION)) {
                         </div>
                         <div class="info-item" style="margin-top: 15px;">
                             <span class="info-label">Lý do</span>
-                            <span class="info-value"><?php echo nl2br(htmlspecialchars($yeuCau['lyDoNghiPhep'])); ?></span>
+                            <span class="info-value" style="display:block;max-height:180px;overflow:auto;white-space:pre-line;word-break:break-word;background:#f8f8f8;padding:10px;border-radius:6px;border:1px solid #eee;"><?php echo nl2br(htmlspecialchars($yeuCau['lyDoNghiPhep'])); ?></span>
                         </div>
                     <?php else: ?>
                         <!-- Chi tiết sửa điểm -->
@@ -492,7 +492,9 @@ if (!isset($_SESSION)) {
                         </div>
                         <div class="info-item" style="margin-top: 15px;">
                             <span class="info-label">Lý do sửa điểm</span>
-                            <span class="info-value"><?php echo nl2br(htmlspecialchars($yeuCau['lyDoSuaDiem'])); ?></span>
+                            <span class="info-value" style="display:block;max-height:180px;overflow:auto;white-space:pre-line;word-break:break-word;background:#f8f8f8;padding:10px;border-radius:6px;border:1px solid #eee;">
+                                <?php echo nl2br(htmlspecialchars($yeuCau['lyDoSuaDiem'])); ?>
+                            </span>
                         </div>
                     <?php endif; ?>
 

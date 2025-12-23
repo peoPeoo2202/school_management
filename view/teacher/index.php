@@ -223,7 +223,7 @@ $lopChuNhiem = $controller->getInfoLopChuNhiem($maGV, $maNhom);
                         </a>
                         <a href="index.php?action=danhsachyeucau" class="quick-link">
                             <i class="fas fa-list-alt"></i>
-                            <span>Danh sách yêu cầu đã gửi</span>
+                            <span>Lịch sử yêu cầu đã gửi</span>
                         </a>
                     </div>
                 </div>

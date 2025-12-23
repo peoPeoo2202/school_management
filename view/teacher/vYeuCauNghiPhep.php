@@ -71,7 +71,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             <!-- FORM (1 form bao hết 3 card) -->
             <form class="form-nghi-phep" method="POST"
-                action="dashboard.php?action=xulynghiphep"
+                action="index.php?action=xulynghiphep"
                 enctype="multipart/form-data"
                 id="formNghiPhep">
 
@@ -151,6 +151,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <!-- Upload theo layout mẫu -->
                                 <div class="file-upload-wrapper">
                                     <input type="file" name="minhChung" id="minhChung" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div id="fileSizeError" style="display:none;color:#e74c3c;font-size:15px;font-weight:bold;margin-top:6px;">
+                                        <i class="fas fa-exclamation-triangle"></i> Dung lượng tệp vượt mức cho phép (tối đa 5MB)
+                                    </div>
                                     <div style="font-size:42px;color:#5081BE;margin-bottom:8px;">
                                         <i class="fas fa-cloud-upload-alt"></i>
                                     </div>
@@ -179,30 +182,40 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                 </div>
 
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+                    </button>
+                    <a href="dashboard.php?action=danhsachyeucau" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Hủy bỏ
+                    </a>
+                </div>
             </form>
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Gửi yêu cầu
-                </button>
-                <a href="dashboard.php?action=danhsachyeucau" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Hủy bỏ
-                </a>
-            </div>
         </div>
     </div>
 
     <script>
         // Hiển thị tên file theo kiểu layout mẫu
         document.getElementById('minhChung').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || '';
+            const file = e.target.files[0];
             const fileSelected = document.getElementById('fileSelected');
             const fileNameSpan = document.getElementById('fileName');
-
-            if (fileName) {
-                fileNameSpan.textContent = fileName;
-                fileSelected.style.display = 'flex';
+            const fileSizeError = document.getElementById('fileSizeError');
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    fileSizeError.style.display = 'block';
+                    fileSelected.style.display = 'none';
+                    fileNameSpan.textContent = '';
+                    e.target.value = '';
+                } else {
+                    fileSizeError.style.display = 'none';
+                    fileNameSpan.textContent = file.name;
+                    fileSelected.style.display = 'flex';
+                }
             } else {
                 fileSelected.style.display = 'none';
+                fileSizeError.style.display = 'none';
+                fileNameSpan.textContent = '';
             }
         });
 
@@ -252,13 +265,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         document.getElementById('formNghiPhep').addEventListener('submit', function(e) {
             const startDate = new Date(document.getElementById('ngayBatDauNghi').value);
             const endDate = new Date(document.getElementById('ngayKetThucNghi').value);
-
+            const minhChungInput = document.getElementById('minhChung');
+            const fileSizeError = document.getElementById('fileSizeError');
             if (endDate < startDate) {
                 e.preventDefault();
                 alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
                 return false;
             }
-
+            if (minhChungInput.files[0] && minhChungInput.files[0].size > 5 * 1024 * 1024) {
+                fileSizeError.style.display = 'block';
+                e.preventDefault();
+                return false;
+            } else {
+                fileSizeError.style.display = 'none';
+            }
             if (!confirm('Bạn có chắc chắn muốn gửi yêu cầu nghỉ phép này?')) {
                 e.preventDefault();
                 return false;
