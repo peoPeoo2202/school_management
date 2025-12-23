@@ -36,8 +36,11 @@ class mTeacher
     =============================== */
     public function getClassListByTeacher($maGV)
     {
-        $sql = "SELECT * FROM lop WHERE maGV = ?";
+        $sql = "SELECT * FROM lophoc WHERE maGV = ?";
         $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return [];
+        }
         $stmt->bind_param("i", $maGV);
         $stmt->execute();
         $result = $stmt->get_result();

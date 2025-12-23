@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -56,6 +58,12 @@ if (in_array($action, ['yeucau', 'danhsachyeucau', 'chitietyeucau', 'xulysuadiem
 $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 $tenDangNhap = $_SESSION['tenDangNhap'] ?? '';
 $maGV = $_SESSION['maGV'] ?? null;
+$maNhom = $_SESSION['maNhom'] ?? null;
+
+// Khởi tạo controller để lấy thông tin lớp chủ nhiệm
+require_once(__DIR__ . '/../../controller/teacherController.php');
+$controller = new cTeacher();
+$lopChuNhiem = $controller->getInfoLopChuNhiem($maGV, $maNhom);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
