@@ -126,14 +126,14 @@ $lopChuNhiem = $controller->getInfoLopChuNhiem($maGV, $maNhom);
                         </div>
                     </div>
                     <div class="info-box">
-                        <h3><i class="fas fa-users"></i> Lớp chủ nhiệm</h3>
+                        <h3><i class="fas fa-users"></i> Thông tin lớp chủ nhiệm</h3>
 
                         <div class="info-detail">
 
                             <span>
                                 <strong>Lớp chủ nhiệm:</strong>
                                 <p>
-                                    <?php echo $lopChuNhiem ? htmlspecialchars($lopChuNhiem['tenLop']) : '-'; ?>
+                                    <?php echo $lopChuNhiem ? htmlspecialchars($lopChuNhiem['tenLop']) : 'Chưa phân công lớp CN'; ?>
                                 </p>
                             </span>
 
