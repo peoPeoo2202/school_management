@@ -63,79 +63,6 @@ $pageIcon = "fas fa-file-upload";
     <title><?php echo $pageTitle; ?> - Hệ thống Quản lý</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .form-section {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #5081BE;
-        }
-
-
-
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        /* Filter Section */
-
-
-
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-
-
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-
-        .history-button-wrapper {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .btn-history {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px 20px;
-            font-size: 14px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-history:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .btn-history i {
-            font-size: 16px;
-        }
-    </style>
 </head>
 
 <body>
@@ -160,7 +87,7 @@ $pageIcon = "fas fa-file-upload";
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title"><i class="fas fa-plus-circle"></i> Thêm đề thi mới</h2>
-                        <a href="vExamHistory.php" class="btn btn-history">
+                        <a href="vExamHistory.php" class="btn btn-primary">
                             <i class="fas fa-history"></i>
                             <span>Lịch sử đề thi</span>
                         </a>

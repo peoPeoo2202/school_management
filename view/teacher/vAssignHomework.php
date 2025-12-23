@@ -188,10 +188,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                     class="btn btn-assign-homework-info">
                                     <i class="fas fa-eye"></i> Chi tiết
                                 </a>
-                                <button class="btn btn-assign-homework-edit" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
+                                <button class="btn btn-outlined" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-edit"></i> Sửa
                                 </button>
-                                <button class="btn btn-assign-homework-delete" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
+                                <button class="btn btn-delete" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </div>
@@ -227,14 +227,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <!-- assign-homework-modal Thêm Bài Tập -->
     <div class="common-modal" id="add-assign-homework">
         <div class="assign-homework-modal-dialog">
-            <div class="assign-homework-modal-header">
-                <h5 class="assign-homework-modal-title">
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
                     <i class="fas fa-plus-circle"></i>
                     Giao Bài Tập Mới
                 </h5>
                 <button type="button" class="btn-close-modal-assign-homework" onclick="closeAddModal()"><i class="fa-solid fa-x"></i></button>
             </div>
-            <div class="assign-homework-modal-body">
+            <div class="common-modal-body">
                 <form id="addHomeworkForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label">Tên bài tập<span>*</span></label>
@@ -309,7 +309,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </form>
             </div>
-            <div class="assign-homework-modal-footer">
+            <div class="common-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeAddModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>
@@ -323,14 +323,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <!-- assign-homework-modal Sửa Bài Tập -->
     <div class="common-modal" id="edit-assign-homework">
         <div class="assign-homework-modal-dialog">
-            <div class="assign-homework-modal-header">
-                <h5 class="assign-homework-modal-title">
+            <div class="common-modal-header">
+                <h5 class="common-modal-title">
                     <i class="fas fa-edit"></i>
                     Sửa Bài Tập
                 </h5>
-                <button type="button" class="btn-close-modal-assign-homework" onclick="closeEditModal()">&times;</button>
+                <button type="button" class="btn-close-modal-assign-homework" onclick="closeEditModal()"><i class="fa-solid fa-x"></i></button>
             </div>
-            <div class="assign-homework-modal-body">
+            <div class="common-modal-body">
                 <form id="editHomeworkForm" enctype="multipart/form-data">
                     <input type="hidden" name="maBaiTap" id="editMaBaiTap">
 
@@ -393,16 +393,18 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                     <div class="form-group">
                         <label>thời gian nộp <span style="color: red;">*</span></label>
-                        <input type="datetime-local" id="editThoiGianNop" name="thoiGianNop" required>
+                        <input class="time-submit-homework" type="datetime-local" id="editThoiGianNop" name="thoiGianNop" required>
                     </div>
-                    <div class="form-group">
-                        <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
+                    
+                    <div class="mb-3">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
                         <label for="editChoPhepNopTre">
                             Cho phép học sinh nộp trễ
                             <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
                         </label>
+                        </div>
                     </div>
-
 
                     <div class="mb-3">
                         <div class="checkbox-wrapper">
@@ -415,7 +417,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </form>
             </div>
-            <div class="assign-homework-modal-footer">
+            <div class="common-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>

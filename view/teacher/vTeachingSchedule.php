@@ -122,7 +122,7 @@ if (!isset($data)) {
                         <i class="fas fa-calendar-week"></i> Thời khóa biểu
                     </h2>
                     <div class="print-btn-container">
-                        <button onclick="window.print()" class="btn btn-primary">
+                        <button onclick="window.print()" class="btn btn-outlined">
                             <i class="fas fa-print"></i> In lịch
                         </button>
                     </div>

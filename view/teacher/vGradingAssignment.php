@@ -172,7 +172,7 @@ if (!isset($data)) {
                     <table class="common-table">
                         <thead>
                             <tr>
-                                <th class="index-cell">STT</th>
+                                <th class="small-cell">STT</th>
                                 <th>Loại kiểm tra</th>
                                 <th>Môn học</th>
                                 <th>Lớp</th>
@@ -186,7 +186,7 @@ if (!isset($data)) {
                         <tbody class="assign-table-body">
                             <?php foreach ($data['gradingAssignment']['data'] as $index => $item): ?>
                                 <tr>
-                                    <td class="index-cell"><?php echo $index + 1; ?></td>
+                                    <td class="small-cell"><?php echo $index + 1; ?></td>
                                     <td>
                                         <?php
                                         $loaiKTClass = 'mieng';
