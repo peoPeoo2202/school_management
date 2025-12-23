@@ -22,10 +22,10 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
 if (isset($_GET['action']) || isset($_POST['action'])) {
     require_once(__DIR__ . '/../../controller/cHomeworkDetail.php');
     $controller = new cHomeworkDetail();
-    
+
     $action = $_GET['action'] ?? $_POST['action'];
-    
-    switch($action) {
+
+    switch ($action) {
         case 'getDetail':
             $controller->getDetail();
             exit();
@@ -71,6 +71,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,323 +79,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            overflow: hidden;
-        }
-
-        .main-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-        }
-
-        .content-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            background: #f0f2f5;
-        }
-
-        .content-inner {
-            flex: 1;
-            padding: 24px 32px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .content-inner::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .content-inner::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .content-inner::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .content-inner::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .back-button:hover {
-            background: #545b62;
-            transform: translateX(-5px);
-        }
-
-        .homework-info {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 24px;
-        }
-
-        .homework-info h2 {
-            color: #5081BE;
-            margin: 0 0 20px 0;
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .info-item {
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .info-item label {
-            font-weight: 600;
-            color: #666;
-            font-size: 13px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .info-item .value {
-            color: #333;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-        }
-
-        .stat-icon.green { background: #28a745; }
-        .stat-icon.blue { background: #5081BE; }
-        .stat-icon.orange { background: #ffc107; }
-
-        .stat-info h3 {
-            color: #666;
-            font-size: 13px;
-            margin: 0 0 5px 0;
-        }
-
-        .stat-info .number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .submissions-table {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .submissions-table h3 {
-            color: #5081BE;
-            margin: 0 0 20px 0;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-        }
-
-        td {
-            font-size: 14px;
-            color: #666;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status-badge.pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-badge.completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        .btn-primary {
-            background: #5081BE;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3d6a9e;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .file-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: #17a2b8;
-            color: white;
-            border-radius: 6px;
-            margin-left: 8px;
-            transition: all 0.3s;
-        }
-
-        .file-link:hover {
-            background: #138496;
-            transform: scale(1.1);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            color: #666;
-            margin: 0;
-        }
 
         /* Modal Styles */
         .modal {
@@ -545,66 +229,106 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 font-size: 12px;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 8px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
         <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
-        
-        <div class="content-area">
-            <div class="content-inner">
-                <a href="<?= url('view/teacher/vAssignHomework.php') ?>" class="back-button">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
 
-                <!-- Thông tin bài tập -->
-                <div class="homework-info">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 style="margin: 0;"><i class="fas fa-file-alt"></i> <?= htmlspecialchars($homework['tenBaiTap']) ?></h2>
-                        <button onclick="toggleLockHomework()" class="btn <?= $homework['khoaBai'] == 1 ? 'btn-danger' : 'btn-warning' ?>" id="lockBtn">
+        <!-- Main Content -->
+        <div class="content-area">
+
+            <!-- Header theo layout mẫu 1 -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h2>
+                        <i class="fas fa-file-alt"></i> Chi tiết bài tập
+                    </h2>
+                    <p>Theo dõi bài tập và danh sách bài nộp.</p>
+                </div>
+
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen ?? 'Giáo viên'); ?></p>
+                </div>
+            </div>
+
+            <!-- Card: Nút quay lại + Thông tin bài tập -->
+            <div class="card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <h2 class="card-title" style="margin:0;">
+                        <i class="fas fa-info-circle"></i> Thông tin bài tập
+                    </h2>
+
+                    <div class="filter-actions-button">
+                        <button onclick="toggleLockHomework()"
+                            class="btn <?= $homework['khoaBai'] == 1 ? ' btn-danger' : 'btn-warning' ?>"
+                            id="lockBtn">
                             <i class="fas fa-<?= $homework['khoaBai'] == 1 ? 'lock' : 'unlock' ?>"></i>
                             <?= $homework['khoaBai'] == 1 ? 'Mở khóa bài tập' : 'Khóa bài tập' ?>
                         </button>
+                        <a href="<?= url('view/teacher/vAssignHomework.php') ?>" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
                     </div>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <label>Lớp:</label>
-                            <div class="value"><?= htmlspecialchars($homework['tenLop']) ?></div>
-                        </div>
-                        <div class="info-item">
-                            <label>Môn học:</label>
-                            <div class="value"><?= htmlspecialchars($homework['tenMonHoc']) ?></div>
-                        </div>
-                        <div class="info-item">
-                            <label>Hạn nộp:</label>
-                            <div class="value"><?= date('d/m/Y H:i', strtotime($homework['thoiGianNop'])) ?></div>
-                        </div>
-                        <div class="info-item">
-                            <label>Cho phép nộp trễ:</label>
-                            <div class="value">
-                                <?= $homework['choPhepNopTre'] == 1 ? '<span style="color: #28a745;">✓ Có</span>' : '<span style="color: #dc3545;">✗ Không</span>' ?>
-                            </div>
-                        </div>
+                </div>
+
+                <!-- Thông tin bài tập (giữ nội dung cũ, chỉ đổi wrapper) -->
+
+
+                <div class="info-details-box">
+                    <div class="info-item">
+                        <p class="info-label">Tên bài tập:</p>
+                        <p class="info-value"><?= htmlspecialchars($homework['tenBaiTap']) ?></p>
                     </div>
-                    
-                    <?php if($homework['yeuCauBaiTap']): ?>
-                    <div style="margin-top: 20px;">
-                        <label style="font-weight: 600; color: #666; font-size: 13px;">Yêu cầu:</label>
-                        <p style="margin: 10px 0 0 0; color: #333;"><?= nl2br(htmlspecialchars($homework['yeuCauBaiTap'])) ?></p>
+
+                    <div class="info-item">
+                        <p class="info-label">Lớp:</p>
+                        <p class="info-value"><?= htmlspecialchars($homework['tenLop']) ?></p>
                     </div>
+
+                    <div class="info-item">
+                        <p class="info-label">Môn học:</p>
+                        <p class="info-value"><?= htmlspecialchars($homework['tenMonHoc']) ?></p>
+                    </div>
+
+                    <div class="info-item">
+                        <p class="info-label">Hạn nộp:</p>
+                        <p class="info-value"><?= date('d/m/Y H:i', strtotime($homework['thoiGianNop'])) ?></p>
+                    </div>
+
+                    <div class="info-item">
+                        <p class="info-label">Cho phép nộp trễ:</p>
+                        <span class="info-value">
+                            <?= $homework['choPhepNopTre'] == 1
+                                ? '<span class="icon-sucess"><i class="fa-solid fa-circle-check"></i><p>Có</p></span>'
+                                : '<span class="icon-danger"><i class="fa-solid fa-circle-xmark"></i><p>Không</p></span>' ?>
+                        </span>
+                    </div>
+
+                    <?php if (!empty($homework['yeuCauBaiTap'])): ?>
+                        <div class="info-item info-item-full">
+                            <p class="info-label">Yêu cầu:</p>
+                            <p class="info-value">
+                                <?= nl2br(htmlspecialchars($homework['yeuCauBaiTap'])) ?>
+                            </p>
+                        </div>
                     <?php endif; ?>
-                    
-                    <?php if(!empty($homework['tenFile'])): 
-                        // Xác định icon và màu theo loại file
+
+                    <?php
+                    if (!empty($homework['tenFile'])):
                         $fileExt = strtolower(pathinfo($homework['tenFile'], PATHINFO_EXTENSION));
                         $fileIcon = 'fa-file';
                         $iconColor = '#666';
-                        
-                        switch($fileExt) {
+
+                        switch ($fileExt) {
                             case 'pdf':
                                 $fileIcon = 'fa-file-pdf';
                                 $iconColor = '#d32f2f';
@@ -646,85 +370,102 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 $iconColor = '#666';
                         }
                     ?>
-                    <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 8px;">
-                        <label style="font-weight: 600; color: #2e7d32; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                            <i class="fas fa-paperclip"></i> File đính kèm của giáo viên:
-                        </label>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas <?= $fileIcon ?>" style="font-size: 24px; color: <?= $iconColor ?>;"></i>
-                                <span style="color: #2e7d32; font-weight: 500;"><?= htmlspecialchars($homework['tenFile']) ?></span>
+
+                        <div class="info-item info-item-full">
+                            <p class="info-label">File đính kèm:</p>
+
+                            <div class="attachment-in-box">
+                                <div class="attachment-info">
+                                    <i class="fas <?= $fileIcon ?> attachment-icon" style="color: <?= $iconColor ?>;"></i>
+                                    <span class="attachment-filename"><?= htmlspecialchars($homework['tenFile']) ?></span>
+                                </div>
+
+                                <div class="attachment-actions">
+                                    <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
+                                        class="file-attachment"
+                                        download>
+                                        <i class="fas fa-download"></i> Tải xuống
+                                    </a>
+
+                                    <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
+                                        class="file-attachment"
+                                        target="_blank">
+                                        <i class="fas fa-eye"></i> Xem
+                                    </a>
+                                </div>
                             </div>
-                            <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>" 
-                               class="btn btn-sm btn-success" 
-                               download
-                               style="padding: 8px 16px;">
-                                <i class="fas fa-download"></i> Tải xuống
-                            </a>
-                            <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>" 
-                               class="btn btn-sm btn-primary" 
-                               target="_blank"
-                               style="padding: 8px 16px;">
-                                <i class="fas fa-eye"></i> Xem
-                            </a>
                         </div>
-                    </div>
+
                     <?php else: ?>
-                    <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
-                        <label style="font-weight: 600; color: #856404; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-info-circle"></i> Không có file đính kèm
-                        </label>
-                    </div>
+                        <div class="info-item info-item-full">
+                            <div class="attachment-empty">
+                                <label class="attachment-empty-label">
+                                    <i class="fas fa-info-circle"></i>
+                                    Không có file đính kèm
+                                </label>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
+            </div>
 
-                <!-- Thống kê -->
-                <div class="stats-cards">
-                    <div class="stat-card">
-                        <div class="stat-icon green">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Tổng số học sinh</h3>
-                            <div class="number"><?= $homework['tongSoHocSinh'] ?></div>
-                        </div>
+            <!-- GIỮ LẠI stats-cards (yêu cầu của ông xã) -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-users"></i>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon blue">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Đã nộp bài</h3>
-                            <div class="number"><?= $homework['soLuongNopBai'] ?></div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon orange">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Chưa nộp</h3>
-                            <div class="number"><?= $homework['tongSoHocSinh'] - $homework['soLuongNopBai'] ?></div>
-                        </div>
+                    <div class="stat-info">
+                        <h3>Tổng số học sinh</h3>
+                        <div class="number"><?= $homework['tongSoHocSinh'] ?></div>
                     </div>
                 </div>
-
-                <!-- Danh sách bài nộp -->
-                <div class="submissions-table">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3><i class="fas fa-list"></i> Danh sách bài nộp</h3>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <label for="statusFilter" style="font-weight: 600; color: #555;">Lọc trạng thái:</label>
-                            <select id="statusFilter" onchange="filterSubmissions()" style="padding: 8px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;">
-                                <option value="all">Tất cả</option>
-                                <option value="Đã nộp" selected>Đã nộp</option>
-                                <option value="Nộp trễ">Nộp trễ</option>
-                                <option value="Chưa nộp">Chưa nộp</option>
-                            </select>
-                        </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    <?php if($submissions->num_rows > 0): ?>
-                    <table id="submissionsTable">
+                    <div class="stat-info">
+                        <h3>Đã nộp bài</h3>
+                        <div class="number"><?= $homework['soLuongNopBai'] ?></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Chưa nộp</h3>
+                        <div class="number"><?= $homework['tongSoHocSinh'] - $homework['soLuongNopBai'] ?></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card: Danh sách bài nộp -->
+            <div class="card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <h2 class="card-title" style="margin:0;">
+                        <i class="fas fa-list"></i> Danh sách bài nộp
+                    </h2>
+
+                    <div class="filter-status">
+                        <label for="statusFilter" class="filter-status-label">
+                            Lọc trạng thái:
+                        </label>
+
+                        <select id="statusFilter"
+                            class="filter-status-select"
+                            onchange="filterSubmissions()">
+                            <option value="all">Tất cả</option>
+                            <option value="Đã nộp" selected>Đã nộp</option>
+                            <option value="Nộp trễ">Nộp trễ</option>
+                            <option value="Chưa nộp">Chưa nộp</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <?php if ($submissions->num_rows > 0): ?>
+                    <table class="common-table" id="submissionsTable">
                         <thead>
                             <tr>
                                 <th>Học sinh</th>
@@ -735,64 +476,64 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($sub = $submissions->fetch_assoc()): ?>
-                            <tr data-status="<?= $sub['trangThaiNop'] ?>">
-                                <td><?= htmlspecialchars($sub['tenHS']) ?></td>
-                                <td><?= $sub['ngayNop'] ? date('d/m/Y H:i', strtotime($sub['ngayNop'])) : '-' ?></td>
-                                <td>
-                                    <span class="status-badge <?= strtolower($sub['trangThaiNop']) ?>">
-                                        <?= $sub['trangThaiNop'] ?>
-                                    </span>
-                                </td>
-                                <td><?= $sub['diem'] !== null ? number_format($sub['diem'], 1) : '-' ?></td>
-                                <td>
-                                    <?php if($sub['ngayNop']): ?>
-                                    <button class="btn btn-sm btn-primary" onclick="openGradeModal(<?= $sub['maBaiNop'] ?>)">
-                                        <i class="fas fa-pen"></i> Chấm điểm
-                                    </button>
-                                    <?php if($sub['tenFile']): ?>
-                                    <a href="<?= url('uploads/submissions/' . $sub['tenFile']) ?>" 
-                                       class="file-link" target="_blank" title="Xem file">
-                                        <i class="fas fa-file-download"></i>
-                                    </a>
-                                    <?php endif; ?>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
+                            <?php while ($sub = $submissions->fetch_assoc()): ?>
+                                <tr data-status="<?= $sub['trangThaiNop'] ?>">
+                                    <td><?= htmlspecialchars($sub['tenHS']) ?></td>
+                                    <td><?= $sub['ngayNop'] ? date('d/m/Y H:i', strtotime($sub['ngayNop'])) : '-' ?></td>
+                                    <td>
+                                        <span class="badge <?= strtolower($sub['trangThaiNop']) ?>">
+                                            <?= $sub['trangThaiNop'] ?>
+                                        </span>
+                                    </td>
+                                    <td><?= $sub['diem'] !== null ? number_format($sub['diem'], 1) : '-' ?></td>
+                                    <td>
+                                        <?php if ($sub['ngayNop']): ?>
+                                            <button class="btn btn-sm btn-primary" onclick="openGradeModal(<?= $sub['maBaiNop'] ?>)">
+                                                <i class="fas fa-pen"></i> Chấm điểm
+                                            </button>
+                                            <?php if ($sub['tenFile']): ?>
+                                                <a href="<?= url('uploads/submissions/' . $sub['tenFile']) ?>"
+                                                    class="btn btn-sm btn-secondary" target="_blank" title="Xem file">
+                                                    <i class="fas fa-file-download"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span style="color:#999;">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
                             <?php endwhile; ?>
-                            <?php 
-                            // Lấy danh sách mã HS đã nộp
-                            $submissions->data_seek(0); // Reset con trỏ
+
+                            <?php
+                            // Reset và dựng học sinh chưa nộp (giữ logic cũ)
+                            $submissions->data_seek(0);
                             $submittedStudents = [];
-                            while($sub = $submissions->fetch_assoc()) {
+                            while ($sub = $submissions->fetch_assoc()) {
                                 $submittedStudents[] = $sub['maHS'];
                             }
-                            
-                            // Hiển thị học sinh chưa nộp
-                            $students->data_seek(0); // Reset con trỏ
-                            while($student = $students->fetch_assoc()): 
+
+                            $students->data_seek(0);
+                            while ($student = $students->fetch_assoc()):
                                 if (!in_array($student['maHS'], $submittedStudents)):
                             ?>
-                            <tr data-status="Chưa nộp">
-                                <td><?= htmlspecialchars($student['hoTen']) ?></td>
-                                <td>-</td>
-                                <td>
-                                    <span class="status-badge pending">
-                                        Chưa nộp
-                                    </span>
-                                </td>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-                            <?php 
+                                    <tr data-status="Chưa nộp">
+                                        <td><?= htmlspecialchars($student['hoTen']) ?></td>
+                                        <td>-</td>
+                                        <td>
+                                            <span class="badge in-progress">Chưa nộp</span>
+                                        </td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                            <?php
                                 endif;
-                            endwhile; 
+                            endwhile;
                             ?>
                         </tbody>
                     </table>
-                    
-                    <!-- Phân trang -->
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+
+                    <!-- Phân trang (giữ) -->
+                    <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:20px;">
                         <button type="button" id="prevBtn" onclick="changePage(-1)" class="btn btn-secondary btn-sm">
                             <i class="fas fa-chevron-left"></i> Trước
                         </button>
@@ -803,19 +544,19 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             Sau <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
-                    
-                    <?php else: ?>
+
+                <?php else: ?>
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
                         <h3>Chưa có bài nộp nào</h3>
                     </div>
-                    <?php endif; ?>
-                </div>
+                <?php endif; ?>
             </div>
+
         </div>
     </div>
 
-    <!-- Modal Chấm điểm -->
+    <!-- Modal Chấm điểm (GIỮ NGUYÊN như code cũ của ông xã) -->
     <div class="modal" id="gradeModal">
         <div class="modal-dialog">
             <div class="modal-header">
@@ -831,8 +572,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Điểm <span style="color: red;">*</span></label>
-                        <input type="number" name="diem" id="diem" class="form-control" 
-                               min="0" max="10" step="0.5" required>
+                        <input type="number" name="diem" id="diem" class="form-control"
+                            min="0" max="10" step="0.5" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Nhận xét</label>
@@ -861,37 +602,37 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         function initPagination() {
             const table = document.getElementById('submissionsTable');
             if (!table) return;
-            
+
             const tbody = table.getElementsByTagName('tbody')[0];
             allRows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultRow');
             totalRows = allRows.length;
-            
+
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             document.getElementById('totalPages').textContent = totalPages;
-            
+
             showPage(1);
         }
 
         function showPage(page) {
             const totalPages = Math.ceil(totalRows / rowsPerPage);
-            
+
             if (page < 1) page = 1;
             if (page > totalPages) page = totalPages;
             if (totalPages === 0) page = 1;
-            
+
             currentPage = page;
-            
+
             // Ẩn tất cả các hàng
             allRows.forEach(row => row.style.display = 'none');
-            
+
             // Hiển thị các hàng cho trang hiện tại
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            
+
             for (let i = start; i < end && i < totalRows; i++) {
                 allRows[i].style.display = '';
             }
-            
+
             document.getElementById('currentPage').textContent = page;
             document.getElementById('prevBtn').disabled = (page === 1);
             document.getElementById('nextBtn').disabled = (page === totalPages || totalPages === 0);
@@ -903,34 +644,36 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         function openGradeModal(maBaiNop) {
             console.log('Opening modal for maBaiNop:', maBaiNop); // Debug
-            
+
             if (!maBaiNop || maBaiNop <= 0) {
                 alert('Mã bài nộp không hợp lệ: ' + maBaiNop);
                 return;
             }
-            
+
             fetch('<?= url("controller/cHomeworkDetail.php?action=getDetail") ?>', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: 'maBaiNop=' + maBaiNop
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log('Submission data:', data); // Debug
-                if(data.success) {
-                    document.getElementById('maBaiNop').value = data.submission.maBaiNop;
-                    document.getElementById('studentName').value = data.submission.tenHS;
-                    document.getElementById('diem').value = data.submission.diem || '';
-                    document.getElementById('nhanXet').value = data.submission.nhanXet || '';
-                    document.getElementById('gradeModal').classList.add('show');
-                } else {
-                    alert('Lỗi: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi xảy ra khi tải dữ liệu');
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'maBaiNop=' + maBaiNop
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Submission data:', data); // Debug
+                    if (data.success) {
+                        document.getElementById('maBaiNop').value = data.submission.maBaiNop;
+                        document.getElementById('studentName').value = data.submission.tenHS;
+                        document.getElementById('diem').value = data.submission.diem || '';
+                        document.getElementById('nhanXet').value = data.submission.nhanXet || '';
+                        document.getElementById('gradeModal').classList.add('show');
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi xảy ra khi tải dữ liệu');
+                });
         }
 
         function closeGradeModal() {
@@ -941,27 +684,27 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             const filterValue = document.getElementById('statusFilter').value;
             const table = document.getElementById('submissionsTable');
             if (!table) return;
-            
+
             const tbody = table.getElementsByTagName('tbody')[0];
             const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultRow');
-            
+
             // Ẩn tất cả các hàng trước
             rows.forEach(row => row.style.display = 'none');
-            
+
             // Lọc các hàng theo trạng thái
             allRows = rows.filter(row => {
                 const status = row.getAttribute('data-status');
                 return filterValue === 'all' || status === filterValue;
             });
-            
+
             totalRows = allRows.length;
-            
+
             // Xóa thông báo "không tìm thấy" nếu có
             let noResultRow = document.getElementById('noResultRow');
             if (noResultRow) {
                 noResultRow.remove();
             }
-            
+
             // Hiển thị thông báo nếu không có kết quả
             if (totalRows === 0) {
                 noResultRow = tbody.insertRow(0);
@@ -974,15 +717,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 cell.style.fontStyle = 'italic';
                 cell.innerHTML = '<i class="fas fa-search"></i> Không tìm thấy bài nộp với trạng thái này';
             }
-            
+
             // Cập nhật phân trang
             const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
             document.getElementById('totalPages').textContent = totalPages;
-            
+
             // Hiển thị trang 1 sau khi lọc
             showPage(1);
         }
-        
+
         // Khởi tạo phân trang khi trang được tải
         document.addEventListener('DOMContentLoaded', function() {
             initPagination();
@@ -990,45 +733,45 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
         function submitGrade() {
             const form = document.getElementById('gradeForm');
-            if(!form.checkValidity()) {
+            if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
             const formData = new FormData(form);
             const maBaiNop = formData.get('maBaiNop');
-            
+
             console.log('Submitting grade for maBaiNop:', maBaiNop); // Debug
             console.log('FormData:', Array.from(formData.entries())); // Debug
-            
+
             fetch('<?= url("controller/cHomeworkDetail.php?action=grade") ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                console.log('Grade response:', data); // Debug
-                alert(data.message);
-                if(data.success) {
-                    closeGradeModal();
-                    location.reload();
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi xảy ra khi chấm điểm');
-            });
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log('Grade response:', data); // Debug
+                    alert(data.message);
+                    if (data.success) {
+                        closeGradeModal();
+                        location.reload();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi xảy ra khi chấm điểm');
+                });
         }
-        
+
         function toggleLockHomework() {
             const lockBtn = document.getElementById('lockBtn');
             const currentLockState = <?= $homework['khoaBai'] ?>;
             const action = currentLockState == 1 ? 'unlock' : 'lock';
-            const confirmMsg = currentLockState == 1 
-                ? 'Bạn có chắc muốn mở khóa bài tập này? Học sinh sẽ có thể nộp bài.' 
-                : 'Bạn có chắc muốn khóa bài tập này? Học sinh sẽ không thể nộp bài.';
-            
-            if(!confirm(confirmMsg)) {
+            const confirmMsg = currentLockState == 1 ?
+                'Bạn có chắc muốn mở khóa bài tập này? Học sinh sẽ có thể nộp bài.' :
+                'Bạn có chắc muốn khóa bài tập này? Học sinh sẽ không thể nộp bài.';
+
+            if (!confirm(confirmMsg)) {
                 return;
             }
 
@@ -1040,29 +783,29 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             formData.append('action', action);
 
             fetch('<?= url("controller/cHomeworkDetail.php?action=toggleLock") ?>', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    location.reload();
-                } else {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        lockBtn.disabled = false;
+                        lockBtn.innerHTML = action == 'lock' ?
+                            '<i class="fas fa-unlock"></i> Khóa bài tập' :
+                            '<i class="fas fa-lock"></i> Mở khóa bài tập';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Có lỗi xảy ra khi xử lý');
                     lockBtn.disabled = false;
-                    lockBtn.innerHTML = action == 'lock' 
-                        ? '<i class="fas fa-unlock"></i> Khóa bài tập' 
-                        : '<i class="fas fa-lock"></i> Mở khóa bài tập';
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Có lỗi xảy ra khi xử lý');
-                lockBtn.disabled = false;
-                lockBtn.innerHTML = action == 'lock' 
-                    ? '<i class="fas fa-unlock"></i> Khóa bài tập' 
-                    : '<i class="fas fa-lock"></i> Mở khóa bài tập';
-            });
+                    lockBtn.innerHTML = action == 'lock' ?
+                        '<i class="fas fa-unlock"></i> Khóa bài tập' :
+                        '<i class="fas fa-lock"></i> Mở khóa bài tập';
+                });
         }
 
         window.onclick = function(event) {
@@ -1073,4 +816,5 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
     </script>
 </body>
+
 </html>
