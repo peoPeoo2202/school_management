@@ -118,26 +118,41 @@ $maGV = $_SESSION['maGV'] ?? null;
                         </div>
                     </div>
                     <div class="info-box">
-                        <h3><i class="fas fa-user"></i> Lớp chủ nhiệm</h3>
+                        <h3><i class="fas fa-users"></i> Lớp chủ nhiệm</h3>
+
                         <div class="info-detail">
+
                             <span>
-                                <strong>Họ tên:</strong>
-                                <p><?php echo htmlspecialchars($hoTen); ?></p>
+                                <strong>Lớp chủ nhiệm:</strong>
+                                <p>
+                                    <?php echo $lopChuNhiem ? htmlspecialchars($lopChuNhiem['tenLop']) : '-'; ?>
+                                </p>
                             </span>
+
                             <span>
-                                <strong>Tên đăng nhập:</strong>
-                                <p><?php echo htmlspecialchars($tenDangNhap); ?></p>
+                                <strong>Sĩ số:</strong>
+                                <p>
+                                    <?php echo $lopChuNhiem ? $lopChuNhiem['siSo'] : '-'; ?>
+                                </p>
                             </span>
+
                             <span>
-                                <strong>Mã giáo viên:</strong>
-                                <p><?php echo $maGV ? $maGV : '<em style="color: #dc3545;">Chưa liên kết</em>'; ?></p>
+                                <strong>Học sinh nam:</strong>
+                                <p>
+                                    <?php echo $lopChuNhiem ? $lopChuNhiem['soNam'] : '-'; ?>
+                                </p>
                             </span>
+
                             <span>
-                                <strong>Loại tài khoản</strong>
-                                <p>Giáo viên</p>
+                                <strong>Học sinh nữ:</strong>
+                                <p>
+                                    <?php echo $lopChuNhiem ? $lopChuNhiem['soNu'] : '-'; ?>
+                                </p>
                             </span>
+
                         </div>
                     </div>
+
                 </div>
 
             </div>

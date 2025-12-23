@@ -12,308 +12,187 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <title>Báo cáo kết quả học tập - Hệ thống Quản lý Giáo dục</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo VIEW_URL . '/teacher/style.css'; ?>">
-    <style>
-
-
-        .header {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-            font-size: 14px;
-        }
-
-        .header h1 {
-            margin: 0;
-            color: #5081BE;
-        }
-
-        .header h1 i {
-            color: #5081BE;
-        }
-
-        .filter-section {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-        }
-
-        .filter-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .filter-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 16px;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .report-section {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .report-header {
-            background: #f8f9fa;
-            padding: 20px 25px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .report-header h3 {
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .report-table th,
-        .report-table td {
-            padding: 12px 8px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .report-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-            position: sticky;
-            top: 0;
-            white-space: nowrap;
-        }
-
-        .report-table td {
-            color: #666;
-        }
-
-        .report-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .grade-excellent {
-            color: #28a745;
-            font-weight: 600;
-        }
-
-        .grade-good {
-            color: #17a2b8;
-            font-weight: 600;
-        }
-
-        .grade-average {
-            color: #ffc107;
-            font-weight: 600;
-        }
-
-        .grade-weak {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-style: italic;
-        }
-
-        .stats-summary {
-            background: #f8f9fa;
-            padding: 8px 10px;
-            border-top: 1px solid #eee;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 2px;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .filter-form {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-buttons {
-                justify-content: center;
-            }
-
-            .report-table {
-                font-size: 12px;
-            }
-
-            .report-table th,
-            .report-table td {
-                padding: 8px 4px;
-            }
-        }
-    </style>
 </head>
 
 <body>
     <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
         <?php include(__DIR__ . '/../layouts/navigate/navigateTeacher.php'); ?>
 
-        <!-- Main Content -->
         <div class="content-area">
-            <div class="container">
-                <div class="header">
-                    <h1>
-                        <i class="fas fa-book"></i>
-                        Báo cáo kết quả học tập
-                    </h1>
+
+            <!-- Header theo layout mẫu -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h2><i class="fas fa-book"></i> Báo cáo kết quả học tập</h2>
+                    <p>Theo dõi kết quả học tập theo lớp, học kỳ và năm học.</p>
                 </div>
 
-        <div class="filter-section">
-            <div class="filter-title">
-                <i class="fas fa-filter"></i>
-                Bộ lọc báo cáo
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen ?? 'Giáo viên'); ?></p>
+                </div>
             </div>
-            <form method="GET" action="" class="filter-form" id="filter-form">
-                <input type="hidden" name="action" value="hoc-tap">
 
-                <div class="form-group">
-                    <label for="tenMonHoc">Môn học:</label>
-                    <div style="padding: 6px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;">
-                        <strong><?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?></strong>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-filter"></i> Bộ lọc </h2>
+                </div>
+
+                <form method="GET" action="" class="filter-form" id="   ">
+                    <input type="hidden" name="action" value="hoc-tap">
+
+                    <div class="filter-group">
+                        <label for="tenMonHoc">Môn học</label>
+                        <div class="report-subject-name">
+                            <p><?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?></p>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="maLop">Lớp <span style="color:#dc3545;">*</span></label>
+                        <select name="maLop" id="maLop" required>
+                            <option value="">Lớp</option>
+                            <?php foreach ($danhSachLop as $lop): ?>
+                                <option value="<?php echo $lop['maLop']; ?>"
+                                    <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($lop['tenLop']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="hocKy">Học kỳ <span style="color:#dc3545;">*</span></label>
+                        <select name="hocKy" id="hocKy" required>
+                            <option value="">Học kỳ</option>
+                            <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                            <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="namHoc">Năm học <span style="color:#dc3545;">*</span></label>
+                        <select name="namHoc" id="namHoc" required>
+                            <option value="">Năm học</option>
+                            <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                            <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                        </select>
+                    </div>
+
+                    <!-- actions giống layout mẫu -->
+                    <div class="filter-group ">
+                        <div class="filter-actions-button">
+                            <button type="submit" class="btn btn-primary" name="submit" value="1">
+                                <i class="fas fa-search"></i> Xem kết quả
+                            </button>
+
+
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <?php
+            $showStats = isset($_GET['submit']) && !empty($duLieuBaoCao);
+            ?>
+
+            <?php if ($showStats): ?>
+                <?php
+                $soHocSinh = count($duLieuBaoCao);
+                $tongDiem = 0;
+                $soGioi = 0;
+                $soYeu = 0;
+
+                foreach ($duLieuBaoCao as $row) {
+                    $diem = floatval($row['diemTrungBinh'] ?? 0);
+                    $tongDiem += $diem;
+                    if ($diem >= 8.0) $soGioi++;
+                    if ($diem < 5.0) $soYeu++;
+                }
+                ?>
+
+                <div class="stats-assign-row">
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-total">
+                            <?php echo $soHocSinh; ?>
+                        </div>
+                        <div class="stat-label">Tổng số học sinh</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-upcoming">
+                            <?php echo $soHocSinh > 0 ? number_format($tongDiem / $soHocSinh, 2) : '0'; ?>
+                        </div>
+                        <div class="stat-label">Điểm trung bình</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-finish">
+                            <?php echo $soGioi; ?>
+                        </div>
+                        <div class="stat-label">Số HS giỏi</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-danger">
+                            <?php echo $soYeu; ?>
+                        </div>
+                        <div class="stat-label">Số HS yếu</div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="maLop">Lớp: <span style="color: #dc3545;">*</span></label>
-                    <select name="maLop" id="maLop" required>
-                        <option value="">Chọn lớp</option>
-                        <?php foreach ($danhSachLop as $lop): ?>
-                            <option value="<?php echo $lop['maLop']; ?>"
-                                <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($lop['tenLop']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+            <?php endif; ?>
+            <!-- Card kết quả -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-table"></i> Kết quả học tập</h2>
+                    <?php if (isset($_GET['submit']) && !empty($duLieuBaoCao)): ?>
+                        <?php
+                        $params = $_GET;
+                        $params['action'] = 'xuat-excel';
+                        $params['type'] = 'hoc-tap';
+                        unset($params['submit']);
+                        ?>
+                        <a href="?<?php echo http_build_query($params); ?>" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Xuất Excel
+                        </a>
+                    <?php endif; ?>
                 </div>
 
-                <div class="form-group">
-                    <label for="hocKy">Học kỳ: <span style="color: #dc3545;">*</span></label>
-                    <select name="hocKy" id="hocKy" required>
-                        <option value="">Chọn học kỳ</option>
-                        <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                        <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                    </select>
-                </div>
+                <?php if (!isset($_GET['submit'])): ?>
+                    <div class="empty-state">
+                        <div>
+                            <i class="fas fa-info-circle"></i>
+                            <p>Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".</p>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label for="namHoc">Năm học: <span style="color: #dc3545;">*</span></label>
-                    <select name="namHoc" id="namHoc" required>
-                        <option value="">Chọn năm học</option>
-                        <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                        <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                    </select>
-                </div>
-            </form>
+                <?php else: ?>
 
-            <div class="filter-buttons">
-                <button type="submit" form="filter-form" class="btn btn-primary" name="submit" value="1">
-                    <i class="fas fa-search"></i>
-                    Xem kết quả
-                </button>
-                <?php if (isset($_GET['submit']) && !empty($duLieuBaoCao)): ?>
-                <?php 
-                $params = $_GET;
-                $params['action'] = 'xuat-excel';
-                $params['type'] = 'hoc-tap';
-                unset($params['submit']);
-                ?>
-                <a href="?<?php echo http_build_query($params); ?>" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i>
-                    Xuất Excel
-                </a>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <?php if (isset($_GET['submit'])): ?>
-        <div class="report-section">
-            <div class="report-header">
-                <h3>
-                    <i class="fas fa-table"></i>
-                    Kết quả học tập
-                </h3>
-            </div>
-
-            <?php if (!empty($duLieuBaoCao)): ?>
-                        <div class="table-container">
-                            <table class="report-table">
+                    <?php if (!empty($duLieuBaoCao)): ?>
+                        <div>
+                            <table class="common-table">
                                 <thead>
                                     <tr>
-                                        <th>STT</th>
+                                        <th class="small-cell">STT</th>
                                         <th>Họ tên</th>
-                                        <th>Lớp</th>
-                                        <th>Môn học</th>
-                                        <th>Học kỳ</th>
-                                        <th>Năm học</th>
-                                        <th>Điểm TX1</th>
-                                        <th>Điểm TX2</th>
-                                        <th>Điểm TX3</th>
-                                        <th>Điểm TX4</th>
-                                        <th>Điểm giữa kỳ</th>
-                                        <th>Điểm cuối kỳ</th>
-                                        <th>Điểm TB</th>
-                                        <th>Xếp loại</th>
+                                        <th class="small-cell">Lớp</th>
+                                        <th class="table-subject-name">Môn học</th>
+                                        <th class="small-cell">Học kỳ</th>
+                                        <th class="table-small-text">Năm học</th>
+                                        <th class="small-cell">Điểm TX1</th>
+                                        <th class="small-cell">Điểm TX2</th>
+                                        <th class="small-cell">Điểm TX3</th>
+                                        <th class="small-cell">Điểm TX4</th>
+                                        <th class="small-cell">Điểm giữa kỳ</th>
+                                        <th class="small-cell">Điểm cuối kỳ</th>
+                                        <th class="small-cell">Điểm TB</th>
+                                        <th class="range-cell">Xếp loại</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="common-table-body">
                                     <?php
                                     $stt = 1;
-                                    $tongDiem = 0;
-                                    $soHocSinh = count($duLieuBaoCao);
                                     ?>
                                     <?php foreach ($duLieuBaoCao as $row): ?>
                                         <?php
@@ -327,134 +206,64 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             $classXepLoai = 'grade-excellent';
                                         } elseif ($diemTB >= 8.0) {
                                             $xepLoai = 'Giỏi';
-                                            $classXepLoai = 'grade-excellent';
+                                            $classXepLoai = 'badge badge-success';
                                         } elseif ($diemTB >= 6.5) {
                                             $xepLoai = 'Khá';
-                                            $classXepLoai = 'grade-good';
+                                            $classXepLoai = 'badge badge-primary';
                                         } elseif ($diemTB >= 5.0) {
                                             $xepLoai = 'Trung bình';
-                                            $classXepLoai = 'grade-average';
+                                            $classXepLoai = 'badge badge-warning';
                                         } else {
                                             $xepLoai = 'Yếu';
-                                            $classXepLoai = 'grade-weak';
+                                            $classXepLoai = 'badge badge-danger';
                                         }
                                         ?>
                                         <tr>
-                                            <td><?php echo $stt++; ?></td>
+                                            <td class="small-cell"><?php echo $stt++; ?></td>
                                             <td><?php echo htmlspecialchars($row['tenHocSinh']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['tenLop']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
-                                            <td><?php echo $row['hocKy']; ?></td>
-                                            <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
-                                            <td><?php echo isset($row['diemTX1']) && $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diemTX2']) && $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diemTX3']) && $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diemTX4']) && $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diemGiuaKy']) && $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
-                                            <td><?php echo isset($row['diemCuoiKy']) && $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
-                                            <td><strong><?php echo number_format($diemTB, 2); ?></strong></td>
-                                            <td><span class="<?php echo $classXepLoai; ?>"><?php echo $xepLoai; ?></span></td>
+                                            <td class="small-cell"><?php echo htmlspecialchars($row['tenLop']); ?></td>
+                                            <td class="table-small-text"><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
+                                            <td class="small-cell"><?php echo $row['hocKy']; ?></td>
+                                            <td class="table-small-text"><?php echo htmlspecialchars($row['namHoc']); ?></td>
+
+                                            <td class="small-cell"><?php echo isset($row['diemTX1']) && $row['diemTX1'] !== null ? number_format($row['diemTX1'], 1) : '-'; ?></td>
+                                            <td class="small-cell"><?php echo isset($row['diemTX2']) && $row['diemTX2'] !== null ? number_format($row['diemTX2'], 1) : '-'; ?></td>
+                                            <td class="small-cell"><?php echo isset($row['diemTX3']) && $row['diemTX3'] !== null ? number_format($row['diemTX3'], 1) : '-'; ?></td>
+                                            <td class="small-cell"><?php echo isset($row['diemTX4']) && $row['diemTX4'] !== null ? number_format($row['diemTX4'], 1) : '-'; ?></td>
+                                            <td class="small-cell"><?php echo isset($row['diemGiuaKy']) && $row['diemGiuaKy'] !== null ? number_format($row['diemGiuaKy'], 1) : '-'; ?></td>
+                                            <td class="small-cell"><?php echo isset($row['diemCuoiKy']) && $row['diemCuoiKy'] !== null ? number_format($row['diemCuoiKy'], 1) : '-'; ?></td>
+
+                                            <td class="small-cell"> <strong class="<?php echo $diemTB <= 5 ? 'low-avg-grade' : ''; ?>">
+                                                    <?php echo number_format($diemTB, 2); ?>
+                                                </strong></td>
+                                            <td class="range-cell">
+                                                <span class="<?php echo $classXepLoai; ?>">
+                                                    <?php echo $xepLoai; ?>
+                                                </span>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="stats-summary">
-                            <div class="stat-item">
-                                <div class="stat-label">Tổng số học sinh</div>
-                                <div class="stat-value"><?php echo $soHocSinh; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Điểm trung bình</div>
-                                <div class="stat-value"><?php echo $soHocSinh > 0 ? number_format($tongDiem / $soHocSinh, 2) : '0'; ?></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Số HS xuất sắc</div>
-                                <div class="stat-value grade-excellent">
-                                    <?php 
-                                    $soXuatSac = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        if (floatval($row['diemTrungBinh']) >= 9.0) $soXuatSac++;
-                                    }
-                                    echo $soXuatSac;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Số HS giỏi</div>
-                                <div class="stat-value grade-excellent">
-                                    <?php 
-                                    $soGioi = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        $diem = floatval($row['diemTrungBinh']);
-                                        if ($diem >= 8.0 && $diem < 9.0) $soGioi++;
-                                    }
-                                    echo $soGioi;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Số HS khá</div>
-                                <div class="stat-value grade-good">
-                                    <?php 
-                                    $soKha = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        $diem = floatval($row['diemTrungBinh']);
-                                        if ($diem >= 6.5 && $diem < 8.0) $soKha++;
-                                    }
-                                    echo $soKha;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Số HS trung bình</div>
-                                <div class="stat-value grade-average">
-                                    <?php 
-                                    $soTB = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        $diem = floatval($row['diemTrungBinh']);
-                                        if ($diem >= 5.0 && $diem < 6.5) $soTB++;
-                                    }
-                                    echo $soTB;
-                                    ?>
-                                </div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Số HS yếu</div>
-                                <div class="stat-value grade-weak">
-                                    <?php 
-                                    $soYeu = 0;
-                                    foreach ($duLieuBaoCao as $row) {
-                                        if (floatval($row['diemTrungBinh']) < 5.0) $soYeu++;
-                                    }
-                                    echo $soYeu;
-                                    ?>
-                                </div>
-                            </div>
-                        </div>
+
+
                     <?php else: ?>
-                        <div class="no-data">
-                            <i class="fas fa-info-circle"></i>
-                            Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.
+                        <div class="empty-state">
+                            <div>
+                                <i class="fas fa-info-circle"></i>
+                                <p>Không có dữ liệu để hiển thị. Vui lòng kiểm tra lại bộ lọc.</p>
+                            </div>
                         </div>
                     <?php endif; ?>
-            </div>
-        </div>
-        <?php else: ?>
-        <div class="report-section">
-            <div class="no-data">
-                <i class="fas fa-info-circle"></i><br>
-                Vui lòng chọn lớp, học kỳ và năm học, sau đó nhấn "Xem kết quả".
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
 
-    <script>
-        // Form validation handled by HTML5 required attributes
-        // User must manually click "Xem kết quả" button
-    </script>
+                <?php endif; ?>
+            </div>
+
+        </div>
+    </div>
 </body>
+
 
 </html>

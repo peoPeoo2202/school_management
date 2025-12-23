@@ -49,44 +49,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        /* thead {
-            background-color: #5081BE;
-        } */
-
-        th {
-            padding: 8px;
-            text-align: left;
-            font-weight: 600;
-            color: white;
-            font-size: 14px;
-            background-color: #5081BE;
-            text-align: center;
-        }
-
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 12px;
-            font-weight: 400;
-        }
-
-        tbody tr {
-            transition: all 0.2s;
-        }
-
-        tbody tr:hover {
-            background: #f8f9ff;
-        }
-
+ 
         .badge {
             display: inline-block;
             padding: 4px 12px;

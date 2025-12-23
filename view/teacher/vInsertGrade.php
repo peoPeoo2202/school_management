@@ -200,7 +200,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <table class="common-table">
                                 <thead>
                                     <tr>
-                                        <th class="index-cell" rowspan="2">STT</th>
+                                        <th class="small-cell" rowspan="2">STT</th>
                                         <th rowspan="2">Tên học sinh</th>
                                         <th colspan="4">ĐĐG TX</th>
                                         <th rowspan="2">ĐĐG GK</th>
@@ -218,7 +218,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <tbody>
                                     <?php foreach ($students as $index => $student): ?>
                                         <tr>
-                                            <td class="index-cell"><?php echo $index + 1; ?></td>
+                                            <td class="small-cell"><?php echo $index + 1; ?></td>
                                             <td class="student-name"><?php echo htmlspecialchars($student['hoTen']); ?></td>
                                             <td>
                                                 <input type="text" class="grade-input"

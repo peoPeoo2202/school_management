@@ -58,19 +58,22 @@ foreach ($subjects as $subj) {
             <?php echo htmlspecialchars($subjectName); ?> -->
         </h4>
     </div>
-    <div>
-        
+    <div style="height: fit-content;">
+        <h4 class="header-link">
+            <i class="fa-solid fa-bars"></i>
+            <div>
+                <a href="index.php?page=submitHomework">
+                    Danh sách bài tập
+                </a>
+                <span class="separator">/</span>
+                <span class="current-subject">
+                    <?php echo htmlspecialchars($subjectName); ?>
+                </span>
+            </div>
+
+        </h4>
     </div>
-    <h4 class="header-link">
-        <i class="fa-solid fa-bars"></i>
-        <a href="index.php?page=submitHomework">
-            Danh sách bài tập
-        </a>
-        <span class="separator">/</span>
-        <span class="current-subject">
-            <?php echo htmlspecialchars($subjectName); ?>
-        </span>
-    </h4>
+
     <div class="homework-detail-container">
         <?php if (empty($homeworks)): ?>
             <div class="empty-state">
