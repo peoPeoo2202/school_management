@@ -234,7 +234,7 @@ $db->mDisconnect($conn);
             <!-- Actions Bar -->
             <div class="actions-bar">
                 <button class="btn btn-danger" id="delete-selected-btn" onclick="deleteSelected()" disabled>
-                    <i class="fas fa-trash"></i> Xóa đã chọn (<span id="selected-count">0</span>)
+                    <i class="fas fa-ban"></i> Vô hiệu hóa đã chọn (<span id="selected-count">0</span>)
                 </button>
                 <div class="pagination-controls">
                     <label for="records-per-page">Hiển thị:</label>
@@ -485,22 +485,22 @@ $db->mDisconnect($conn);
     <div id="delete-modal" class="modal">
         <div class="modal-content modal-small">
             <div class="modal-header">
-                <h2>Xác nhận xóa</h2>
+                <h2>Xác nhận vô hiệu hóa</h2>
                 <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="warning-icon">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <p id="delete-message">Bạn có chắc chắn muốn xóa học sinh này không?</p>
-                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+                <p id="delete-message">Bạn có chắc chắn muốn vô hiệu hóa học sinh này không?</p>
+                <p class="warning-text">Học sinh sẽ bị vô hiệu hóa và không thể thao tác, nhưng vẫn tồn tại trong hệ thống.</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeDeleteModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>
                 <button class="btn btn-danger" id="confirm-delete-btn">
-                    <i class="fas fa-trash"></i> Xóa
+                    <i class="fas fa-ban"></i> Vô hiệu hóa
                 </button>
             </div>
         </div>
