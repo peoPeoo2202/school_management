@@ -168,13 +168,15 @@ function renderStudentsTable() {
         return;
     }
     
-    tbody.innerHTML = allStudents.map(student => `
-        <tr>
+    tbody.innerHTML = allStudents.map(student => {
+        const isDisabled = student.trangThai === 'Đã xóa';
+        return `
+        <tr class="${isDisabled ? 'disabled-row' : ''}">
             <td>
                 <input type="checkbox" 
                        class="student-checkbox" 
                        value="${student.maHocSinh}"
-                       onchange="updateSelectedCount()">
+                       onchange="updateSelectedCount()" ${isDisabled ? 'disabled' : ''}>
             </td>
             <td>${escapeHtml(student.maHocSinh)}</td>
             <td>${escapeHtml(student.hoTen)}</td>
@@ -184,19 +186,20 @@ function renderStudentsTable() {
             <td>${escapeHtml(student.khoi || 'N/A')}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-icon btn-view" onclick="viewStudent('${student.maHocSinh}')">
+                    <button class="btn-icon btn-view" onclick="${isDisabled ? '' : `viewStudent('${student.maHocSinh}')`}" ${isDisabled ? 'disabled' : ''}>
                         <i class="fas fa-eye"></i> Xem
                     </button>
-                    <button class="btn-icon btn-edit" onclick="editStudent('${student.maHocSinh}')">
+                    <button class="btn-icon btn-edit" onclick="${isDisabled ? '' : `editStudent('${student.maHocSinh}')`}" ${isDisabled ? 'disabled' : ''}>
                         <i class="fas fa-edit"></i> Sửa
                     </button>
-                    <button class="btn-icon btn-delete" onclick="deleteStudent('${student.maHocSinh}')">
-                        <i class="fas fa-trash"></i> Xóa
+                    <button class="btn-icon btn-delete" onclick="${isDisabled ? '' : `deleteStudent('${student.maHocSinh}')`}" ${isDisabled ? 'disabled' : ''}>
+                        <i class="fas fa-ban"></i> Vô hiệu hóa
                     </button>
                 </div>
             </td>
         </tr>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // ========================================
@@ -475,21 +478,25 @@ function populateForm(student, readonly) {
         `;
     } else {
         // Edit mode - show form inputs
-        document.getElementById('student-id').value = student.maHS || student.maHocSinh || '';
-        document.getElementById('hoten').value = student.hoTen || '';
-        document.getElementById('gioitinh').value = student.gioiTinh || '';
-        document.getElementById('ngaysinh').value = student.ngaySinh || '';
-        document.getElementById('tinh').value = student.tinhThanh || '';
-        document.getElementById('xa').value = student.xaPhuong || '';
-        document.getElementById('ngayvaotruong').value = student.ngayVaoTruong || '';
-        document.getElementById('trangthai').value = student.trangThai || student.trangThaiHocTap || 'Đang học';
-        document.getElementById('dantoc').value = student.danToc || '';
-        document.getElementById('sdtnha').value = student.sdtNha || '';
-        document.getElementById('sdtdidong').value = student.sdtDiDong || '';
-        document.getElementById('hotencha').value = student.hoTenCha || '';
-        document.getElementById('nghenghiepcha').value = student.ngheNghiepCha || '';
-        document.getElementById('hotenme').value = student.hoTenMe || '';
-        document.getElementById('nghenghiepme').value = student.ngheNghiepMe || '';
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.value = val;
+        };
+        setVal('student-id', student.maHS || student.maHocSinh || '');
+        setVal('hoten', student.hoTen || '');
+        setVal('gioitinh', student.gioiTinh || '');
+        setVal('ngaysinh', student.ngaySinh || '');
+        setVal('tinh', student.tinhThanh || '');
+        setVal('xa', student.xaPhuong || '');
+        setVal('ngayvaotruong', student.ngayVaoTruong || '');
+        setVal('trangthai', student.trangThai || student.trangThaiHocTap || 'Đang học');
+        setVal('dantoc', student.danToc || '');
+        setVal('sdtnha', student.sdtNha || '');
+        setVal('sdtdidong', student.sdtDiDong || '');
+        setVal('hotencha', student.hoTenCha || '');
+        setVal('nghenghiepcha', student.ngheNghiepCha || '');
+        setVal('hotenme', student.hoTenMe || '');
+        setVal('nghenghiepme', student.ngheNghiepMe || '');
         
         // Set Khối and load Lớp
         if (student.khoi) {
@@ -510,11 +517,33 @@ function populateForm(student, readonly) {
 }
 
 function loadAcademicData(academic) {
-    // Placeholder - implement based on your academic data structure
     const content = document.getElementById('academic-content');
     if (academic && academic.length > 0) {
-        // Build academic table/cards here
-        content.innerHTML = '<p class="empty-state">Dữ liệu học tập (chức năng đang phát triển)</p>';
+        let html = '';
+        academic.forEach(record => {
+            html += `<h4>Năm học: ${record.namHoc} - Học kỳ: ${record.hocKy}</h4>`;
+            html += `<table class="detail-table"><thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>TX1</th><th>TX2</th><th>TX3</th><th>TX4</th>
+                            <th>Giữa kỳ</th><th>Cuối kỳ</th><th>TB</th>
+                        </tr>
+                    </thead><tbody>`;
+            record.grades.forEach(g => {
+                html += `<tr>
+                    <td>${escapeHtml(g.tenMonHoc)}</td>
+                    <td>${g.diemThuongXuyen1 ?? ''}</td>
+                    <td>${g.diemThuongXuyen2 ?? ''}</td>
+                    <td>${g.diemThuongXuyen3 ?? ''}</td>
+                    <td>${g.diemThuongXuyen4 ?? ''}</td>
+                    <td>${g.diemGiuaKy ?? ''}</td>
+                    <td>${g.diemCuoiKy ?? ''}</td>
+                    <td>${g.diemTB ?? ''}</td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        });
+        content.innerHTML = html;
     } else {
         content.innerHTML = '<p class="empty-state">Chưa có dữ liệu học tập</p>';
     }

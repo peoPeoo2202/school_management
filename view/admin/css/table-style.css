@@ -1,3 +1,13 @@
+/* Add style for disabled rows */
+.disabled-row {
+    background-color: #f5c6cb !important;
+    color: #888 !important;
+    opacity: 0.7;
+}
+.disabled-row .action-buttons button {
+    pointer-events: none;
+    opacity: 0.5;
+}
 /* ========================================
    TABLE STYLES - Data Tables & Modals
    ======================================== */

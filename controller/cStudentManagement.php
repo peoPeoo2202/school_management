@@ -1,8 +1,38 @@
 <?php
-/**
- * CONTROLLER: Student Management
- * Handles CRUD operations for student information
- */
+// Ẩn lỗi PHP khỏi output (tránh lẫn HTML vào JSON)
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+// Ghi log lỗi PHP vào file log thay vì trả ra output (giúp debug lỗi 500)
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    $msg = date('Y-m-d H:i:s') . " | $errstr in $errfile on line $errline\n";
+    error_log($msg, 3, __DIR__ . '/../logs/php_error.log');
+    return true;
+});
+set_exception_handler(function($e) {
+    $msg = date('Y-m-d H:i:s') . " | Exception: " . $e->getMessage() . "\n";
+    error_log($msg, 3, __DIR__ . '/../logs/php_error.log');
+    http_response_code(500);
+    echo json_encode(['success'=>false,'message'=>'Lỗi hệ thống, vui lòng liên hệ quản trị viên.']);
+    exit();
+});
+// Ẩn lỗi PHP khỏi output (tránh lẫn HTML vào JSON)
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+// Ghi log lỗi PHP vào file log thay vì trả ra output (giúp debug lỗi 500)
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    $msg = date('Y-m-d H:i:s') . " | $errstr in $errfile on line $errline\n";
+    error_log($msg, 3, __DIR__ . '/../logs/php_error.log');
+    return true;
+});
+set_exception_handler(function($e) {
+    $msg = date('Y-m-d H:i:s') . " | Exception: " . $e->getMessage() . "\n";
+    error_log($msg, 3, __DIR__ . '/../logs/php_error.log');
+    http_response_code(500);
+    echo json_encode(['success'=>false,'message'=>'Lỗi hệ thống, vui lòng liên hệ quản trị viên.']);
+    exit();
+});
 
 require_once '../model/mConnect.php';
 require_once '../model/mStudent.php';
@@ -121,14 +151,14 @@ function listStudents() {
     }
     
     // Get students
-    $sql = "SELECT hs.maHS as maHocSinh, hs.hoTen, hs.gioiTinh, hs.ngaySinh, 
-                   l.tenLop, k.khoiLop as khoi
-            FROM hocsinh hs
-            LEFT JOIN lophoc l ON hs.maLop = l.maLop
-            LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
-            $whereClause
-            ORDER BY k.khoiLop, l.tenLop, hs.hoTen
-            LIMIT ? OFFSET ?";
+        $sql = "SELECT hs.maHS as maHocSinh, hs.hoTen, hs.gioiTinh, hs.ngaySinh, 
+                 l.tenLop, k.khoiLop as khoi, hs.trangThai
+             FROM hocsinh hs
+             LEFT JOIN lophoc l ON hs.maLop = l.maLop
+             LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+             $whereClause
+             ORDER BY k.khoiLop, l.tenLop, hs.hoTen
+             LIMIT ? OFFSET ?";
     
     $params[] = $limit;
     $params[] = $offset;
@@ -192,10 +222,39 @@ function getStudentDetail() {
     }
     
     $student = $result->fetch_assoc();
+    // Đảm bảo trả về đủ trường cho form (nếu thiếu thì thêm key rỗng)
+    $fields = [
+        'maHS', 'maHocSinh', 'hoTen', 'gioiTinh', 'ngaySinh', 'tinhThanh', 'xaPhuong', 'ngayVaoTruong',
+        'trangThai', 'trangThaiHocTap', 'danToc', 'sdtNha', 'sdtDiDong', 'hoTenCha', 'ngheNghiepCha',
+        'hoTenMe', 'ngheNghiepMe', 'maLop', 'tenLop', 'khoi', 'maKhoi'
+    ];
+    foreach ($fields as $f) {
+        if (!isset($student[$f])) {
+            $student[$f] = '';
+        }
+    }
+    // Đồng bộ key maHocSinh cho JS
+    if (empty($student['maHocSinh']) && !empty($student['maHS'])) {
+        $student['maHocSinh'] = $student['maHS'];
+    }
     
-    // Get academic records (if table exists)
+    // Get academic records (bảng điểm)
+    require_once '../model/mStudent.php';
+    $mStudent = new mStudent();
+    $years = $mStudent->getAvailableYears($maHocSinh);
     $academic = [];
-    // TODO: Implement academic records query based on your schema
+    foreach ($years as $namHoc) {
+        foreach ([1, 2] as $hocKy) {
+            $grades = $mStudent->getDetailedGrades($maHocSinh, $namHoc, $hocKy);
+            if ($grades) {
+                $academic[] = [
+                    'namHoc' => $namHoc,
+                    'hocKy' => $hocKy,
+                    'grades' => $grades
+                ];
+            }
+        }
+    }
     
     // Get awards (khen thưởng)
     $awards = [];
@@ -307,24 +366,41 @@ function createStudent() {
                 hoTenCha, ngheNghiepCha, hoTenMe, ngheNghiepMe
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
+    // Assign POST values to variables for bind_param
+    $hoTen = $_POST['hoTen'];
+    $gioiTinh = $_POST['gioiTinh'];
+    $ngaySinh = $_POST['ngaySinh'];
+    $maLop = $_POST['maLop'];
+    $tinhThanh = $_POST['tinhThanh'];
+    $xaPhuong = isset($_POST['xaPhuong']) ? $_POST['xaPhuong'] : null;
+    $ngayVaoTruong = $_POST['ngayVaoTruong'];
+    $trangThai = isset($_POST['trangThai']) ? $_POST['trangThai'] : 'Đang học';
+    $danToc = isset($_POST['danToc']) ? $_POST['danToc'] : null;
+    $sdtNha = isset($_POST['sdtNha']) ? $_POST['sdtNha'] : null;
+    $sdtDiDong = isset($_POST['sdtDiDong']) ? $_POST['sdtDiDong'] : null;
+    $hoTenCha = isset($_POST['hoTenCha']) ? $_POST['hoTenCha'] : null;
+    $ngheNghiepCha = isset($_POST['ngheNghiepCha']) ? $_POST['ngheNghiepCha'] : null;
+    $hoTenMe = isset($_POST['hoTenMe']) ? $_POST['hoTenMe'] : null;
+    $ngheNghiepMe = $_POST['ngheNghiepMe'] ?? null;
+
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('ssssssssssssssss',
         $maHocSinh,
-        $_POST['hoTen'],
-        $_POST['gioiTinh'],
-        $_POST['ngaySinh'],
-        $_POST['maLop'],
-        $_POST['tinhThanh'],
-        $_POST['xaPhuong'] ?? null,
-        $_POST['ngayVaoTruong'],
-        $_POST['trangThai'] ?? 'Đang học',
-        $_POST['danToc'] ?? null,
-        $_POST['sdtNha'] ?? null,
-        $_POST['sdtDiDong'] ?? null,
-        $_POST['hoTenCha'] ?? null,
-        $_POST['ngheNghiepCha'] ?? null,
-        $_POST['hoTenMe'] ?? null,
-        $_POST['ngheNghiepMe'] ?? null
+        $hoTen,
+        $gioiTinh,
+        $ngaySinh,
+        $maLop,
+        $tinhThanh,
+        $xaPhuong,
+        $ngayVaoTruong,
+        $trangThai,
+        $danToc,
+        $sdtNha,
+        $sdtDiDong,
+        $hoTenCha,
+        $ngheNghiepCha,
+        $hoTenMe,
+        $ngheNghiepMe
     );
     
     if ($stmt->execute()) {
@@ -388,25 +464,47 @@ function updateStudent() {
             WHERE maHS = ?";
     
     $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Lỗi truy vấn: ' . $conn->error
+        ]);
+        return;
+    }
+    // Sử dụng biến tạm để bind_param không lỗi khi truyền null
+    $hoTen = $_POST['hoTen'];
+    $gioiTinh = $_POST['gioiTinh'];
+    $ngaySinh = $_POST['ngaySinh'];
+    $maLop = $_POST['maLop'];
+    $tinhThanh = $_POST['tinhThanh'];
+    $xaPhuong = isset($_POST['xaPhuong']) ? $_POST['xaPhuong'] : null;
+    $ngayVaoTruong = $_POST['ngayVaoTruong'];
+    $trangThai = isset($_POST['trangThai']) ? $_POST['trangThai'] : 'Đang học';
+    $danToc = isset($_POST['danToc']) ? $_POST['danToc'] : null;
+    $sdtNha = isset($_POST['sdtNha']) ? $_POST['sdtNha'] : null;
+    $sdtDiDong = isset($_POST['sdtDiDong']) ? $_POST['sdtDiDong'] : null;
+    $hoTenCha = isset($_POST['hoTenCha']) ? $_POST['hoTenCha'] : null;
+    $ngheNghiepCha = isset($_POST['ngheNghiepCha']) ? $_POST['ngheNghiepCha'] : null;
+    $hoTenMe = isset($_POST['hoTenMe']) ? $_POST['hoTenMe'] : null;
+    $ngheNghiepMe = isset($_POST['ngheNghiepMe']) ? $_POST['ngheNghiepMe'] : null;
     $stmt->bind_param('ssssssssssssssss',
-        $_POST['hoTen'],
-        $_POST['gioiTinh'],
-        $_POST['ngaySinh'],
-        $_POST['maLop'],
-        $_POST['tinhThanh'],
-        $_POST['xaPhuong'] ?? null,
-        $_POST['ngayVaoTruong'],
-        $_POST['trangThai'] ?? 'Đang học',
-        $_POST['danToc'] ?? null,
-        $_POST['sdtNha'] ?? null,
-        $_POST['sdtDiDong'] ?? null,
-        $_POST['hoTenCha'] ?? null,
-        $_POST['ngheNghiepCha'] ?? null,
-        $_POST['hoTenMe'] ?? null,
-        $_POST['ngheNghiepMe'] ?? null,
+        $hoTen,
+        $gioiTinh,
+        $ngaySinh,
+        $maLop,
+        $tinhThanh,
+        $xaPhuong,
+        $ngayVaoTruong,
+        $trangThai,
+        $danToc,
+        $sdtNha,
+        $sdtDiDong,
+        $hoTenCha,
+        $ngheNghiepCha,
+        $hoTenMe,
+        $ngheNghiepMe,
         $maHocSinh
     );
-    
     if ($stmt->execute()) {
         echo json_encode([
             'success' => true,
@@ -427,7 +525,6 @@ function deleteStudents() {
     global $conn;
     
     $studentIds = json_decode($_POST['studentIds'] ?? '[]', true);
-    
     if (empty($studentIds)) {
         echo json_encode([
             'success' => false,
@@ -435,56 +532,21 @@ function deleteStudents() {
         ]);
         return;
     }
-    
-    $conn->begin_transaction();
-    
-    try {
-        // Check for constraints (e.g., grades, awards, etc.)
-        $checkSql = "SELECT COUNT(*) as count FROM diem WHERE maHS IN (" . 
-                    str_repeat('?,', count($studentIds) - 1) . "?)";
-        $checkStmt = $conn->prepare($checkSql);
-        $checkStmt->bind_param(str_repeat('s', count($studentIds)), ...$studentIds);
-        $checkStmt->execute();
-        $checkResult = $checkStmt->get_result();
-        $gradeCount = $checkResult->fetch_assoc()['count'];
-        
-        if ($gradeCount > 0) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'Không thể xóa học sinh đã có điểm trong hệ thống'
-            ]);
-            return;
-        }
-        
-        // Delete related records first
-        $tables = ['khenthuong', 'vipham', 'nghihoc', 'diemdanh'];
-        foreach ($tables as $table) {
-            $deleteSql = "DELETE FROM $table WHERE maHS IN (" . 
-                        str_repeat('?,', count($studentIds) - 1) . "?)";
-            $deleteStmt = $conn->prepare($deleteSql);
-            $deleteStmt->bind_param(str_repeat('s', count($studentIds)), ...$studentIds);
-            $deleteStmt->execute();
-        }
-        
-        // Delete students
-        $deleteSql = "DELETE FROM hocsinh WHERE maHS IN (" . 
-                    str_repeat('?,', count($studentIds) - 1) . "?)";
-        $deleteStmt = $conn->prepare($deleteSql);
-        $deleteStmt->bind_param(str_repeat('s', count($studentIds)), ...$studentIds);
-        $deleteStmt->execute();
-        
-        $conn->commit();
-        
+    // Cập nhật trạng thái học sinh thành "Đã xóa"
+    $placeholders = implode(',', array_fill(0, count($studentIds), '?'));
+    $types = str_repeat('s', count($studentIds));
+    $sql = "UPDATE hocsinh SET trangThai = 'Đã xóa' WHERE maHS IN ($placeholders)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$studentIds);
+    if ($stmt->execute()) {
         echo json_encode([
             'success' => true,
-            'message' => 'Xóa thành công ' . count($studentIds) . ' học sinh'
+            'message' => 'Đã vô hiệu hóa ' . count($studentIds) . ' học sinh'
         ]);
-        
-    } catch (Exception $e) {
-        $conn->rollback();
+    } else {
         echo json_encode([
             'success' => false,
-            'message' => 'Lỗi khi xóa: ' . $e->getMessage()
+            'message' => 'Lỗi khi vô hiệu hóa: ' . $stmt->error
         ]);
     }
 }
