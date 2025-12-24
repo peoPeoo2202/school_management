@@ -49,15 +49,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             </div>
             <h4 class="header-link">
-        <i class="fa-solid fa-bars"></i>
-        <a href="index.php?action=danhsachyeucau">
-            Danh sách Yêu cầu
-        </a>
-        <span class="separator">/</span>
-        <span class="current-subject">
-           Yêu cầu #<?php echo $yeuCau['maYeuCau']; ?>
-        </span>
-    </h4>
+                <i class="fa-solid fa-bars"></i>
+                <a href="index.php?action=danhsachyeucau">
+                    Danh sách Yêu cầu
+                </a>
+                <span class="separator">/</span>
+                <span class="current-subject">
+                    Yêu cầu #<?php echo $yeuCau['maYeuCau']; ?>
+                </span>
+            </h4>
             <div class="info-grid">
                 <!-- Card Thông tin chung -->
                 <div class="card">
@@ -65,7 +65,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <h2 class="card-title"><i class="fa-solid fa-circle-info"></i> Thông tin chung</h2>
                     </div>
 
-                    <div class="info-details-box">
+                    <div class="info-details-request">
                         <div class="info-item">
                             <p class="info-label">Loại yêu cầu: </p>
                             <p class="info-value">
@@ -115,10 +115,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                             <div class="info-item">
                                 <p class="info-label">Người xử lý</p>
-                                <p class="info-value">
+                                <span class="info-value nguoi-xu-ly">
                                     <i class="fas fa-user"></i>
-                                    <?php echo htmlspecialchars($yeuCau['nguoiXuLy']); ?>
-                                    </span>
+                                    <p><?php echo htmlspecialchars($yeuCau['nguoiXuLy']); ?></p>
+                                </span>
+                                </span>
                             </div>
                         <?php endif; ?>
 
@@ -140,7 +141,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <div class="card-header">
                             <h2 class="card-title"><i class="fas fa-edit"></i> Thông tin sửa điểm</h2>
                         </div>
-                        <div class="info-details-box">
+                        <div class="info-details-request">
                             <div class="info-item">
                                 <span class="info-label">Họ và tên học sinh: </span>
                                 <span class="info-value"></i> <?php echo htmlspecialchars($yeuCau['tenHS']); ?></span>
@@ -189,7 +190,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <h2 class="card-title"><i class="fas fa-calendar-times"></i> Thông tin nghỉ phép</h2>
                         </div>
 
-                        <div class="info-details-box">
+                        <div class="info-details-request">
                             <div class="info-item">
                                 <span class="info-label">Ngày bắt đầu nghỉ: </span>
                                 <span class="info-value"><?php echo date('d/m/Y', strtotime($yeuCau['ngayBatDauNghi'])); ?></span>

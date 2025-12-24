@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION)) {
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ?>
@@ -11,6 +11,7 @@ if (!isset($_SESSION)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết yêu cầu - Hệ thống quản lý trường học</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../student/style.css">
     <style>
         * {
             margin: 0;
@@ -78,6 +79,9 @@ if (!isset($_SESSION)) {
             background: #c82333;
         }
 
+        .main-wrapper { display: flex; min-height: 100vh; }
+        .content-area { flex: 1; padding: 20px; }
+        
         .detail-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -372,7 +376,13 @@ if (!isset($_SESSION)) {
     </style>
 </head>
 <body>
-    <div class="detail-container">
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+
+        <!-- Main Content -->
+        <div class="content-area">
+        <div class="detail-container">
         <a href="?action=danhsach" class="back-link">← Quay lại danh sách</a>
 
         <div class="detail-card">
@@ -715,7 +725,9 @@ if (!isset($_SESSION)) {
             }
         }
     </script>
+        </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
-
-<?php require_once(__DIR__ . '/../layouts/footer.php'); ?>

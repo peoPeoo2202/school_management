@@ -85,85 +85,8 @@ if (!empty($children)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang chủ phụ huynh</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* Reset body margin */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        /* Main wrapper with flexbox layout */
-        .main-wrapper {
-            display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-        
-        /* Sidebar Navigation - Fixed position */
-        .sidebar-nav {
-            width: 250px;
-            min-width: 250px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            overflow-y: auto;
-            z-index: 1000;
-            flex-shrink: 0;
-        }
-        
-        /* Content area - Takes remaining space */
-        .content-area {
-            flex: 1;
-            margin-left: 250px;
-            min-height: 100vh;
-            padding: 30px;
-            background: #f5f5f5;
-            width: calc(100% - 250px);
-        }
-        
-        /* Responsive design for mobile */
-        @media (max-width: 768px) {
-            .sidebar-nav {
-                transform: translateX(-250px);
-                transition: transform 0.3s ease;
-            }
-            
-            .sidebar-nav.active {
-                transform: translateX(0);
-            }
-            
-            .content-area {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .navbar-toggle {
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                z-index: 1001;
-                background: #8e44ad;
-                color: white;
-                border: none;
-                padding: 12px 16px;
-                border-radius: 8px;
-                cursor: pointer;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            }
-            
-            .navbar-toggle:hover {
-                background: #9b59b6;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../../view/student/style.css">
+    
 </head>
 <body>
     <div class="main-wrapper">
@@ -183,32 +106,14 @@ if (!empty($children)) {
                     echo '<p style="color: #666;">Vui lòng liên hệ nhà trường để cập nhật thông tin.</p>';
                     echo '</div>';
                 } else {
-                    // Hiển thị selector chọn con
-                    echo '<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">';
-                    echo '<form method="GET" style="display: flex; align-items: center; gap: 15px;">';
-                    echo '<label style="font-weight: 600; color: #333;"><i class="fas fa-user-graduate"></i> Xem thông tin của:</label>';
-                    echo '<select name="childIndex" onchange="this.form.submit()" style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">';
-                    
-                    foreach ($children as $index => $child) {
-                        $selected = ($index == ($_GET['childIndex'] ?? $_SESSION['selectedChildIndex'])) ? 'selected' : '';
-                        echo '<option value="' . $index . '" ' . $selected . '>' . htmlspecialchars($child['hoTen']) . ' - ' . htmlspecialchars($child['tenLop']) . '</option>';
-                    }
-                    
-                    echo '</select>';
-                    // Keep current page parameter
-                    if (isset($_GET['page'])) {
-                        echo '<input type="hidden" name="page" value="' . htmlspecialchars($_GET['page']) . '">';
-                    }
-                    echo '</form>';
-                    echo '</div>';
-                    
                     // Cập nhật selected child nếu có thay đổi
                     if (isset($_GET['childIndex'])) {
                         $_SESSION['selectedChildIndex'] = intval($_GET['childIndex']);
                         $_SESSION['maHS'] = $children[$_SESSION['selectedChildIndex']]['maHS'];
                     }
                     
-                    // Hiển thị nội dung theo page - Tái sử dụng view từ student
+                    // Capture page content để có thể insert selector
+                    ob_start();
                     $page = $_GET['page'] ?? 'timeTable';
                     if($page == 'grades'){
                         include_once(__DIR__ . '/../student/grades.php');
@@ -217,6 +122,73 @@ if (!empty($children)) {
                     }else{
                         include_once(__DIR__ . '/../student/timeTable.php');
                     }
+                    $pageContent = ob_get_clean();
+                    
+                    // XỬ LÝ THEO TRANG
+                    if ($page === 'timeTable') {
+                        // TRANG THỜI KHÓA BIỂU: Insert selector TRONG title-header, bên phải
+                        $selectorInHeader = '<div class="child-selector-header">';
+                        $selectorInHeader .= '<label><i class="fas fa-user-graduate"></i> Học sinh:</label>';
+                        $selectorInHeader .= '<select name="childIndex" onchange="this.form.submit()">';
+                        
+                        foreach ($children as $index => $child) {
+                            $selected = ($index == ($_GET['childIndex'] ?? $_SESSION['selectedChildIndex'])) ? 'selected' : '';
+                            $selectorInHeader .= '<option value="' . $index . '" ' . $selected . '>' . htmlspecialchars($child['hoTen']) . '</option>';
+                        }
+                        
+                        $selectorInHeader .= '</select>';
+                        if (isset($_GET['page'])) {
+                            $selectorInHeader .= '<input type="hidden" name="page" value="' . htmlspecialchars($_GET['page']) . '">';
+                        }
+                        $selectorInHeader .= '</div>';
+                        
+                        // Tìm title-header và thêm flexbox + selector
+                        $pattern = '/<div[^>]*class="title-header"[^>]*>(.*?)<\/div>/is';
+                        if (preg_match($pattern, $pageContent, $matches, PREG_OFFSET_CAPTURE)) {
+                            $headerStart = $matches[0][1];
+                            $headerEnd = $headerStart + strlen($matches[0][0]);
+                            
+                            // Thay thế div title-header để thêm flexbox
+                            $oldHeader = $matches[0][0];
+                            $newHeader = preg_replace(
+                                '/<div([^>]*class="title-header"[^>]*)>/i',
+                                '<div$1 style="display: flex; align-items: center; justify-content: space-between;">',
+                                $oldHeader
+                            );
+                            // Insert selector trước tag đóng </div>
+                            $newHeader = substr_replace($newHeader, $selectorInHeader, strlen($newHeader) - 6, 0);
+                            
+                            $pageContent = substr_replace($pageContent, $newHeader, $headerStart, strlen($oldHeader));
+                        }
+                    } else {
+                        // CÁC TRANG KHÁC (grades, classification): Insert selector trong filter-form, cuối bên phải
+                        $selectorInline = '<div class="child-selector-inline">';
+                        $selectorInline .= '<label><i class="fas fa-user-graduate"></i> Học sinh:</label>';
+                        $selectorInline .= '<select name="childIndex" onchange="this.form.submit()">';
+                        
+                        foreach ($children as $index => $child) {
+                            $selected = ($index == ($_GET['childIndex'] ?? $_SESSION['selectedChildIndex'])) ? 'selected' : '';
+                            $selectorInline .= '<option value="' . $index . '" ' . $selected . '>' . htmlspecialchars($child['hoTen']) . '</option>';
+                        }
+                        
+                        $selectorInline .= '</select>';
+                        if (isset($_GET['page'])) {
+                            $selectorInline .= '<input type="hidden" name="page" value="' . htmlspecialchars($_GET['page']) . '">';
+                        }
+                        $selectorInline .= '</div>';
+                        
+                        // Tìm filter-form và insert selector ở cuối, trước tag đóng </form>
+                        $pattern = '/<form[^>]*class="filter-form"[^>]*>(.*?)<\/form>/is';
+                        if (preg_match($pattern, $pageContent, $matches, PREG_OFFSET_CAPTURE)) {
+                            $formContent = $matches[1][0];
+                            $formPos = $matches[1][1];
+                            // Insert selector cuối cùng trong form, trước tag đóng
+                            $newFormContent = $formContent . $selectorInline;
+                            $pageContent = substr_replace($pageContent, $newFormContent, $formPos, strlen($formContent));
+                        }
+                    }
+                    
+                    echo $pageContent;
                 }
             ?>
         </div>

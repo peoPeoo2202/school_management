@@ -207,7 +207,7 @@ $trangThai = $_GET['trangThai'] ?? 'all';
                                         </div>
                                     </td>
 
-                                    <td class="request-text"><?php echo date('d/m/Y H:i', strtotime($yeuCau['ngayGui'])); ?></td>
+                                    <td class="table-small-text "><?php echo date('d/m/Y H:i', strtotime($yeuCau['ngayGui'])); ?></td>
 
                                     <td class="center">
                                         <span class="badge <?php echo $statusClass[$yeuCau['trangThai']]; ?>">

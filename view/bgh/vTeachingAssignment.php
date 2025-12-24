@@ -3,7 +3,9 @@
  * View: vTeachingAssignment.php
  * Trang chính phân công giảng dạy - Menu lựa chọn
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
@@ -26,19 +28,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân công Giảng dạy - BGH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../student/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+       
 
         .container {
             max-width: 1400px;
@@ -247,7 +239,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+
+        <!-- Main Content -->
+        <div class="content-area">
+        <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>
@@ -364,6 +362,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                 </a>
             </div>
         </div>
+        </div>
     </div>
+</div>
 </body>
 </html>

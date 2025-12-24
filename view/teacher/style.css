@@ -2326,13 +2326,26 @@ textarea.form-control {
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 32px;
 }
+.info-details-request{
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 
+}
+.info-details-request .info-value{
+	white-space: nowrap;
+}
 .info-details-box {
 	padding-top: 10px;
 	display: flex;
 	justify-content: space-between;
 }
 
+.nguoi-xu-ly{
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
 .info-details-box.homework-assign {
 	justify-content: none;
 	flex-direction: column;

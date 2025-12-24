@@ -243,6 +243,216 @@ body {
             display: block;
         }
     }
+
+/* =========================================================
+   BGH NAVBAR (Ban Giám Hiệu)
+   ========================================================= */
+.bgh-navbar {
+    min-width: 250px;
+    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 0;
+    position: relative;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.bgh-navbar .navbar-header {
+    padding: 16px;
+    background: #1a2f42;
+    border-bottom: 2px solid #2a5298;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bgh-navbar .navbar-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #2a9fd8;
+}
+
+.bgh-navbar .navbar-toggle {
+    display: none;
+}
+
+.bgh-navbar .navbar-user {
+    padding: 8px;
+    border-bottom: 1px solid #1a2f42;
+    background: rgba(42, 82, 152, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bgh-navbar .user-avatar {
+    font-size: 40px;
+    color: #1a2f42;
+}
+
+.bgh-navbar .user-details {
+    flex: 1;
+}
+
+.bgh-navbar .user-name {
+    margin: 0;
+    font-weight: 500;
+    font-size: 14px;
+    color: white;
+}
+
+.bgh-navbar .user-role {
+    margin: 0;
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+.bgh-navbar .navbar-menu {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.bgh-navbar .navbar-menu > li {
+    margin: 0;
+}
+
+.bgh-navbar .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #d4dce6;
+    transition: all 0.3s;
+    position: relative;
+    font-size: 16px;
+}
+
+.bgh-navbar .menu-item i:first-child {
+    min-width: 16px;
+    text-align: center;
+}
+
+.bgh-navbar .menu-item:hover {
+    background: rgba(42, 82, 152, 0.2);
+    padding-left: 24px;
+    color: white;
+}
+
+.bgh-navbar .menu-item.active {
+    background: #2a5298;
+    color: white;
+    border-left: 2px solid #2a9fd8;
+    padding-left: 16px;
+}
+
+.bgh-navbar .menu-toggle {
+    position: relative;
+}
+
+.bgh-navbar .menu-toggle i:last-child {
+    margin-left: auto;
+    transition: transform 0.3s;
+}
+
+.bgh-navbar .menu-toggle.open i:last-child {
+    transform: rotate(90deg);
+}
+
+.bgh-navbar .submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s;
+}
+
+.bgh-navbar .submenu.open {
+    max-height: 500px;
+}
+
+.bgh-navbar .submenu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 16px 8px 32px;
+    text-decoration: none;
+    color: #a8b4c6;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.bgh-navbar .submenu-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.bgh-navbar .submenu-item:hover {
+    color: white;
+    padding-left: 42px;
+}
+
+.bgh-navbar .navbar-footer {
+    padding: 8px;
+    margin-top: auto;
+    border-top: 2px solid #2a9fd8;
+    background: #1a2f42;
+    font-size: 16px;
+}
+
+.bgh-navbar .logout-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a8d5f0;
+    text-decoration: none;
+    transition: all 0.3s;
+    padding: 8px;
+    border-radius: 8px;
+    border-left: 2px solid transparent;
+}
+
+.bgh-navbar .logout-link:hover {
+    background: rgba(42, 159, 216, 0.2);
+    color: #c8e6f5;
+    border-left: 3px solid #2a9fd8;
+}
+
+/* Scrollbar */
+.bgh-navbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Firefox */
+.bgh-navbar {
+    scrollbar-width: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bgh-navbar {
+        width: 250px;
+        margin-left: -250px;
+        transition: margin-left 0.3s;
+    }
+
+    .bgh-navbar.open {
+        margin-left: 0;
+    }
+
+    .bgh-navbar .navbar-toggle {
+        display: block;
+    }
+}
+
 /* =========================================================
    2) SIDEBAR NAVBAR (STUDENT)
    ========================================================= */
@@ -1616,4 +1826,70 @@ table .buoi-cell {
     .student-navbar {
         width: 200px;
     }
+}
+
+/* =========================================================
+   PARENT CHILD SELECTOR STYLES
+   ========================================================= */
+
+/* Selector trong title-header (timeTable page) */
+.child-selector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    font-size: 17px;
+}
+
+.child-selector-header label {
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+
+.child-selector-header select {
+    padding: 8px ;
+    border: 1px solid #ddd;
+    min-width: 200px;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.child-selector-header select:hover,
+.child-selector-header select:focus {
+    border-color: #5081BE;
+    outline: none;
+}
+
+/* Selector trong filter-form (grades, classification pages) */
+.child-selector-inline {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+}
+
+.child-selector-inline label {
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+}
+
+.child-selector-inline select {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.child-selector-inline select:hover,
+.child-selector-inline select:focus {
+    border-color: #5081BE;
+    outline: none;
 }
