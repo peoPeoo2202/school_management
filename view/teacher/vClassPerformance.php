@@ -47,7 +47,7 @@ $data = [];
 if ($maLop && $maGV) {
     // Lấy thông tin lớp
     $classInfo = $model->getClassInfo($maLop);
-    
+
     // Kiểm tra giáo viên có phải là GVCN của lớp này không
     if (!$classInfo || $classInfo['maGV'] != $maGV) {
         $data['error'] = 'Bạn không có quyền xem thông tin của lớp này';
@@ -56,34 +56,36 @@ if ($maLop && $maGV) {
         $currentYear = date('Y');
         $namHoc = ($currentYear - 1) . '-' . $currentYear;
         $hocKy = (date('m') <= 6) ? 2 : 1;
-        
+
         // Lấy các thống kê
         $averageScore = $model->getClassAverageScore($maLop, $hocKy, $namHoc);
+        $averageScoreHK1 = $model->getClassAverageScore($maLop, 1, $namHoc);
+        $averageScoreHK2 = $model->getClassAverageScore($maLop, 2, $namHoc);
         $yearlyAverage = $model->getClassYearlyAverage($maLop, $namHoc);
         $awardsCount = $model->getAwardsCount($maLop, $hocKy, $namHoc);
         $awardsByLevel = $model->getAwardsByLevel($maLop, $hocKy, $namHoc);
-        
+
         // Lấy danh sách học sinh được khen thưởng theo cấp (chi tiết)
         $awardsByLevelDetail = [];
         foreach ($awardsByLevel as $award) {
             $capKhenThuong = $award['capKhenThuong'];
             $awardsByLevelDetail[$capKhenThuong] = $model->getAwardsByLevelDetail($maLop, $hocKy, $namHoc, $capKhenThuong);
         }
-        
+
         $violationsCount = $model->getViolationsCount($maLop, $hocKy, $namHoc);
-        
+
         // Lấy danh sách học sinh vi phạm theo mức độ
         $violationsNhe = $model->getViolationsByLevel($maLop, $hocKy, $namHoc, 'Nhe');
         $violationsTB = $model->getViolationsByLevel($maLop, $hocKy, $namHoc, 'Trung binh');
         $violationsNang = $model->getViolationsByLevel($maLop, $hocKy, $namHoc, 'Nang');
-        
+
         $conductStats = $model->getConductStatistics($maLop, $hocKy, $namHoc);
         $academicStats = $model->getAcademicStatistics($maLop, $hocKy, $namHoc);
-        
+
         // Lấy thống kê nghỉ học
         $absenceStats = $model->getAbsenceStatistics($maLop, $hocKy, $namHoc);
         $topAbsentStudents = $model->getTopAbsentStudents($maLop, $hocKy, $namHoc, 5);
-        
+
         $data = [
             'classes' => $classes,
             'classInfo' => $classInfo,
@@ -91,6 +93,8 @@ if ($maLop && $maGV) {
             'hocKy' => $hocKy,
             'namHoc' => $namHoc,
             'averageScore' => $averageScore,
+            'averageScoreHK1' => $averageScoreHK1,
+            'averageScoreHK2' => $averageScoreHK2,
             'yearlyAverage' => $yearlyAverage,
             'awardsCount' => $awardsCount,
             'awardsByLevel' => $awardsByLevel,
@@ -119,6 +123,26 @@ if ($maLop && $maGV) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
+        .class-info {
+            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #5081BE;
+        }
+
+        .class-info h3 {
+            color: #5081BE;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .class-info p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 14px;
+        }
 
         .stats-grid {
             display: grid;
@@ -148,6 +172,7 @@ if ($maLop && $maGV) {
             border-radius: 8px;
             margin-bottom: 16px;
         }
+
         .conduct-item:last-child {
             margin-bottom: 0;
         }
@@ -525,78 +550,154 @@ if ($maLop && $maGV) {
             <?php else: ?>
                 <!-- Chọn lớp chủ nhiệm -->
                 <?php if (isset($data['classes']) && count($data['classes']) > 1): ?>
-                <div class="class-selector">
-                    <h3><i class="fas fa-school"></i> Chọn lớp chủ nhiệm</h3>
-                    <div class="class-buttons">
-                        <?php foreach ($data['classes'] as $class): ?>
-                            <a href="?maLop=<?php echo $class['maLop']; ?>" 
-                               class="class-btn <?php echo ($class['maLop'] == $data['currentClassId']) ? 'active' : ''; ?>">
-                                <span class="class-btn-name"><?php echo htmlspecialchars($class['tenLop']); ?></span>
-                                <span class="class-btn-info">
-                                    Khối <?php echo htmlspecialchars($class['khoiLop']); ?> | 
-                                    <?php echo $class['siSo']; ?> HS
-                                </span>
-                            </a>
-                        <?php endforeach; ?>
+                    <div class="class-selector">
+                        <h3><i class="fas fa-school"></i> Chọn lớp chủ nhiệm</h3>
+                        <div class="class-buttons">
+                            <?php foreach ($data['classes'] as $class): ?>
+                                <a href="?maLop=<?php echo $class['maLop']; ?>"
+                                    class="class-btn <?php echo ($class['maLop'] == $data['currentClassId']) ? 'active' : ''; ?>">
+                                    <span class="class-btn-name"><?php echo htmlspecialchars($class['tenLop']); ?></span>
+                                    <span class="class-btn-info">
+                                        Khối <?php echo htmlspecialchars($class['khoiLop']); ?> |
+                                        <?php echo $class['siSo']; ?> HS
+                                    </span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
                 <?php endif; ?>
 
                 <!-- Thông tin lớp -->
-                <div class="info-box">
+                <div class="class-info">
                     <h3><i class="fas fa-info-circle"></i> Thông tin lớp học</h3>
-                    <p><strong>Lớp chủ nhiệm:</strong> <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?> </p>
+                    <p><strong>Lớp:</strong> <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?> - Khối <?php echo htmlspecialchars($data['classInfo']['khoiLop']); ?></p>
                     <p><strong>Sĩ số:</strong> <?php echo $data['classInfo']['siSo']; ?> học sinh</p>
                     <p><strong>Năm học:</strong> <?php echo htmlspecialchars($data['classInfo']['namHoc']); ?> - Học kỳ <?php echo $data['hocKy']; ?></p>
                     <p><strong>Giáo viên chủ nhiệm:</strong> <?php echo htmlspecialchars($data['classInfo']['tenGVCN']); ?></p>
                 </div>
 
                 <!-- Thống kê tổng quan -->
-                <div class="stats-grid">
-                    <div class="stat-card info">
-                        <h4><i class="fas fa-graduation-cap"></i> Điểm trung bình lớp</h4>
-                        <div class="stat-value"><?php echo number_format($data['averageScore']['diemTBLop'] ?? 0, 2); ?></div>
-                        <div class="stat-label">Học kỳ <?php echo $data['hocKy']; ?></div>
-                    </div>
-
-                    <div class="stat-card success" style="cursor: pointer;" 
-                         onclick="window.location.href='../../view/teacher/vStudentAward.php?maLop=<?php echo $data['currentClassId']; ?>'">
-                        <h4><i class="fas fa-award"></i> Khen thưởng</h4>
-                        <div class="stat-value"><?php echo $data['awardsCount']['soHSKhenThuong'] ?? 0; ?></div>
-                        <div class="stat-label"><?php echo $data['awardsCount']['tongKhenThuong'] ?? 0; ?> lượt khen thưởng</div>
-                        <div style="margin-top: 10px; font-size: 12px; color: #27ae60;">
-                            <i class="fas fa-hand-pointer"></i> Click để quản lý
+                <div class="stats-assign-row">
+                    <!-- HK1 -->
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-primary">
+                            <?php
+                            echo number_format(
+                                $data['averageScoreHK1']['diemTBLop'] ?? 0,
+                                2
+                            );
+                            ?>
+                        </div>
+                        <div class="stat-label">
+                            <i class="fas fa-graduation-cap"></i> Điểm trung bình HK1
                         </div>
                     </div>
 
-                    <div class="stat-card warning" style="cursor: pointer;" 
-                         onclick="window.location.href='../../view/teacher/vStudentViolation.php?maLop=<?php echo $data['currentClassId']; ?>'">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Vi phạm</h4>
-                        <div class="stat-value"><?php echo $data['violationsCount']['soHSViPham'] ?? 0; ?></div>
-                        <div class="stat-label"><?php echo $data['violationsCount']['tongViPham'] ?? 0; ?> lượt vi phạm</div>
-                        <div style="margin-top: 10px; font-size: 12px; color: #e74c3c;">
-                            <i class="fas fa-hand-pointer"></i> Click để quản lý
+                    <!-- HK2 -->
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-upcoming">
+                            <?php
+                            echo number_format(
+                                $data['averageScoreHK2']['diemTBLop'] ?? 0,
+                                2
+                            );
+                            ?>
+                        </div>
+                        <div class="stat-label">
+                            <i class="fas fa-graduation-cap"></i> Điểm trung bình HK2
                         </div>
                     </div>
 
-                    <div class="stat-card" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%); cursor: pointer;" 
-                         onclick="window.location.href='../../view/teacher/vStudentAbsence.php?maLop=<?php echo $data['currentClassId']; ?>'">
-                        <h4><i class="fas fa-calendar-times"></i> Nghỉ học</h4>
-                        <div class="stat-value"><?php echo $data['absenceStats']['soHSNghi'] ?? 0; ?></div>
-                        <div class="stat-label"><?php echo $data['absenceStats']['tongSoNgayNghi'] ?? 0; ?> ngày nghỉ (<?php echo $data['absenceStats']['tongNghiKhongPhep'] ?? 0; ?> không phép)</div>
-                        <div style="margin-top: 10px; font-size: 12px; color: #fff;">
-                            <i class="fas fa-hand-pointer"></i> Click để quản lý
+                    <!-- Cả năm -->
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-finish">
+                            <?php
+                            echo number_format(
+                                $data['yearlyAverage'] ?? 0,
+                                2
+                            );
+                            ?>
+                        </div>
+                        <div class="stat-label">
+                            <i class="fas fa-calendar-alt"></i> Điểm TB cả năm
                         </div>
                     </div>
-
-                    <?php if ($data['yearlyAverage']): ?>
-                    <div class="stat-card">
-                        <h4><i class="fas fa-calendar-alt"></i> Điểm TB cả năm</h4>
-                        <div class="stat-value"><?php echo number_format($data['yearlyAverage'], 2); ?></div>
-                        <div class="stat-label">Điểm tổng kết năm học</div>
-                    </div>
-                    <?php endif; ?>
                 </div>
+
+                <div class="stats-grid">
+
+                    <!-- Khen thưởng -->
+                    <div class="stat-card-performance award-box" style="cursor: pointer;"
+                        onclick="window.location.href='../../view/teacher/vStudentAward.php?maLop=<?php echo $data['currentClassId']; ?>'">
+
+                        <div class="stat-icon award">
+                            <i class="fa-solid fa-medal"></i>
+                        </div>
+
+                        <div class="stat-content">
+
+                            <div class="stat-value number">
+                                <?php echo $data['awardsCount']['soHSKhenThuong'] ?? 0; ?>
+                                <p class="student">Học sinh</p>
+                            </div>
+                            <div class="stat-label">
+                                <?php echo $data['awardsCount']['tongKhenThuong'] ?? 0; ?> lượt khen thưởng
+                            </div>
+                            <div class="stat-hint success-text">
+                                <i class="fas fa-hand-pointer"></i> Click để quản lý
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vi phạm -->
+                    <div class="stat-card-performance vi-pham-box" style="cursor: pointer;"
+                        onclick="window.location.href='../../view/teacher/vStudentViolation.php?maLop=<?php echo $data['currentClassId']; ?>'">
+
+                        <div class="stat-icon vi-pham">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+
+                        <div class="stat-content">
+
+                            <div class="stat-value number">
+                                <?php echo $data['violationsCount']['soHSViPham'] ?? 0; ?>
+                                <p class="student">Học sinh</p>
+                            </div>
+                            <div class="stat-label">
+                                <?php echo $data['violationsCount']['tongViPham'] ?? 0; ?> lượt vi phạm
+                            </div>
+                            <div class="stat-hint warning-text">
+                                <i class="fas fa-hand-pointer"></i> Click để quản lý
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nghỉ học -->
+                    <div class="stat-card-performance nghi-hoc-box" style=" cursor: pointer;"
+                        onclick="window.location.href='../../view/teacher/vStudentAbsence.php?maLop=<?php echo $data['currentClassId']; ?>'">
+
+                        <div class="stat-icon nghi-hoc">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                        </div>
+
+                        <div class="stat-content">
+
+                            <div class="stat-value number">
+                                <?php echo $data['absenceStats']['soHSNghi'] ?? 0; ?>
+                                <p class="student">Học sinh</p>
+                            </div>
+                            <div class="stat-label">
+                                <?php echo $data['absenceStats']['tongSoNgayNghi'] ?? 0; ?> ngày nghỉ
+                                (<?php echo $data['absenceStats']['tongNghiKhongPhep'] ?? 0; ?> không phép)
+                            </div>
+                            <div class="stat-hint light-text">
+                                <i class="fas fa-hand-pointer"></i> Click để quản lý
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
 
                 <!-- Thống kê Hạnh kiểm và Học lực -->
                 <div class="stats-grid">
@@ -632,26 +733,26 @@ if ($maLop && $maGV) {
 
                     <!-- Thống kê Học lực -->
                     <?php if (!empty($data['academicStats'])): ?>
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="card-title">
-                                <i class="fas fa-book"></i> Thống kê Học lực
-                            </h2>
-                        </div>
-                        <div class="chart-container">
-                            <?php foreach ($data['academicStats'] as $academic): ?>
-                                <div class="conduct-item">
-                                    <div class="conduct-label">
-                                        <span>Học lực <?php echo htmlspecialchars($academic['xepLoai']); ?></span>
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">
+                                    <i class="fas fa-book"></i> Thống kê Học lực
+                                </h2>
+                            </div>
+                            <div class="chart-container">
+                                <?php foreach ($data['academicStats'] as $academic): ?>
+                                    <div class="conduct-item">
+                                        <div class="conduct-label">
+                                            <span>Học lực <?php echo htmlspecialchars($academic['xepLoai']); ?></span>
+                                        </div>
+                                        <div class="conduct-stats">
+                                            <span class="conduct-count"><?php echo $academic['soLuong']; ?></span>
+                                            <span class="conduct-percent">học sinh</span>
+                                        </div>
                                     </div>
-                                    <div class="conduct-stats">
-                                        <span class="conduct-count"><?php echo $academic['soLuong']; ?></span>
-                                        <span class="conduct-percent">học sinh</span>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
-                    </div>
                     <?php endif; ?>
                 </div>
 
@@ -663,8 +764,8 @@ if ($maLop && $maGV) {
                             <h2 class="card-title">
                                 <i class="fas fa-trophy"></i> Khen thưởng
                             </h2>
-                            <a href="../../view/teacher/vStudentAward.php?maLop=<?php echo $data['currentClassId']; ?>" 
-                               class="btn btn-primary btn-sm">
+                            <a href="../../view/teacher/vStudentAward.php?maLop=<?php echo $data['currentClassId']; ?>"
+                                class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Quản lý khen thưởng
                             </a>
                         </div>
@@ -680,7 +781,7 @@ if ($maLop && $maGV) {
                                                 <div class="tooltip-title">
                                                     <i class="fas fa-trophy"></i> Danh sách học sinh được khen thưởng cấp <?php echo htmlspecialchars($award['capKhenThuong']); ?>
                                                 </div>
-                                                <?php 
+                                                <?php
                                                 $capKhenThuong = $award['capKhenThuong'];
                                                 $studentsAwards = $data['awardsByLevelDetail'][$capKhenThuong] ?? [];
                                                 ?>
@@ -693,8 +794,8 @@ if ($maLop && $maGV) {
                                                                     <span class="award-count"><?php echo $student['soLanKhenThuong']; ?> lần</span>
                                                                 </div>
                                                                 <div class="violation-types">
-                                                                    <i class="fas fa-angle-right"></i> 
-                                                                    <?php 
+                                                                    <i class="fas fa-angle-right"></i>
+                                                                    <?php
                                                                     $details = explode(' | ', $student['chiTietKhenThuong']);
                                                                     foreach ($details as $detail) {
                                                                         echo '<span class="award-detail">' . htmlspecialchars($detail) . '</span>';
@@ -722,8 +823,8 @@ if ($maLop && $maGV) {
                             <h2 class="card-title">
                                 <i class="fas fa-ban"></i>Vi phạm
                             </h2>
-                            <a href="../../view/teacher/vStudentViolation.php?maLop=<?php echo $data['currentClassId']; ?>" 
-                               class="btn btn-primary btn-sm">
+                            <a href="../../view/teacher/vStudentViolation.php?maLop=<?php echo $data['currentClassId']; ?>"
+                                class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Quản lý vi phạm
                             </a>
                         </div>
@@ -746,8 +847,8 @@ if ($maLop && $maGV) {
                                                                 <span class="violation-count"><?php echo $student['soLanViPham']; ?> lần</span>
                                                             </div>
                                                             <div class="violation-types">
-                                                                <i class="fas fa-angle-right"></i> 
-                                                                <?php 
+                                                                <i class="fas fa-angle-right"></i>
+                                                                <?php
                                                                 $details = explode(' | ', $student['chiTietViPham']);
                                                                 foreach ($details as $detail) {
                                                                     echo '<span class="violation-detail">' . htmlspecialchars($detail) . '</span>';
@@ -782,8 +883,8 @@ if ($maLop && $maGV) {
                                                                 <span class="violation-count"><?php echo $student['soLanViPham']; ?> lần</span>
                                                             </div>
                                                             <div class="violation-types">
-                                                                <i class="fas fa-angle-right"></i> 
-                                                                <?php 
+                                                                <i class="fas fa-angle-right"></i>
+                                                                <?php
                                                                 $details = explode(' | ', $student['chiTietViPham']);
                                                                 foreach ($details as $detail) {
                                                                     echo '<span class="violation-detail">' . htmlspecialchars($detail) . '</span>';
@@ -818,8 +919,8 @@ if ($maLop && $maGV) {
                                                                 <span class="violation-count"><?php echo $student['soLanViPham']; ?> lần</span>
                                                             </div>
                                                             <div class="violation-types">
-                                                                <i class="fas fa-angle-right"></i> 
-                                                                <?php 
+                                                                <i class="fas fa-angle-right"></i>
+                                                                <?php
                                                                 $details = explode(' | ', $student['chiTietViPham']);
                                                                 foreach ($details as $detail) {
                                                                     echo '<span class="violation-detail">' . htmlspecialchars($detail) . '</span>';
@@ -845,39 +946,39 @@ if ($maLop && $maGV) {
 
                 <!-- Thống kê nghỉ học -->
                 <?php if (!empty($data['topAbsentStudents'])): ?>
-                <div class="card">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 class="card-title">
-                            <i class="fas fa-calendar-times"></i> Học sinh nghỉ nhiều nhất
-                        </h2>
-                        <a href="../../view/teacher/vStudentAbsence.php?maLop=<?php echo $data['currentClassId']; ?>" 
-                           class="btn btn-primary btn-sm" style="text-decoration: none;">
-                            <i class="fas fa-cog"></i> Quản lý nghỉ học
-                        </a>
-                    </div>
-                    <div class="chart-container">
-                        <?php foreach ($data['topAbsentStudents'] as $student): ?>
-                        <div class="conduct-item">
-                            <div class="conduct-label">
-                                <div class="conduct-icon" style="background: #ffe0b2; color: #e65100;">
-                                    <i class="fas fa-user-slash"></i>
-                                </div>
-                                <span><?php echo htmlspecialchars($student['hoTen']); ?></span>
-                            </div>
-                            <div class="conduct-stats">
-                                <span style="font-size: 14px; color: #27ae60;">
-                                    Có phép: <strong><?php echo $student['soNghiCoPhep']; ?></strong>
-                                </span>
-                                <span style="font-size: 14px; color: #e74c3c;">
-                                    Không phép: <strong><?php echo $student['soNghiKhongPhep']; ?></strong>
-                                </span>
-                                <div class="conduct-count"><?php echo $student['tongNghi']; ?></div>
-                                <span style="font-size: 12px; color: #999;">ngày</span>
-                            </div>
+                    <div class="card">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="card-title">
+                                <i class="fas fa-calendar-times"></i> Học sinh nghỉ nhiều nhất
+                            </h2>
+                            <a href="../../view/teacher/vStudentAbsence.php?maLop=<?php echo $data['currentClassId']; ?>"
+                                class="btn btn-primary btn-sm" style="text-decoration: none;">
+                                <i class="fas fa-cog"></i> Quản lý nghỉ học
+                            </a>
                         </div>
-                        <?php endforeach; ?>
+                        <div class="chart-container">
+                            <?php foreach ($data['topAbsentStudents'] as $student): ?>
+                                <div class="conduct-item">
+                                    <div class="conduct-label">
+                                        <div class="conduct-icon" style="background: #ffe0b2; color: #e65100;">
+                                            <i class="fas fa-user-slash"></i>
+                                        </div>
+                                        <span><?php echo htmlspecialchars($student['hoTen']); ?></span>
+                                    </div>
+                                    <div class="conduct-stats">
+                                        <span style="font-size: 14px; color: #27ae60;">
+                                            Có phép: <strong><?php echo $student['soNghiCoPhep']; ?></strong>
+                                        </span>
+                                        <span style="font-size: 14px; color: #e74c3c;">
+                                            Không phép: <strong><?php echo $student['soNghiKhongPhep']; ?></strong>
+                                        </span>
+                                        <div class="conduct-count"><?php echo $student['tongNghi']; ?></div>
+                                        <span style="font-size: 12px; color: #999;">ngày</span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
