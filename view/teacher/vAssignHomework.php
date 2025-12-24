@@ -191,7 +191,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <button class="btn btn-outlined" onclick="editHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-edit"></i> Sửa
                                 </button>
-                                <button class="btn btn-delete" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
+                                <button class="btn btn-delete-homework" onclick="deleteHomework(<?= $hw['maBaiTap'] ?>)">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </div>
@@ -318,6 +318,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     </div>
 
     <!-- assign-homework-modal Sửa Bài Tập -->
+    <!-- assign-homework-modal Sửa Bài Tập (ĐÃ SỬA) -->
     <div class="common-modal" id="edit-assign-homework">
         <div class="assign-homework-modal-dialog">
             <div class="common-modal-header">
@@ -325,15 +326,19 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     <i class="fas fa-edit"></i>
                     Sửa Bài Tập
                 </h5>
-                <button type="button" class="btn-close-modal" onclick="closeEditModal()"><i class="fa-solid fa-x"></i></button>
+                <button type="button" class="btn-close-modal" onclick="closeEditModal()">
+                    <i class="fa-solid fa-x"></i>
+                </button>
             </div>
+
             <div class="common-modal-body">
                 <form id="editHomeworkForm" enctype="multipart/form-data">
                     <input type="hidden" name="maBaiTap" id="editMaBaiTap">
 
                     <div class="mb-3">
                         <label class="form-label">Tên bài tập<span>*</span></label>
-                        <input type="text" name="tenBaiTap" id="editTenBaiTap" class="form-control" placeholder="Nhập tên bài tập..." required>
+                        <input type="text" name="tenBaiTap" id="editTenBaiTap"
+                            class="form-control" placeholder="Nhập tên bài tập..." required>
                     </div>
 
                     <div class="mb-3">
@@ -343,26 +348,28 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <?php
                             $classes->data_seek(0);
                             while ($class = $classes->fetch_assoc()): ?>
-                                <option value="<?= $class['maLop'] ?>"><?= htmlspecialchars($class['tenLop']) ?></option>
+                                <option value="<?= $class['maLop'] ?>">
+                                    <?= htmlspecialchars($class['tenLop']) ?>
+                                </option>
                             <?php endwhile; ?>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Yêu cầu bài tập</label>
-                        <textarea name="yeuCauBaiTap" id="editYeuCau" class="form-control" rows="4" placeholder="Mô tả chi tiết yêu cầu bài tập..."></textarea>
+                        <textarea name="yeuCauBaiTap" id="editYeuCau"
+                            class="form-control" rows="4"
+                            placeholder="Mô tả chi tiết yêu cầu bài tập..."></textarea>
                     </div>
-                    <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
-                    <label for="editChoPhepNopTre">
-                        Cho phép học sinh nộp trễ
-                        <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
-                    </label>
 
+                    <!-- FILE HIỆN TẠI -->
                     <div class="mb-3">
                         <label class="form-label">File hiện tại</label>
-                        <div id="currentFile" style="display: none; padding: 10px; background: #e8f5e9; border-radius: 8px; margin-bottom: 10px;">
-                            <i class="fas fa-file" style="color: #4caf50;"></i>
-                            <span id="currentFileName" style="color: #2e7d32; font-weight: 600; margin-left: 8px;"></span>
+                        <div id="currentFile"
+                            style="display:none; padding:10px; background:#e8f5e9; border-radius:8px; margin-bottom:10px;">
+                            <i class="fas fa-file" style="color:#4caf50;"></i>
+                            <span id="currentFileName"
+                                style="color:#2e7d32; font-weight:600; margin-left:8px;"></span>
                         </div>
 
                         <label class="form-label">Thay đổi file (tùy chọn)</label>
@@ -374,9 +381,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <h4>Chọn file mới hoặc kéo thả vào đây</h4>
                                 <p>Hỗ trợ: PDF, DOC, DOCX, XLS, XLSX (Tối đa 10MB)</p>
                             </div>
-                            <input type="file" name="fileBaiTap" id="editFileBaiTap" class="file-upload-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                            <input type="file" name="fileBaiTap" id="editFileBaiTap"
+                                class="file-upload-input"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
                             <div class="file-upload-hint">Để trống nếu không muốn thay đổi file</div>
                         </div>
+
                         <div class="file-selected" id="editFileSelected">
                             <i class="fas fa-file-check"></i>
                             <div class="file-info">
@@ -388,18 +398,23 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </button>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>thời gian nộp <span style="color: red;">*</span></label>
-                        <input class="time-submit-homework" type="datetime-local" id="editThoiGianNop" name="thoiGianNop" required>
+
+                    <!-- THỜI GIAN -->
+                    <div class="mb-3">
+                        <label class="form-label">Thời gian nộp<span>*</span></label>
+                        <input type="datetime-local" id="editThoiGianNop"
+                            name="thoiGianNop" class="form-control" required>
                     </div>
-                    
+
+                    <!-- CHECKBOX -->
                     <div class="mb-3">
                         <div class="checkbox-wrapper">
-                            <input type="checkbox" name="choPhepNopTre" id="editChoPhepNopTre" value="1">
-                        <label for="editChoPhepNopTre">
-                            Cho phép học sinh nộp trễ
-                            <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
-                        </label>
+                            <input type="checkbox" name="choPhepNopTre"
+                                id="editChoPhepNopTre" value="1">
+                            <label for="editChoPhepNopTre">
+                                Cho phép học sinh nộp trễ
+                                <span class="checkbox-hint">(Sau thời hạn nộp bài)</span>
+                            </label>
                         </div>
                     </div>
 
@@ -412,13 +427,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </label>
                         </div>
                     </div>
+
                 </form>
             </div>
+
             <div class="common-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
                     <i class="fas fa-times"></i> Hủy
                 </button>
-                <button type="button" class="btn btn-primary" id="updateBtn" onclick="updateHomework()">
+                <button type="button" class="btn btn-primary" id="updateBtn"
+                    onclick="updateHomework()">
                     <i class="fas fa-save"></i> Cập Nhật
                 </button>
             </div>
@@ -832,7 +850,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             container.style.display = 'flex';
             let html = '<div class="pagination">';
-            
+
             // Nút "Trước"
             if (currentPage > 1) {
                 html += `<a href="javascript:changePage(${currentPage - 1})">
@@ -840,18 +858,18 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             } else {
                 html += `<span class="disabled"><i class="fas fa-chevron-left"></i> Trước</span>`;
             }
-            
+
             // Số trang (hiển thị current ±2)
             const startPage = Math.max(1, currentPage - 2);
             const endPage = Math.min(totalPages, currentPage + 2);
-            
+
             if (startPage > 1) {
                 html += '<a href="javascript:changePage(1)">1</a>';
                 if (startPage > 2) {
                     html += '<span>...</span>';
                 }
             }
-            
+
             for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) {
                     html += `<span class="current-page">${i}</span>`;
@@ -859,14 +877,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     html += `<a href="javascript:changePage(${i})">${i}</a>`;
                 }
             }
-            
+
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                     html += '<span>...</span>';
                 }
                 html += `<a href="javascript:changePage(${totalPages})">${totalPages}</a>`;
             }
-            
+
             // Nút "Sau"
             if (currentPage < totalPages) {
                 html += `<a href="javascript:changePage(${currentPage + 1})">
@@ -874,15 +892,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             } else {
                 html += `<span class="disabled">Sau <i class="fas fa-chevron-right"></i></span>`;
             }
-            
+
             html += '</div>';
-            
+
             // Thêm thông tin trang
             const offset = (currentPage - 1) * itemsPerPage;
             html += `<div class="pagination-info">
                 Hiển thị ${offset + 1} - ${Math.min(offset + itemsPerPage, totalItems)} 
                 trong tổng số ${totalItems} bài tập</div>`;
-            
+
             container.innerHTML = html;
         }
 

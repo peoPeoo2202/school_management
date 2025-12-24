@@ -126,7 +126,7 @@ $lopChuNhiem = $controller->getInfoLopChuNhiem($maGV, $maNhom);
                                 <p><?php echo $maGV ? $maGV : '<em style="color: #dc3545;">Chưa liên kết</em>'; ?></p>
                             </span>
                             <span>
-                                <strong>Chức vụ:</strong>
+                                <strong>Loại tài khoản:</strong>
                                 <p>Giáo viên</p>
                             </span>
                         </div>
