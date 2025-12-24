@@ -56,37 +56,59 @@ class mTeacher
     /* ===============================
        LẤY DANH SÁCH LỚP CHI TIẾT (kèm thông tin đầy đủ từ lophoc)
     =============================== */
-    public function getDetailedClassListByTeacher($maGV)
+    public function getDetailedClassListByTeacher($maGV, $filters = [])
     {
-        // Lấy dữ liệu từ lophoc + khoi + phong
-        // JOIN với lichday để lấy môn học, tiết học, học kỳ
-        $sql = "SELECT 
-                    lh.maLop,
-                    lh.tenLop,
-                    lh.siSo,
-                    lh.namHoc,
-                    k.khoiLop,
-                    ph.tenPhong,
-                    COALESCE(mh.tenMonHoc, 'Chưa cập nhật') AS tenMonHoc,
-                    COALESCE(ld.hocKy, 1) AS hocKy,
-                    COALESCE((ld.tietKetThuc - ld.tietBatDau + 1), 0) AS soTietTrongTuan,
-                    'Chưa cập nhật' AS giaoVienChuNhiem
-                FROM lophoc lh
-                LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                LEFT JOIN phong ph ON lh.maPhong = ph.maPhong
-                LEFT JOIN lichday ld ON lh.maLop = ld.maLop AND lh.maGV = ld.maGV
-                LEFT JOIN monhoc mh ON ld.maMonHoc = mh.maMonHoc
-                WHERE lh.maGV = ?
-                ORDER BY lh.tenLop";
+        // Sử dụng view v_phancong_giangday để lấy dữ liệu phân công giảng dạy
+        $sql = "SELECT DISTINCT
+                    v.maLop,
+                    v.tenLop,
+                    v.khoiLop,
+                    v.maKhoi,
+                    v.tenMonHoc,
+                    v.hocKy,
+                    v.namHoc,
+                    v.soTiet,
+                    l.siSo,
+                    COALESCE(p.tenPhong, 'Chưa xếp') AS tenPhong,
+                    COALESCE(gvcn.hoTen, 'Chưa có') AS giaoVienChuNhiem,
+                    v.soTiet AS soTietTrongTuan
+                FROM v_phancong_giangday v
+                LEFT JOIN lophoc l ON v.maLop = l.maLop
+                LEFT JOIN phong p ON l.maPhong = p.maPhong
+                LEFT JOIN giaovien gvcn ON l.maGV = gvcn.maGV
+                WHERE v.maGV = ?";
+        
+        $params = [$maGV];
+        $types = "i";
+        
+        // Thêm điều kiện filter
+        if (!empty($filters['hocKy'])) {
+            $sql .= " AND v.hocKy = ?";
+            $params[] = $filters['hocKy'];
+            $types .= "i";
+        }
+        
+        if (!empty($filters['namHoc'])) {
+            $sql .= " AND v.namHoc = ?";
+            $params[] = $filters['namHoc'];
+            $types .= "s";
+        }
+        
+        if (!empty($filters['maKhoi'])) {
+            $sql .= " AND v.maKhoi = ?";
+            $params[] = $filters['maKhoi'];
+            $types .= "i";
+        }
+        
+        $sql .= " ORDER BY v.tenLop, v.tenMonHoc";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
-            // Nếu query fail, log lỗi và trả về mảng rỗng
             error_log("SQL Error: " . $this->conn->error);
             return [];
         }
         
-        $stmt->bind_param("i", $maGV);
+        $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -185,6 +207,105 @@ class mTeacher
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
+        return $result;
+    }
+
+    /* ===============================
+       LẤY DANH SÁCH KHỐI
+    =============================== */
+    public function getAllKhoi()
+    {
+        $sql = "SELECT maKhoi, khoiLop FROM khoi ORDER BY khoiLop ASC";
+        $result = $this->conn->query($sql);
+        
+        $data = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        return $data;
+    }
+
+    /* ===============================
+       LẤY DANH SÁCH HỌC SINH THEO LỚP
+    =============================== */
+    public function getStudentsByClass($maLop, $page = 1, $limit = 10)
+    {
+        $offset = ($page - 1) * $limit;
+        
+        $sql = "SELECT hs.maHS, hs.hoTen, hs.ngaySinh, hs.gioiTinh, hs.diaChi, 
+                       hs.trangThaiHocTap, l.tenLop, k.khoiLop
+                FROM hocsinh hs
+                JOIN lophoc l ON hs.maLop = l.maLop
+                JOIN khoi k ON l.maKhoi = k.maKhoi
+                WHERE hs.maLop = ?
+                ORDER BY hs.hoTen ASC
+                LIMIT ? OFFSET ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("SQL Error: " . $this->conn->error);
+            return [];
+        }
+        
+        $stmt->bind_param("iii", $maLop, $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $data = [];
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+        $stmt->close();
+        
+        return $data;
+    }
+
+    /* ===============================
+       ĐẾM TỔNG SỐ HỌC SINH THEO LỚP
+    =============================== */
+    public function countStudentsByClass($maLop)
+    {
+        $sql = "SELECT COUNT(*) as total FROM hocsinh WHERE maLop = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return 0;
+        }
+        
+        $stmt->bind_param("i", $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        return $result['total'] ?? 0;
+    }
+
+    /* ===============================
+       LẤY THÔNG TIN LỚP HỌC
+    =============================== */
+    public function getClassInfo($maLop)
+    {
+        $sql = "SELECT l.maLop, l.tenLop, l.siSo, l.namHoc, 
+                       k.khoiLop, p.tenPhong,
+                       COALESCE(gv.hoTen, 'Chưa có') AS giaoVienChuNhiem
+                FROM lophoc l
+                LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+                LEFT JOIN phong p ON l.maPhong = p.maPhong
+                LEFT JOIN giaovien gv ON l.maGV = gv.maGV
+                WHERE l.maLop = ?";
+        
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+        
+        $stmt->bind_param("i", $maLop);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
         return $result;
     }
 }

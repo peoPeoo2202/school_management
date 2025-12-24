@@ -18,6 +18,12 @@ if ($_SESSION['loaiTaiKhoan'] !== 'giaovien') {
 // Xử lý routing cho các chức năng yêu cầu
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
+// Routing cho danh sách học sinh theo lớp
+if ($action == 'viewStudentList') {
+    require_once(__DIR__ . '/vClassStudentList.php');
+    exit();
+}
+
 if (in_array($action, ['yeucau', 'danhsachyeucau', 'chitietyeucau', 'xulysuadiem', 'xulynghiphep', 'download'])) {
     require_once(__DIR__ . '/../../controller/cTeacherRequest.php');
     $controller = new ControllerTeacherRequest();

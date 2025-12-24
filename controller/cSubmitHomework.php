@@ -60,12 +60,23 @@ class cSubmitHomework {
         $duongDan = null;
 
         if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
+            // Kiểm tra định dạng file
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+            
+            if (!in_array($extension, $allowedExtensions)) {
+                return [
+                    'success' => false, 
+                    'message' => 'Định dạng file không được hỗ trợ! Vui lòng chọn file PDF, DOC, DOCX, XLS hoặc XLSX.',
+                    'showAlert' => true
+                ];
+            }
+            
             $uploadDir = __DIR__ . '/../uploads/submissions/';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
 
-            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $tenFile = time() . '_' . uniqid() . '_' . basename($file['name']);
             $duongDan = 'uploads/submissions/' . $tenFile;
 

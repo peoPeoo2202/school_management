@@ -407,16 +407,48 @@ class ControllerStudentClassification {
             return ['success' => false, 'message' => 'Bạn không có quyền xếp loại'];
         }
         
-        $result = $this->model->autoClassifyAllConduct($maLop, $hocKy, $namHoc, $maGV);
+        // Log để debug
+        error_log("AutoClassify conduct: maLop=$maLop, hocKy=$hocKy, namHoc=$namHoc, maGV=$maGV");
         
-        if ($result['success'] > 0) {
-            return [
-                'success' => true,
-                'message' => "Đã xếp loại tự động thành công cho {$result['success']} học sinh" .
-                            ($result['failed'] > 0 ? " ({$result['failed']} học sinh lỗi)" : "")
-            ];
-        } else {
-            return ['success' => false, 'message' => 'Không thể xếp loại tự động'];
+        try {
+            $result = $this->model->autoClassifyAllConduct($maLop, $hocKy, $namHoc, $maGV);
+            
+            error_log("AutoClassify result: " . json_encode($result));
+            
+            if ($result['success'] > 0) {
+                $message = "Đã xếp loại hạnh kiểm tự động thành công cho {$result['success']} học sinh";
+                if (!empty($result['noData'])) {
+                    $message .= ". {$result['noData']} học sinh chưa có dữ liệu hạnh kiểm";
+                }
+                if ($result['failed'] > 0) {
+                    $message .= ". {$result['failed']} học sinh lỗi";
+                }
+                return [
+                    'success' => true,
+                    'message' => $message
+                ];
+            } else {
+                $reasons = [];
+                if (!empty($result['noData'])) {
+                    $reasons[] = "{$result['noData']} học sinh chưa có dữ liệu hạnh kiểm";
+                }
+                if ($result['failed'] > 0) {
+                    $reasons[] = "{$result['failed']} học sinh lỗi";
+                }
+                
+                $message = 'Không thể xếp loại tự động';
+                if (!empty($reasons)) {
+                    $message .= ': ' . implode(', ', $reasons);
+                }
+                
+                return [
+                    'success' => false, 
+                    'message' => $message
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("AutoClassify error: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Lỗi khi xếp loại: ' . $e->getMessage()];
         }
     }
     

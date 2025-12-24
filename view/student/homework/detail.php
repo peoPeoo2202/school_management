@@ -39,10 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             ? 'Bài tập đã bị khóa. Học sinh không thể nộp bài!'
             : 'Bài tập đã hết hạn nộp và không cho phép nộp trễ! Vui lòng liên hệ giáo viên.';
         $messageType = 'error';
+        $showAlert = true;
     } else {
         $result = $controller->submitHomework($maBaiTap, $maHS, $_FILES['file'], $_POST['noiDung'] ?? '');
         $message = $result['message'];
         $messageType = $result['success'] ? 'success' : 'error';
+        $showAlert = isset($result['showAlert']) && $result['showAlert'];
         $submission = $controller->getStudentSubmission($maBaiTap, $maHS);
     }
 }
@@ -88,10 +90,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         <div>
 
             <?php if (isset($message)): ?>
-                <div class="message <?php echo $messageType; ?>">
-                    <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
-                    <span><?php echo htmlspecialchars($message); ?></span>
-                </div>
+                <?php if (isset($showAlert) && $showAlert): ?>
+                    <script>
+                        alert('<?php echo addslashes($message); ?>');
+                    </script>
+                <?php else: ?>
+                    <div class="message <?php echo $messageType; ?>">
+                        <i class="fas fa-<?php echo $messageType === 'success' ? 'check-circle' : 'exclamation-circle'; ?>"></i>
+                        <span><?php echo htmlspecialchars($message); ?></span>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
             <h2 class="detail-row homework-detail-title"><i class="fas fa-info-circle"></i>Chi tiết bài tập</h2>
 

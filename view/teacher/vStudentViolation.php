@@ -115,37 +115,36 @@ if (empty($classes)) {
                         
                     </div>
 
-                    <form method="GET" action="../../controller/cStudentViolation.php">
-                        <input type="hidden" name="action" value="list">
-                        <div class="filter-section">
-                            <div class="filter-group">
-                                <label>Học kỳ</label>
-                                <select id="hocKy" class="form-select" onchange="loadData()">
-                                    <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                    <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Năm học</label>
-                                <select id="namHoc" class="form-select" onchange="loadData()">
-                                    <?php
-                                    $currentYear = date('Y');
-                                    for ($i = 0; $i < 5; $i++) {
-                                        $startYear = $currentYear - $i - 1;
-                                        $endYear = $currentYear - $i;
-                                        $namHocOption = $startYear . '-' . $endYear;
-                                        $selected = ($namHocOption == $data['namHoc']) ? 'selected' : '';
-                                        echo "<option value='$namHocOption' $selected>$namHocOption</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="filter-actions-button"> <button class="btn btn-secondary" onclick="openAddModal(0,'')">
-                        <i class="fas fa-plus"></i> Thêm vi phạm
-                    </button></div>
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label>Học kỳ</label>
+                            <select id="hocKy" class="form-select" onchange="loadData()">
+                                <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
                         </div>
-                    </form>
+
+                        <div class="filter-group">
+                            <label>Năm học</label>
+                            <select id="namHoc" class="form-select" onchange="loadData()">
+                                <?php
+                                $currentYear = date('Y');
+                                for ($i = 0; $i < 5; $i++) {
+                                    $startYear = $currentYear - $i - 1;
+                                    $endYear = $currentYear - $i;
+                                    $namHocOption = $startYear . '-' . $endYear;
+                                    $selected = ($namHocOption == $data['namHoc']) ? 'selected' : '';
+                                    echo "<option value='$namHocOption' $selected>$namHocOption</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="filter-actions-button">
+                            <button type="button" class="btn btn-secondary" onclick="openAddModal(0,'')">
+                                <i class="fas fa-plus"></i> Thêm vi phạm
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <input type="hidden" id="maLop" value="<?php echo $data['currentClassId']; ?>">
@@ -178,12 +177,11 @@ if (empty($classes)) {
 
             <div class="common-modal-body">
                 <div id="addForm">
-                    <input type="hidden" id="addMaHS">
-
                     <div class="form-group mb-3">
-                        <label class="form-label">Học sinh</label>
-                        <input type="text" class="form-control" id="addHoTen" readonly
-                            style="background: #f8f9fa; font-weight: bold;">
+                        <label class="form-label">Học sinh <span style="color: red;">*</span></label>
+                        <select class="form-select" id="addMaHS">
+                            <option value="">-- Chọn học sinh --</option>
+                        </select>
                     </div>
 
                     <div class="form-group mb-3">
@@ -639,13 +637,26 @@ if (empty($classes)) {
         // =========================
         function openAddModal(maHS = 0, hoTen = '') {
             const modal = document.getElementById('addModal');
-            document.getElementById('addMaHS').value = maHS;
-            document.getElementById('addHoTen').value = hoTen;
+            const selectMaHS = document.getElementById('addMaHS');
+            
+            // Load danh sách học sinh vào select
+            selectMaHS.innerHTML = '<option value="">-- Chọn học sinh --</option>';
+            students.forEach(student => {
+                selectMaHS.innerHTML += `<option value="${student.maHS}">${student.hoTen}</option>`;
+            });
+            
+            // Nếu có maHS được truyền vào, chọn học sinh đó
+            if (maHS > 0) {
+                selectMaHS.value = maHS;
+            }
+            
+            // Reset các trường khác
             document.getElementById('addLoaiViPham').value = '';
             document.getElementById('addNoiDungViPham').value = '';
             document.getElementById('addMucDoViPham').value = '';
             document.getElementById('addHinhThucXuLy').value = '';
             document.getElementById('addNgayViPham').value = new Date().toISOString().split('T')[0];
+            
             if (modal) modal.classList.add('show');
         }
 
@@ -709,7 +720,7 @@ if (empty($classes)) {
             const hinhThucXuLy = document.getElementById('addHinhThucXuLy').value.trim();
             const ngayViPham = document.getElementById('addNgayViPham').value;
 
-            if (!loaiViPham || !mucDoViPham || !hinhThucXuLy || !ngayViPham) {
+            if (!maHS || !loaiViPham || !mucDoViPham || !hinhThucXuLy || !ngayViPham) {
                 showAlert('Vui lòng điền đầy đủ thông tin', 'error');
                 return;
             }

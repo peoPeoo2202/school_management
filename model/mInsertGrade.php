@@ -18,11 +18,10 @@ class mInsertGrade
      */
     public function getSubjectsByTeacher($maGV)
     {
-        $sql = "SELECT DISTINCT mh.maMonHoc, mh.tenMonHoc 
-                FROM phancong_gvbm pc
-                JOIN monhoc mh ON pc.maMonHoc = mh.maMonHoc
-                WHERE pc.maGV = ?
-                ORDER BY mh.tenMonHoc";
+        $sql = "SELECT DISTINCT v.maMonHoc, v.tenMonHoc 
+                FROM v_phancong_giangday v
+                WHERE v.maGV = ?
+                ORDER BY v.tenMonHoc";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -49,12 +48,10 @@ class mInsertGrade
      */
     public function getClassesByTeacherAndSubject($maGV, $maMonHoc)
     {
-        $sql = "SELECT DISTINCT lh.maLop, lh.tenLop, k.khoiLop, lh.namHoc
-                FROM phancong_gvbm pc
-                JOIN lophoc lh ON pc.maLop = lh.maLop
-                LEFT JOIN khoi k ON lh.maKhoi = k.maKhoi
-                WHERE pc.maGV = ? AND pc.maMonHoc = ?
-                ORDER BY lh.tenLop";
+        $sql = "SELECT DISTINCT v.maLop, v.tenLop, v.khoiLop, v.namHoc
+                FROM v_phancong_giangday v
+                WHERE v.maGV = ? AND v.maMonHoc = ?
+                ORDER BY v.tenLop";
         
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -138,7 +135,7 @@ class mInsertGrade
     public function checkTeacherPermission($maGV, $maLop, $maMonHoc)
     {
         $sql = "SELECT COUNT(*) as count 
-                FROM phancong_gvbm 
+                FROM v_phancong_giangday 
                 WHERE maGV = ? AND maLop = ? AND maMonHoc = ?";
         
         $stmt = $this->conn->prepare($sql);
