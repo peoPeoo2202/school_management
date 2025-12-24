@@ -279,6 +279,71 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         let allRows = [];
         let totalRows = 0;
 
+        // Hàm kiểm tra và chỉ cho phép nhập số
+        function validateGradeInput(event) {
+            const input = event.target;
+            let value = input.value;
+            
+            // Chỉ cho phép số và dấu chấm
+            value = value.replace(/[^0-9.]/g, '');
+            
+            // Chỉ cho phép một dấu chấm duy nhất
+            const parts = value.split('.');
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            // Giới hạn 2 chữ số sau dấu chấm
+            if (parts.length === 2 && parts[1].length > 2) {
+                value = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            
+            // Giới hạn giá trị từ 0 đến 10
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue) && numValue > 10) {
+                value = '10';
+            }
+            
+            input.value = value;
+        }
+
+        // Hàm ngăn chặn nhập ký tự không hợp lệ
+        function preventInvalidChar(event) {
+            const key = event.key;
+            const value = event.target.value;
+            
+            // Cho phép các phím điều khiển
+            if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(key)) {
+                return true;
+            }
+            
+            // Chỉ cho phép số và dấu chấm
+            if (!/^[0-9.]$/.test(key)) {
+                event.preventDefault();
+                return false;
+            }
+            
+            // Không cho phép nhiều hơn 1 dấu chấm
+            if (key === '.' && value.includes('.')) {
+                event.preventDefault();
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Áp dụng validation cho tất cả các ô nhập điểm
+        function initGradeInputValidation() {
+            const gradeInputs = document.querySelectorAll('.grade-input');
+            gradeInputs.forEach(input => {
+                input.addEventListener('input', validateGradeInput);
+                input.addEventListener('keydown', preventInvalidChar);
+                
+                // Thêm thuộc tính để hiển thị bàn phím số trên mobile
+                input.setAttribute('inputmode', 'decimal');
+            });
+        }
+
         function initPagination() {
             const tbody = document.querySelector('.common-table tbody');
             if (!tbody) return;
@@ -391,7 +456,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
         }
 
         // Initialize pagination when page loads
-        document.addEventListener('DOMContentLoaded', initPagination);
+        document.addEventListener('DOMContentLoaded', function() {
+            initPagination();
+            initGradeInputValidation();
+        });
     </script>
 
 </body>
