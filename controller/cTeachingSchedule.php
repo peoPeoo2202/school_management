@@ -181,8 +181,8 @@ class cTeachingSchedule
         // Lấy lịch dạy
         $schedule = $this->model->getTeachingSchedule($maGV, $hocKy, $namHoc, $maLop, $thu);
 
-        // Lấy danh sách lớp để hiển thị filter
-        $classes = $this->model->getTeacherClasses($maGV, $hocKy, $namHoc);
+        // Lấy danh sách lớp từ view phân công giảng dạy
+        $classes = $this->model->getClassesFromPhanCong($maGV, $namHoc);
 
         // Tổ chức dữ liệu thành grid (theo thứ và tiết)
         $scheduleGrid = $this->organizeScheduleGrid($schedule['data']);

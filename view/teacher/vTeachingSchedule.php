@@ -35,8 +35,12 @@ if (!isset($data)) {
     // Lấy lịch dạy
     $schedule = $model->getTeachingSchedule($maGV, $hocKy, $namHoc, $maLop, $thu);
 
-    // Lấy danh sách lớp để hiển thị filter
-    $classes = $model->getTeacherClasses($maGV, $hocKy, $namHoc);
+    // Debug: Hiển thị số lượng bản ghi
+    // echo "<pre>Debug - Số lịch dạy: " . count($schedule['data']) . "</pre>";
+    // echo "<pre>"; print_r($schedule['data']); echo "</pre>";
+
+    // Lấy danh sách lớp từ view phân công giảng dạy
+    $classes = $model->getClassesFromPhanCong($maGV, $namHoc);
 
     // Tổ chức dữ liệu thành grid (theo thứ và tiết)
     $scheduleGrid = [];
@@ -129,7 +133,7 @@ if (!isset($data)) {
 
                 </div>
                 <form method="GET" action="../../controller/cTeachingSchedule.php">
-                    <input type="hidden" name="action" value="schedule">
+                    <input type="hidden" name="action" value="viewSchedule">
                     <div class="filter-section">
                         <div class="filter-group">
                             <label>Học kỳ</label>
@@ -155,7 +159,7 @@ if (!isset($data)) {
                                     <?php foreach ($data['classes']['data'] as $class): ?>
                                         <option value="<?php echo $class['maLop']; ?>"
                                             <?php echo (isset($data['filters']['maLop']) && $data['filters']['maLop'] == $class['maLop']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($class['tenLop']) . ' - ' . htmlspecialchars($class['tenMonHoc']); ?>
+                                            <?php echo htmlspecialchars($class['tenLop']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -185,6 +189,7 @@ if (!isset($data)) {
                                     <th class="day-header">Thứ 5</th>
                                     <th class="day-header">Thứ 6</th>
                                     <th class="day-header">Thứ 7</th>
+                                    <th class="day-header">Chủ nhật</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -204,7 +209,7 @@ if (!isset($data)) {
                                             <strong>Tiết <?php echo $tiet; ?></strong><br>
                                             <small><?php echo $gio; ?></small>
                                         </td>
-                                        <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                                        <?php for ($thu = 2; $thu <= 8; $thu++): ?>
                                             <td>
                                                 <?php
                                                 if (
@@ -247,6 +252,7 @@ if (!isset($data)) {
                                     <th class="day-header">Thứ 5</th>
                                     <th class="day-header">Thứ 6</th>
                                     <th class="day-header">Thứ 7</th>
+                                    <th class="day-header">Chủ nhật</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -266,7 +272,7 @@ if (!isset($data)) {
                                             <strong>Tiết <?php echo $tiet; ?></strong><br>
                                             <small><?php echo $gio; ?></small>
                                         </td>
-                                        <?php for ($thu = 2; $thu <= 7; $thu++): ?>
+                                        <?php for ($thu = 2; $thu <= 8; $thu++): ?>
                                             <td>
                                                 <?php
                                                 if (

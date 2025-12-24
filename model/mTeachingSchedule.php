@@ -466,5 +466,65 @@ class mTeachingSchedule
             'message' => 'Không tìm thấy lịch dạy'
         ];
     }
+
+    /**
+     * Lấy danh sách lớp từ view phân công giảng dạy
+     * 
+     * @param int $maGV Mã giáo viên
+     * @param string|null $namHoc Năm học (VD: 2024-2025)
+     * @return array Danh sách lớp học
+     */
+    public function getClassesFromPhanCong($maGV, $namHoc = null)
+    {
+        $sql = "SELECT DISTINCT
+                    maLop,
+                    tenLop,
+                    khoiLop,
+                    maMonHoc,
+                    tenMonHoc,
+                    hocKy
+                FROM v_phancong_giangday
+                WHERE maGV = ?
+                  AND trangThai = 'active'";
+
+        $params = [$maGV];
+        $types = "i";
+
+        if ($namHoc !== null) {
+            $sql .= " AND namHoc = ?";
+            $params[] = $namHoc;
+            $types .= "s";
+        }
+
+        $sql .= " ORDER BY khoiLop, tenLop, hocKy";
+
+        $stmt = mysqli_prepare($this->conn, $sql);
+        if (!$stmt) {
+            return ['success' => false, 'message' => 'Lỗi prepare statement: ' . mysqli_error($this->conn)];
+        }
+
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $classes = [];
+        $uniqueClasses = []; // Để loại bỏ trùng lặp theo maLop
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            // Chỉ thêm nếu chưa có lớp này trong danh sách
+            if (!isset($uniqueClasses[$row['maLop']])) {
+                $uniqueClasses[$row['maLop']] = true;
+                $classes[] = $row;
+            }
+        }
+
+        mysqli_stmt_close($stmt);
+
+        return [
+            'success' => true,
+            'data' => $classes,
+            'total' => count($classes)
+        ];
+    }
 }
 ?>
