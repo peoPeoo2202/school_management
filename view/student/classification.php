@@ -35,6 +35,12 @@ $maHS = $info['maHS'];
 // Lấy danh sách năm học
 $availableYears = $model->getAvailableYears($maHS);
 
+// Nếu không có năm học nào, thêm năm hiện tại làm mặc định
+if (empty($availableYears)) {
+    $currentYear = date('Y');
+    $availableYears = [($currentYear - 1) . '-' . $currentYear];
+}
+
 // Lấy năm học từ request
 $namHoc = $_GET['namHoc'] ?? ($availableYears[0] ?? '2024-2025');
 

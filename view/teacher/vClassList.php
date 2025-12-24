@@ -20,20 +20,27 @@ $maGV = $_SESSION['maGV'] ?? null;
 // Nếu $data không được định nghĩa, khởi tạo nó
 if (!isset($data)) {
     $model = new mTeacher();
+    
+    // Lấy filter từ GET parameters
+    $filters = [
+        'hocKy' => $_GET['hocKy'] ?? '',
+        'namHoc' => $_GET['namHoc'] ?? '',
+        'maKhoi' => $_GET['maKhoi'] ?? ''
+    ];
 
-    // Lấy danh sách lớp chi tiết của giáo viên
-    $danhSachLop = $model->getDetailedClassListByTeacher($maGV);
+    // Lấy danh sách lớp chi tiết của giáo viên với filter
+    $danhSachLop = $model->getDetailedClassListByTeacher($maGV, $filters);
+    
+    // Lấy danh sách khối từ database
+    $danhSachKhoi = $model->getAllKhoi();
 
     $data = [
         'classes' => [
             'success' => !empty($danhSachLop),
             'data' => $danhSachLop ?? []
         ],
-        'filters' => [
-            'hocKy' => $_GET['hocKy'] ?? '',
-            'namHoc' => $_GET['namHoc'] ?? '',
-            'maKhoi' => $_GET['maKhoi'] ?? ''
-        ]
+        'khoi' => $danhSachKhoi,
+        'filters' => $filters
     ];
 }
 
@@ -105,9 +112,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <label>Khối</label>
                             <select name="maKhoi">
                                 <option value="">Tất cả</option>
-                                <option value="1" <?php echo ($data['filters']['maKhoi'] == 1) ? 'selected' : ''; ?>>Khối 10</option>
-                                <option value="2" <?php echo ($data['filters']['maKhoi'] == 2) ? 'selected' : ''; ?>>Khối 11</option>
-                                <option value="3" <?php echo ($data['filters']['maKhoi'] == 3) ? 'selected' : ''; ?>>Khối 12</option>
+                                <?php if (!empty($data['khoi'])): ?>
+                                    <?php foreach ($data['khoi'] as $khoi): ?>
+                                        <option value="<?php echo $khoi['maKhoi']; ?>" 
+                                            <?php echo ($data['filters']['maKhoi'] == $khoi['maKhoi']) ? 'selected' : ''; ?>>
+                                            Khối <?php echo htmlspecialchars($khoi['khoiLop']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </select>
                         </div>
 
@@ -140,6 +152,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                 <th class="center">Số tiết / tuần</th>
                                 <th class="center">Học kỳ</th>
                                 <th class="nowrap">Năm học</th>
+                                <th class="center">Thao tác</th>
                             </tr>
                         </thead>
 
@@ -203,6 +216,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                     <!-- Năm học -->
                                     <td class="nowrap">
                                         <?php echo htmlspecialchars($class['namHoc']); ?>
+                                    </td>
+
+                                    <!-- Thao tác -->
+                                    <td class="center">
+                                        <a href="index.php?action=viewStudentList&maLop=<?php echo $class['maLop']; ?>&tenLop=<?php echo urlencode($class['tenLop']); ?>" 
+                                           class="btn-icon" title="Xem danh sách học sinh">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

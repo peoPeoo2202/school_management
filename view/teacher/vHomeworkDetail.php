@@ -739,10 +739,15 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             if (!table) return;
 
             const tbody = table.getElementsByTagName('tbody')[0];
+            
+            // Xóa thông báo "không tìm thấy" nếu có
+            let noResultRow = document.getElementById('noResultRow');
+            if (noResultRow) {
+                noResultRow.remove();
+            }
+            
+            // Lấy tất cả các hàng (trừ noResultRow)
             const rows = Array.from(tbody.getElementsByTagName('tr')).filter(row => row.id !== 'noResultRow');
-
-            // Ẩn tất cả các hàng trước
-            rows.forEach(row => row.style.display = 'none');
 
             // Lọc các hàng theo trạng thái
             allRows = rows.filter(row => {
@@ -752,14 +757,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             totalRows = allRows.length;
 
-            // Xóa thông báo "không tìm thấy" nếu có
-            let noResultRow = document.getElementById('noResultRow');
-            if (noResultRow) {
-                noResultRow.remove();
-            }
-
             // Hiển thị thông báo nếu không có kết quả
             if (totalRows === 0) {
+                // Ẩn tất cả các hàng
+                rows.forEach(row => row.style.display = 'none');
+                
                 noResultRow = tbody.insertRow(0);
                 noResultRow.id = 'noResultRow';
                 const cell = noResultRow.insertCell(0);
@@ -769,14 +771,13 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 cell.style.color = '#999';
                 cell.style.fontStyle = 'italic';
                 cell.innerHTML = '<i class="fas fa-search"></i> Không tìm thấy bài nộp với trạng thái này';
+            } else {
+                // Ẩn tất cả các hàng trước
+                rows.forEach(row => row.style.display = 'none');
+                
+                // Hiển thị trang 1 sau khi lọc
+                showPage(1);
             }
-
-            // Cập nhật phân trang
-            const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
-            document.getElementById('totalPages').textContent = totalPages;
-
-            // Hiển thị trang 1 sau khi lọc
-            showPage(1);
         }
 
         // Khởi tạo phân trang khi trang được tải

@@ -193,6 +193,9 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                         <input type="hidden" id="namHoc" value="<?php echo $data['namHoc']; ?>">
                     </div>
 
+                    <!-- Alert Messages -->
+                    <div id="alertMessage"></div>
+
                     <!-- Chọn học kỳ đánh giá -->
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
                         <div style="margin-bottom: 0;">
@@ -246,11 +249,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                     <!-- Tab: Xếp loại danh hiệu -->
                     <div id="tab-title" class="tab-content" style="display: none; margin-top: 25px;">
-                        <div class="action-buttons" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <button class="btn btn-primary" onclick="classifyAllTitles()">
-                                <i class="fas fa-magic"></i> Xếp loại danh hiệu tự động
-                            </button>
-                        </div>
                         <div id="titleContent"></div>
                     </div>
                 </div>
@@ -1122,9 +1120,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 if (data.success) {
                     alertDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${data.message}</div>`;
                     
+                    // Đánh dấu cần reload dữ liệu mới
+                    needsDataRefresh = true;
+                    
                     // Reload dữ liệu sau 1 giây để thấy kết quả
                     setTimeout(() => {
-                        loadData();
+                        loadData(true); // Force reload
                         alertDiv.innerHTML = '';
                     }, 1500);
                 } else {
@@ -1135,7 +1136,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 }
             })
             .catch(error => {
-                closeCriteriaModal();
                 console.error('Error:', error);
                 alertDiv.innerHTML = `<div class="alert alert-error"><i class="fas fa-times-circle"></i> ${error.message || 'Lỗi khi xử lý. Vui lòng thử lại.'}</div>`;
                 setTimeout(() => {

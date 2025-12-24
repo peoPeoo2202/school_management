@@ -207,43 +207,40 @@ if (empty($classes)) {
 
                     </div>
 
-                    <form method="GET" action="../../controller/cStudentAward.php">
-                        <input type="hidden" name="action" value="list">
-                        <div class="filter-section">
-                            <div class="filter-group">
-                                <label>Học kỳ</label>
-                                <select id="hocKy" name="hocKy" class="form-control" onchange="loadData()">
-                                    <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
-                                    <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Năm học</label>
-                                <select id="namHoc" name="namHoc" class="form-control" onchange="loadData()">
-                                    <?php
-                                    $currentYear = date('Y');
-                                    $startYear = 2020; // Năm bắt đầu
-                                    for ($year = $currentYear; $year >= $startYear; $year--) {
-                                        $namHoc = ($year - 1) . '-' . $year;
-                                        $selected = ($namHoc == $data['namHoc']) ? 'selected' : '';
-                                        echo "<option value='$namHoc' $selected>$namHoc</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <div class="filter-actions-button">
-                                <label>&nbsp;</label>
-                                <button type="submit" class="btn btn-secondary">
-                                    <i class="fas fa-filter"></i> Lọc
-                                </button>
-                                <button class="btn btn-primary" onclick="openAddModal()">
-                                    <i class="fas fa-plus"></i> Thêm khen thưởng
-                                </button>
-                            </div>
+                    <div class="filter-section">
+                        <div class="filter-group">
+                            <label>Học kỳ</label>
+                            <select id="hocKy" name="hocKy" class="form-control" onchange="loadData()">
+                                <option value="1" <?php echo ($data['hocKy'] == 1) ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo ($data['hocKy'] == 2) ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
                         </div>
-                    </form>
+
+                        <div class="filter-group">
+                            <label>Năm học</label>
+                            <select id="namHoc" name="namHoc" class="form-control" onchange="loadData()">
+                                <?php
+                                $currentYear = date('Y');
+                                $startYear = 2020; // Năm bắt đầu
+                                for ($year = $currentYear; $year >= $startYear; $year--) {
+                                    $namHoc = ($year - 1) . '-' . $year;
+                                    $selected = ($namHoc == $data['namHoc']) ? 'selected' : '';
+                                    echo "<option value='$namHoc' $selected>$namHoc</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions-button">
+                            <label>&nbsp;</label>
+                            <button type="button" class="btn btn-secondary" onclick="loadData()">
+                                <i class="fas fa-filter"></i> Lọc
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="openAddModal()">
+                                <i class="fas fa-plus"></i> Thêm khen thưởng
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="alertMessage"></div>

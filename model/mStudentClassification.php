@@ -757,7 +757,7 @@ class ModelStudentClassification {
         $viPhamNang = intval($data['viPhamNang']);
         $hocLuc = $data['loaiHocLuc'];
         
-        // Chuẩn hóa tên học lực
+        // Chuẩn hóa tên học lực (có thể null nếu chưa có học lực)
         $hocLucNormalized = $this->normalizeHocLuc($hocLuc);
         
         // Map học lực thành số để so sánh
@@ -768,6 +768,7 @@ class ModelStudentClassification {
             'Chua dat' => 1
         ];
         
+        // Nếu chưa có học lực, gán level = 0 (chưa xác định)
         $currentHocLucLevel = $hocLucLevel[$hocLucNormalized] ?? 0;
         
         // Kiểm tra từ loại tốt nhất đến thấp nhất
@@ -782,15 +783,29 @@ class ModelStudentClassification {
             $minHocLucNormalized = $this->normalizeHocLuc($rule['minHocLuc']);
             $minHocLucLevel = $hocLucLevel[$minHocLucNormalized] ?? 0;
             
-            // Kiểm tra TẤT CẢ các điều kiện (dùng AND)
-            // Học sinh phải thỏa mãn tất cả các điều kiện mới được xếp loại đó
-            if ($nghiCoPhep <= $rule['maxNghiCoPhep'] &&
-                $nghiKhongPhep <= $rule['maxNghiKhongPhep'] &&
-                $viPhamNhe <= $rule['maxViPhamNhe'] &&
-                $viPhamTB <= $rule['maxViPhamTB'] &&
-                $viPhamNang <= $rule['maxViPhamNang'] &&
-                $currentHocLucLevel >= $minHocLucLevel) {
-                return $ranking;
+            // Kiểm tra các điều kiện
+            $nghiCoPhepOk = $nghiCoPhep <= $rule['maxNghiCoPhep'];
+            $nghiKhongPhepOk = $nghiKhongPhep <= $rule['maxNghiKhongPhep'];
+            $viPhamNheOk = $viPhamNhe <= $rule['maxViPhamNhe'];
+            $viPhamTBOk = $viPhamTB <= $rule['maxViPhamTB'];
+            $viPhamNangOk = $viPhamNang <= $rule['maxViPhamNang'];
+            
+            // Nếu CHƯA CÓ HỌC LỰC (currentHocLucLevel = 0):
+            // Chỉ xét điều kiện nghỉ học và vi phạm, BỎ QUA điều kiện học lực
+            if ($currentHocLucLevel == 0) {
+                // Xếp loại chỉ dựa trên nghỉ học và vi phạm
+                if ($nghiCoPhepOk && $nghiKhongPhepOk && 
+                    $viPhamNheOk && $viPhamTBOk && $viPhamNangOk) {
+                    return $ranking;
+                }
+            } else {
+                // Nếu ĐÃ CÓ HỌC LỰC: Xét tất cả các điều kiện bao gồm cả học lực
+                $hocLucOk = $currentHocLucLevel >= $minHocLucLevel;
+                
+                if ($nghiCoPhepOk && $nghiKhongPhepOk && 
+                    $viPhamNheOk && $viPhamTBOk && $viPhamNangOk && $hocLucOk) {
+                    return $ranking;
+                }
             }
         }
         
@@ -840,23 +855,34 @@ class ModelStudentClassification {
         
         $success = 0;
         $failed = 0;
+        $noData = 0; // Đếm học sinh chưa có dữ liệu
         
         while ($row = $result->fetch_assoc()) {
             $maHS = $row['maHS'];
-            $ranking = $this->calculateConductRankingByCriteria($maHS, $hocKy, $namHoc, $criteria);
             
-            if ($ranking) {
-                if ($this->saveConductRankingManual($maHS, $namHoc, $hocKy, $ranking)) {
-                    $success++;
+            try {
+                $ranking = $this->calculateConductRankingByCriteria($maHS, $hocKy, $namHoc, $criteria);
+                
+                if ($ranking) {
+                    if ($this->saveConductRankingManual($maHS, $namHoc, $hocKy, $ranking)) {
+                        $success++;
+                    } else {
+                        $failed++;
+                    }
                 } else {
-                    $failed++;
+                    $noData++;
                 }
-            } else {
+            } catch (Exception $e) {
+                error_log("Error classifying conduct for student $maHS: " . $e->getMessage());
                 $failed++;
             }
         }
         
-        return ['success' => $success, 'failed' => $failed];
+        return [
+            'success' => $success, 
+            'failed' => $failed,
+            'noData' => $noData
+        ];
     }
     
     /**

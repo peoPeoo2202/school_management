@@ -99,7 +99,7 @@ $pageIcon = "fas fa-file-upload";
                             <div class="form-group">
                                 <label for="tenDeThi">Tên đề thi <span style="color:#e74c3c">*</span></label>
                                 <input type="text" id="tenDeThi" name="tenDeThi" required
-                                    placeholder="Ví dụ: Đề thi giữa kỳ 1 - Toán 10">
+                                    placeholder="Ví dụ: Đề thi giữa kỳ 1 - Toán 6">
                             </div>
 
                             <div class="form-group">

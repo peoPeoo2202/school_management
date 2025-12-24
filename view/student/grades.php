@@ -35,6 +35,12 @@ $maHS = $info['maHS'];
 // Lấy danh sách năm học
 $availableYears = $model->getAvailableYears($maHS);
 
+// Nếu không có năm học nào, thêm năm hiện tại làm mặc định
+if (empty($availableYears)) {
+    $currentYear = date('Y');
+    $availableYears = [($currentYear - 1) . '-' . $currentYear];
+}
+
 // Lấy năm học và học kỳ từ request
 $namHoc = $_GET['namHoc'] ?? ($availableYears[0] ?? '2023-2024');
 $hocKy = $_GET['hocKy'] ?? 1;
@@ -96,7 +102,8 @@ if ($hocKy === 'canam') {
     <?php if (empty($grades)): ?>
         <div class="no-data">
             <i class="fas fa-inbox"></i>
-            <p>Không có dữ liệu điểm cho <?= $hocKy === 'canam' ? 'cả năm' : 'học kỳ ' . $hocKy ?> năm học <?= $namHoc ?></p>
+            <p>Không có dữ liệu điểm </p>
+            <!-- <?= $hocKy === 'canam' ? 'cả năm' : 'học kỳ ' . $hocKy ?> năm học <?= $namHoc ?> -->
         </div>
     <?php else: ?>
         <?php if ($hocKy === 'canam'): ?>
