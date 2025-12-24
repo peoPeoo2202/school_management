@@ -35,7 +35,7 @@ if (
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo kết quả học tập toàn trường</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../student/style.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">

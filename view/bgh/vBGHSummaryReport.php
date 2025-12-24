@@ -34,7 +34,7 @@ if (!empty($duLieuBaoCao)) {
     <title>Dashboard Tổng Hợp Toàn Trường</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="../student/style.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
       
         .container { max-width: 1800px; margin: 0 auto; }

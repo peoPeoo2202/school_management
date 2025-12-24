@@ -35,7 +35,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân công Lớp cho Học sinh - BGH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../student/style.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * {
             margin: 0;
