@@ -133,6 +133,7 @@ if (!isset($data)) {
 
                 </div>
                 <form method="GET" action="">
+                    <input type="hidden" name="action" value="schedule">
                     <div class="filter-section">
                         <div class="filter-group">
                             <label>Học kỳ</label>
@@ -168,7 +169,7 @@ if (!isset($data)) {
                         <div class="filter-group">
                             <label>&nbsp;</label>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Xem lịch
+                                <i class="fas fa-filter"></i> Lọc
                             </button>
                         </div>
                     </div>

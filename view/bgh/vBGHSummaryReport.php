@@ -34,10 +34,12 @@ if (!empty($duLieuBaoCao)) {
     <title>Dashboard Tổng Hợp Toàn Trường</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+      
         .container { max-width: 1800px; margin: 0 auto; }
+        .main-wrapper { display: flex; min-height: 100vh; }
+        .content-area { flex: 1; padding: 20px; }
         .header { background: white; padding: 25px 35px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: #2d3748; font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
         .header h1 i { color: #667eea; font-size: 32px; }
@@ -82,7 +84,10 @@ if (!empty($duLieuBaoCao)) {
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+        <div class="content-area">
+            <div class="container">
         <!-- Header -->
         <div class="header">
             <div>
@@ -286,5 +291,8 @@ if (!empty($duLieuBaoCao)) {
         });
         <?php endif; ?>
     </script>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

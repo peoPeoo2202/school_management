@@ -120,27 +120,6 @@ if ($maLop && $maGV) {
     <link rel="stylesheet" href="style.css">
     <style>
 
-        .class-info {
-            background: linear-gradient(135deg, #5081BE15 0%, #4a6fa515 100%);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            border-left: 4px solid #5081BE;
-        }
-
-        .class-info h3 {
-            color: #5081BE;
-            margin-bottom: 10px;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .class-info p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 14px;
-        }
-
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -564,9 +543,9 @@ if ($maLop && $maGV) {
                 <?php endif; ?>
 
                 <!-- Thông tin lớp -->
-                <div class="class-info">
+                <div class="info-box">
                     <h3><i class="fas fa-info-circle"></i> Thông tin lớp học</h3>
-                    <p><strong>Lớp:</strong> <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?> - Khối <?php echo htmlspecialchars($data['classInfo']['khoiLop']); ?></p>
+                    <p><strong>Lớp chủ nhiệm:</strong> <?php echo htmlspecialchars($data['classInfo']['tenLop']); ?> </p>
                     <p><strong>Sĩ số:</strong> <?php echo $data['classInfo']['siSo']; ?> học sinh</p>
                     <p><strong>Năm học:</strong> <?php echo htmlspecialchars($data['classInfo']['namHoc']); ?> - Học kỳ <?php echo $data['hocKy']; ?></p>
                     <p><strong>Giáo viên chủ nhiệm:</strong> <?php echo htmlspecialchars($data['classInfo']['tenGVCN']); ?></p>

@@ -22,6 +22,7 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo kết quả đánh giá danh hiệu học sinh</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * {
             margin: 0;
@@ -39,6 +40,16 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
         .container {
             max-width: 1400px;
             margin: 0 auto;
+        }
+        
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 20px;
         }
         
         .header {
@@ -216,7 +227,10 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+        <div class="content-area">
+            <div class="container">
         <div class="header">
             <h1>
                 <i class="fas fa-medal"></i> Báo cáo kết quả đánh giá danh hiệu học sinh
@@ -339,6 +353,8 @@ $danhSachDanhHieu = $data['danhSachDanhHieu'] ?? [];
                     <p>Không có dữ liệu. Vui lòng chọn điều kiện lọc và nhấn "Xem báo cáo".</p>
                 </div>
             <?php endif; ?>
+        </div>
+            </div>
         </div>
     </div>
 </body>

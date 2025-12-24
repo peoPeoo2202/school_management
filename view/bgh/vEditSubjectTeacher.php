@@ -28,157 +28,26 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sửa phân công GVBM - BGH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../teacher/style.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 600px;
-            overflow: hidden;
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .card-header h2 {
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .card-body {
-            padding: 30px;
-        }
-
         .info-group {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 25px;
         }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .info-value {
-            color: #333;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 15px;
-            justify-content: flex-end;
-            margin-top: 25px;
-        }
-
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-primary {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
+      
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+
+        <!-- Main Content -->
+        <div class="content-area">
+        <div class="card">
         <div class="card-header">
             <h2>
                 <i class="fas fa-edit"></i>
@@ -253,5 +122,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
             </form>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

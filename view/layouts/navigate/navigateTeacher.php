@@ -202,6 +202,63 @@ $maGV = $_SESSION['maGV'] ?? '';
                 </li>
             </ul>
         </li>
+        <?php if($maNhom==3007): ?>
+        <!-- Menu Tổ trưởng bộ môn (với dropdown) -->
+        <li class="menu-parent">
+            <a href="#" class="menu-item menu-toggle" data-submenu="ttbm-features">
+                <i class="fas fa-tasks"></i>
+                <span>Chức năng TTBM</span>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            <ul class="submenu" id="ttbm-features-submenu">
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/index.php'); ?>" class="submenu-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard TTBM</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vExamGradingAssignment.php'); ?>" class="submenu-item">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Phân công chấm thi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vExamApproval.php'); ?>" class="submenu-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Duyệt đề thi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vExamProctorAssignment.php'); ?>" class="submenu-item">
+                        <i class="fas fa-eye"></i>
+                        <span>Phân công coi thi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vExamAssignment.php'); ?>" class="submenu-item">
+                        <i class="fas fa-tasks"></i>
+                        <span>Giao bài tập</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vTeacherList.php'); ?>" class="submenu-item">
+                        <i class="fas fa-users"></i>
+                        <span>Danh sách giáo viên</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo url('view/toTruongBoMon/vGradingAssignment.php'); ?>" class="submenu-item">
+                        <i class="fas fa-pen-square"></i>
+                        <span>Phân công giảng dạy</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <?php endif;?>
+
+
+        
     </ul>
 
     <div class="navbar-footer">
@@ -217,13 +274,13 @@ $maGV = $_SESSION['maGV'] ?? '';
     if (!window.__navigateTeacherInitialized) {
         window.__navigateTeacherInitialized = true;
 
-        document.addEventListener('DOMContentLoaded', function() {            
+        document.addEventListener('DOMContentLoaded', function() {
             const menuToggles = document.querySelectorAll('.menu-toggle');
             // Toggle submenu
             menuToggles.forEach(toggle => {
                 toggle.addEventListener('click', function(e) {
                     e.preventDefault();
-                    
+
                     const dataSubmenu = this.dataset.submenu;
                     const submenuId = dataSubmenu + '-submenu';
                     const submenu = document.getElementById(submenuId);

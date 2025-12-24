@@ -7,10 +7,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
+        .main-wrapper { display: flex; min-height: 100vh; }
+        .content-area { flex: 1; padding: 20px; }
         .header { background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: #2d3748; font-size: 26px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
         .header h1 i { color: #667eea; }
@@ -55,6 +58,9 @@
     </style>
 </head>
 <body>
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+        <div class="content-area">
     <?php
     $tongHS = 0; $hsNam = 0; $hsNu = 0; $tyLeNam = 0; $tyLeNu = 0;
     if (!empty($duLieuThongKe)) {
@@ -202,5 +208,7 @@
             <?php endif; ?>
         });
     </script>
+        </div>
+    </div>
 </body>
 </html>

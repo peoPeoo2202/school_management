@@ -1,5 +1,20 @@
 <?php
-// Lấy thông tin từ session (đã được kiểm tra ở controller)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
+    header("Location: ../../public/index.php");
+    exit();
+}
+
+// Kiểm tra quyền truy cập - Chỉ Ban giám hiệu
+if ($_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
+    header("Location: ../../public/index.php?error=access_denied");
+    exit();
+}
+
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
 
 // Xác định có lọc tìm kiếm chưa (ít nhất 1 bộ lọc được chọn)
@@ -20,84 +35,31 @@ if (
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo kết quả học tập toàn trường</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+</head>
+<body>
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        <!-- Main Content -->
+        <div class="content-area">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="header-left">
+                    <h2><i class="fas fa-graduation-cap"></i> Báo cáo kết quả học tập</h2>
+                    <p>Xem chi tiết kết quả học tập toàn trường theo các tiêu chí lọc</p>
+                </div>
+                <div class="header-right">
+                    <p class="welcome-text">Xin chào,</p>
+                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
+                </div>
+            </div>
 
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: #2d3748;
-            font-size: 26px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .header h1 i {
-            color: #667eea;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            <!-- Content Card -->
             color: white;
         }
 
@@ -456,22 +418,18 @@ if (
         $diemTBToanTruong = $tongHocSinh > 0 ? round($tongDiem / $tongHocSinh, 2) : 0;
     }
     ?>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-chart-line"></i> Báo cáo kết quả học tập toàn trường</h1>
-            <div class="btn-group">
-                <a href="cBGHReport.php?action=index" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
-                <a href="../public/index.php?logout=1" class="btn btn-danger">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </a>
-            </div>
-        </div>
+
+            <!-- Content Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-line"></i> Kết quả học tập toàn trường
+                    </h2>
+                </div>
 
         <!-- Statistics Cards -->
         <?php if ($daLoc && !empty($duLieuBaoCao)): ?>
+                <div class="card-body">
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon purple">
@@ -739,6 +697,41 @@ if (
                 ]
             });
             <?php endif; ?>
+        });
+    </script>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menu toggle functionality for mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.bgh-navbar');
+            
+            if (window.innerWidth <= 768) {
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'navbar-toggle';
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                document.body.appendChild(toggleBtn);
+                
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    sidebar.classList.toggle('active');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!sidebar.contains(e.target) && !e.target.classList.contains('navbar-toggle')) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            }
+            
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('active');
+                }
+            });
         });
     </script>
 </body>

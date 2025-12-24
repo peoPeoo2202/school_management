@@ -37,20 +37,8 @@ $currentNamHoc = $namHoc ?? date('Y') . '-' . (date('Y') + 1);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân công Phòng học - BGH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
         .container {
             max-width: 1600px;
             margin: 0 auto;
@@ -395,7 +383,13 @@ $currentNamHoc = $namHoc ?? date('Y') . '-' . (date('Y') + 1);
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <!-- Sidebar Navigation -->
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+
+        <!-- Main Content -->
+        <div class="content-area">
+        <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>
@@ -717,5 +711,8 @@ $currentNamHoc = $namHoc ?? date('Y') . '-' . (date('Y') + 1);
             }
         }
     </script>
+        </div>
+    </div>
+</div>
 </body>
 </html>

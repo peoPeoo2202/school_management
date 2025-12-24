@@ -9,6 +9,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách báo cáo - Ban giám hiệu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * {
             margin: 0;
@@ -26,6 +27,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
         .container {
             max-width: 1400px;
             margin: 0 auto;
+        }
+
+        .main-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .content-area {
+            flex: 1;
+            padding: 20px;
         }
 
         .header {
@@ -222,7 +233,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
+        <div class="content-area">
+            <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>
@@ -353,6 +367,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                         <i class="fas fa-arrow-right"></i> Xem báo cáo
                     </a>
                 </div>
+            </div>
+        </div>
             </div>
         </div>
     </div>
