@@ -132,8 +132,7 @@ if (!isset($data)) {
                     </div>
 
                 </div>
-                <form method="GET" action="../../controller/cTeachingSchedule.php">
-                    <input type="hidden" name="action" value="viewSchedule">
+                <form method="GET" action="">
                     <div class="filter-section">
                         <div class="filter-group">
                             <label>Học kỳ</label>
