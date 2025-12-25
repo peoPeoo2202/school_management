@@ -123,12 +123,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             font-weight: 600;
             color: white;
         }
+<<<<<<< HEAD
 .attachment-in-box{
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
 }
+=======
+
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
         .btn-close {
             background: rgba(255, 255, 255, 0.2);
             border: none;
@@ -382,11 +386,16 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="attachment-in-box">
                                 <div class="attachment-info">
                                     <i class="fas <?= $fileIcon ?> attachment-icon" style="color: <?= $iconColor ?>;"></i>
+<<<<<<< HEAD
                                     <span class="attachment-filename-detail"><?= htmlspecialchars($homework['tenFile']) ?></span>
+=======
+                                    <span class="attachment-filename"><?= htmlspecialchars($homework['tenFile']) ?></span>
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
                                 </div>
 
                                 <div class="attachment-actions">
                                     <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
+<<<<<<< HEAD
                                         class="btn-download-homework"
                                         download>
                                         <i class="fas fa-download"></i> 
@@ -396,6 +405,17 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         class="btn-view-homework"
                                         target="_blank">
                                         <i class="fas fa-eye"></i>
+=======
+                                        class="file-attachment"
+                                        download>
+                                        <i class="fas fa-download"></i> Tải xuống
+                                    </a>
+
+                                    <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
+                                        class="file-attachment"
+                                        target="_blank">
+                                        <i class="fas fa-eye"></i> Xem
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
                                     </a>
                                 </div>
                             </div>
@@ -414,10 +434,17 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
             </div>
 
+<<<<<<< HEAD
             <!-- GIỮ LẠI stats-cards  -->
             <div class="stats-cards">
                 <div class="stat-card">
                     <div class="stat-icon icon-homework">
+=======
+            <!-- GIỮ LẠI stats-cards (yêu cầu của ông xã) -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-info">
@@ -426,7 +453,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
                 <div class="stat-card">
+<<<<<<< HEAD
                     <div class="stat-icon icon-homework">
+=======
+                    <div class="stat-icon blue">
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-info">
@@ -435,7 +466,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
                 <div class="stat-card">
+<<<<<<< HEAD
                     <div class="stat-icon icon-homework">
+=======
+                    <div class="stat-icon orange">
+>>>>>>> parent of 89d9cb2 (Merge branch 'develop' of https://github.com/peoPeoo2202/school_management into feature/admin)
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">
