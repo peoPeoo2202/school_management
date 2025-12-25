@@ -123,7 +123,12 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
             font-weight: 600;
             color: white;
         }
-
+.attachment-in-box{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
         .btn-close {
             background: rgba(255, 255, 255, 0.2);
             border: none;
@@ -377,20 +382,20 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             <div class="attachment-in-box">
                                 <div class="attachment-info">
                                     <i class="fas <?= $fileIcon ?> attachment-icon" style="color: <?= $iconColor ?>;"></i>
-                                    <span class="attachment-filename"><?= htmlspecialchars($homework['tenFile']) ?></span>
+                                    <span class="attachment-filename-detail"><?= htmlspecialchars($homework['tenFile']) ?></span>
                                 </div>
 
                                 <div class="attachment-actions">
                                     <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
-                                        class="file-attachment"
+                                        class="btn-download-homework"
                                         download>
-                                        <i class="fas fa-download"></i> Tải xuống
+                                        <i class="fas fa-download"></i> 
                                     </a>
 
                                     <a href="<?= url('uploads/homework/' . $homework['tenFile']) ?>"
-                                        class="file-attachment"
+                                        class="btn-view-homework"
                                         target="_blank">
-                                        <i class="fas fa-eye"></i> Xem
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                 </div>
                             </div>
@@ -409,10 +414,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
             </div>
 
-            <!-- GIỮ LẠI stats-cards (yêu cầu của ông xã) -->
+            <!-- GIỮ LẠI stats-cards  -->
             <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-icon green">
+                    <div class="stat-icon icon-homework">
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-info">
@@ -421,7 +426,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon blue">
+                    <div class="stat-icon icon-homework">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="stat-info">
@@ -430,7 +435,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-icon orange">
+                    <div class="stat-icon icon-homework">
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="stat-info">

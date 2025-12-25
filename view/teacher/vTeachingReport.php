@@ -42,30 +42,29 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
 
                 <form method="GET" action="" id="filter-form" class="filter-form">
-                    <input type="hidden" name="action" value="giang-day">
+                    <div class="filter-section"><input type="hidden" name="action" value="giang-day">
 
-                    <div class="filter-group">
-                        <label for="hocKy">Học kỳ</label>
-                        <select name="hocKy" id="hocKy">
-                            <option value="">Tất cả học kỳ</option>
-                            <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                            <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="hocKy">Học kỳ</label>
+                            <select name="hocKy" id="hocKy">
+                                <option value="">Tất cả học kỳ</option>
+                                <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <label for="namHoc">Năm học</label>
-                        <select name="namHoc" id="namHoc">
-                            <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                            <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="namHoc">Năm học</label>
+                            <select name="namHoc" id="namHoc">
+                                <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                                <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <div class="filter-actions-button">
-                            <button type="submit" form="filter-form" name="submit" value="1" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Lọc kết quả
-                            </button>
+                            <div class="filter-actions-button">
+                                <button type="submit" form="filter-form" name="submit" value="1" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Lọc kết quả
+                                </button>
                         </div>
                     </div>
                 </form>
@@ -178,14 +177,14 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         $completionRate = $tong > 0 ? ($daDay / $tong * 100) : 0;
 
                                         $progressClass = 'badge badge-danger';
-                                        $progressColor = '#ff0000'; 
+                                        $progressColor = '#ff0000';
 
                                         if ($completionRate > 80) {
                                             $progressClass = 'badge badge-success';
-                                            $progressColor = '#00C94B'; 
+                                            $progressColor = '#00C94B';
                                         } elseif ($completionRate > 50) {
                                             $progressClass = 'badge badge-primary';
-                                            $progressColor = '#2563EB'; 
+                                            $progressColor = '#2563EB';
                                         } elseif ($completionRate > 25) {
                                             $progressClass = 'badge badge-warning';
                                             $progressColor = '#F59E0B';
@@ -197,7 +196,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                             <td class="small-cell"><?php echo htmlspecialchars($row['tenLop']); ?></td>
                                             <td><?php echo htmlspecialchars($row['tenMonHoc']); ?></td>
                                             <td class="normal-cell"><?php echo intval($row['hocKy']); ?></td>
-                                            <td ><?php echo htmlspecialchars($row['namHoc']); ?></td>
+                                            <td><?php echo htmlspecialchars($row['namHoc']); ?></td>
                                             <td class="normal-cell"><strong><?php echo $tong; ?></strong></td>
                                             <td class="normal-cell">
                                                 <strong style="color:#00C94B;"><?php echo $daDay; ?></strong>
