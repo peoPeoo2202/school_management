@@ -107,21 +107,33 @@ if ($hocKy === 'canam') {
         </div>
     <?php else: ?>
         <?php if ($hocKy === 'canam'): ?>
-            <!-- Bảng điểm cả năm - 3 cột: Môn học | Học kỳ 1 | Học kỳ 2 -->
+            <!-- Bảng điểm cả năm - cột: STT | Môn học | Học kỳ 1 | Học kỳ 2 | Điểm trung bình cả năm -->
             <table class="grades-table">
+                <colgroup>
+                    <col style="width: 8%;">
+                    <col style="width: 23%;">
+                    <col style="width: 23%;">
+                    <col style="width: 23%;">
+                    <col style="width: 23%;">
+                </colgroup>
                 <thead>
                     <tr>
+                        <th>STT</th>
                         <th>Môn học</th>
                         <th>Học kỳ 1</th>
                         <th>Học kỳ 2</th>
+                        <th>Trung bình cả năm</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php $stt = 1; ?>
                     <?php foreach ($grades as $grade): ?>
                         <tr>
+                            <td><?= $stt++ ?></td>
                             <td><?= htmlspecialchars($grade['tenMonHoc']) ?></td>
                             <td><?= $grade['hocKy1'] !== null ? number_format($grade['hocKy1'], 2) : '-' ?></td>
                             <td><?= $grade['hocKy2'] !== null ? number_format($grade['hocKy2'], 2) : '-' ?></td>
+                            <td><strong><?= ($grade['hocKy1'] !== null && $grade['hocKy2'] !== null) ? number_format(($grade['hocKy1'] + $grade['hocKy2']) / 2, 2) : '-' ?></strong></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
