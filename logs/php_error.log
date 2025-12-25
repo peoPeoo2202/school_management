@@ -1,0 +1,1 @@
+2025-12-24 06:16:43 | Exception: mysqli_stmt::bind_param(): Argument #7 cannot be passed by reference
