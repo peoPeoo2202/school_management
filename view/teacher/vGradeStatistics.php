@@ -44,27 +44,25 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
 
                 <form method="GET" action="" id="filter-form" class="filter-form">
-                    <input type="hidden" name="action" value="thong-ke-hoc-sinh">
+                    <div class="filter-section"><input type="hidden" name="action" value="thong-ke-hoc-sinh">
 
-                    <div class="filter-group">
-                        <label for="maLop">Lớp</label>
-                        <select name="maLop" id="maLop">
-                            <option value="">Tất cả lớp</option>
-                            <?php foreach ($danhSachLop as $lop): ?>
-                                <option value="<?php echo $lop['maLop']; ?>"
-                                    <?php echo ($_GET['maLop'] ?? '') == $lop['maLop'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($lop['tenLop']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="maLop">Lớp</label>
+                            <select name="maLop" id="maLop">
+                                <option value="">Tất cả lớp</option>
+                                <?php foreach ($danhSachLop as $lop): ?>
+                                    <option value="<?php echo $lop['maLop']; ?>"
+                                        <?php echo ($_GET['maLop'] ?? '') == $lop['maLop'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($lop['tenLop']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <div class="filter-actions-button">
-                            <button type="submit" name="submit" value="1" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Lọc kết quả
-                            </button>
-
+                            <div class="filter-actions-button">
+                                <button type="submit" name="submit" value="1" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Lọc kết quả
+                                </button>
 
                         </div>
                     </div>

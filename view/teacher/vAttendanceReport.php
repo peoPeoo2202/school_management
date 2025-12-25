@@ -40,53 +40,55 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                 </div>
 
                 <form method="GET" action="" class="filter-form" id="filter-form">
-                    <input type="hidden" name="action" value="chuyen-can">
+                    <div class="filter-section">
+                        <input type="hidden" name="action" value="chuyen-can">
 
-                    <div class="filter-group">
-                        <label for="tenMonHoc">Môn học</label>
-                        <div class="report-subject-name">
-                            <p>
-                                <?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?>
-                            </p>
+                        <div class="filter-group">
+                            <label for="tenMonHoc">Môn học</label>
+                            <div class="report-subject-name">
+                                <p>
+                                    <?php echo isset($danhSachMonHoc[0]) ? htmlspecialchars($danhSachMonHoc[0]['tenMonHoc']) : 'Toán'; ?>
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="filter-group">
-                        <label for="maLop">Lớp <span style="color:#dc3545;">*</span></label>
-                        <select name="maLop" id="maLop" required>
-                            <option value="">Lớp</option>
-                            <?php foreach ($danhSachLop as $lop): ?>
-                                <option value="<?php echo $lop['maLop']; ?>"
-                                    <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($lop['tenLop']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="maLop">Lớp <span style="color:#dc3545;">*</span></label>
+                            <select name="maLop" id="maLop" required>
+                                <option value="">Lớp</option>
+                                <?php foreach ($danhSachLop as $lop): ?>
+                                    <option value="<?php echo $lop['maLop']; ?>"
+                                        <?php echo (isset($_GET['maLop']) && $_GET['maLop'] == $lop['maLop']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($lop['tenLop']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <label for="hocKy">Học kỳ <span style="color:#dc3545;">*</span></label>
-                        <select name="hocKy" id="hocKy" required>
-                            <option value="">Học kỳ</option>
-                            <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
-                            <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="hocKy">Học kỳ <span style="color:#dc3545;">*</span></label>
+                            <select name="hocKy" id="hocKy" required>
+                                <option value="">Học kỳ</option>
+                                <option value="1" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '1') ? 'selected' : ''; ?>>Học kỳ 1</option>
+                                <option value="2" <?php echo (isset($_GET['hocKy']) && $_GET['hocKy'] == '2') ? 'selected' : ''; ?>>Học kỳ 2</option>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <label for="namHoc">Năm học <span style="color:#dc3545;">*</span></label>
-                        <select name="namHoc" id="namHoc" required>
-                            <option value="">Năm học</option>
-                            <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
-                            <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
-                        </select>
-                    </div>
+                        <div class="filter-group">
+                            <label for="namHoc">Năm học <span style="color:#dc3545;">*</span></label>
+                            <select name="namHoc" id="namHoc" required>
+                                <option value="">Năm học</option>
+                                <option value="2024-2025" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2024-2025') ? 'selected' : ''; ?>>2024-2025</option>
+                                <option value="2023-2024" <?php echo (isset($_GET['namHoc']) && $_GET['namHoc'] == '2023-2024') ? 'selected' : ''; ?>>2023-2024</option>
+                            </select>
+                        </div>
 
-                    <div class="filter-group">
-                        <div class="filter-actions-button">
-                            <button type="submit" class="btn btn-primary" name="submit" value="1">
-                                <i class="fas fa-search"></i> Xem kết quả
-                            </button>
+                        
+                            <div class="filter-actions-button">
+                                <button type="submit" class="btn btn-primary" name="submit" value="1">
+                                    <i class="fas fa-search"></i> Xem kết quả
+                                </button>
+                           
                         </div>
                     </div>
                 </form>
@@ -111,37 +113,37 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
             <?php if ($showStats): ?>
                 <!-- Card thống kê (giống layout mẫu học tập) -->
-                
-                    <div class="stats-assign-row">
-                        <div class="stat-item">
-                            <div class="stat-value exam-sup-primary">
-                                <?php echo $soHocSinh; ?>
-                            </div>
-                            <div class="stat-label">Tổng số học sinh</div>
-                        </div>
 
-                        <div class="stat-item">
-                            <div class="stat-value exam-sup-upcoming">
-                                <?php echo ($tongNghiCoPhep + $tongNghiKhongPhep); ?>
-                            </div>
-                            <div class="stat-label">Tổng số nghỉ</div>
+                <div class="stats-assign-row">
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-primary">
+                            <?php echo $soHocSinh; ?>
                         </div>
-
-                        <div class="stat-item">
-                            <div class="stat-value exam-sup-finish">
-                                <?php echo $tongNghiCoPhep; ?>
-                            </div>
-                            <div class="stat-label">Nghỉ có phép</div>
-                        </div>
-
-                        <div class="stat-item">
-                            <div class="stat-value exam-sup-danger">
-                                <?php echo $tongNghiKhongPhep; ?>
-                            </div>
-                            <div class="stat-label">Nghỉ không phép</div>
-                        </div>
+                        <div class="stat-label">Tổng số học sinh</div>
                     </div>
-           
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-upcoming">
+                            <?php echo ($tongNghiCoPhep + $tongNghiKhongPhep); ?>
+                        </div>
+                        <div class="stat-label">Tổng số nghỉ</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-finish">
+                            <?php echo $tongNghiCoPhep; ?>
+                        </div>
+                        <div class="stat-label">Nghỉ có phép</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value exam-sup-danger">
+                            <?php echo $tongNghiKhongPhep; ?>
+                        </div>
+                        <div class="stat-label">Nghỉ không phép</div>
+                    </div>
+                </div>
+
             <?php endif; ?>
 
             <!-- Card kết quả (giống mẫu) -->
@@ -176,7 +178,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
 
                         <table class="common-table">
                             <thead>
-                                <tr >
+                                <tr>
                                     <th class="small-cell">STT</th>
                                     <th class="large-cell">Họ tên</th>
                                     <th>Lớp</th>
@@ -198,7 +200,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                                         <td class="normal-cell"><strong><?php echo intval($row['tongSoNghi'] ?? 0); ?></strong></td>
                                         <td class="normal-cell"><?php echo intval($row['soNghiCoPhep'] ?? 0); ?></td>
 
-                                        <td ><?php echo intval($row['soNghiKhongPhep'] ?? 0); ?></td>
+                                        <td><?php echo intval($row['soNghiKhongPhep'] ?? 0); ?></td>
 
                                         <?php
                                         $lyDo = trim($row['lyDoNghiCoPhep'] ?? '');

@@ -2411,6 +2411,12 @@ textarea.form-control {
 	word-break: break-word;
 }
 
+.attachment-filename-detail {
+	color: #212121;
+	font-weight: 500;
+	word-break: break-word;
+}
+
 /* ===== Nút file (CSS có sẵn của em) ===== */
 .file-attachment {
 	display: inline-flex;
@@ -2423,6 +2429,44 @@ textarea.form-control {
 	text-decoration: none;
 	font-size: 14px;
 	transition: all 0.3s;
+}
+
+.btn-view-homework {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+
+	padding: 4px 16px;
+	background: #EDEFF5;
+	color: #212121;
+
+	border-radius: 6px;
+	text-decoration: none;
+	font-size: 14px;
+
+	transition: all 0.3s ease;
+}
+
+.btn-download-homework {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+
+	padding: 4px 16px;
+	background: #5081BE;
+	color: #fff;
+
+	border-radius: 6px;
+	text-decoration: none;
+	font-size: 14px;
+
+	transition: all 0.3s ease;
+}
+
+.btn-download-homework:hover {
+	background: #3f6fa8;
 }
 
 .file-attachment:hover {
@@ -2749,7 +2793,13 @@ textarea.form-control {
 	align-items: center;
 	line-height: 1;
 }
-
+.icon-homework{
+	background-color: #5081be;
+	color: white;
+}
+.icon-homework i{
+	color: white;
+}
 .icon-sucess {
 	color: #00C94B;
 
@@ -3152,14 +3202,19 @@ textarea.form-control {
 	background-color: #27ae60;
 	color: white;
 }
-.award-box{
+
+.award-box {
 	background-color: #d4edda;
 }
-.vi-pham-box{
+
+.vi-pham-box {
 	background-color: #f8d7da;
 }
-.nghi-hoc-box{
-	background-color: #fff3cd;}
+
+.nghi-hoc-box {
+	background-color: #fff3cd;
+}
+
 .stat-hint {
 	font-size: 12px;
 }
@@ -3198,24 +3253,30 @@ textarea.form-control {
 	gap: 8px;
 
 }
-.vi-pham{
+
+.vi-pham {
 	background: #ff0000;
 	color: white;
 }
-.nghi-hoc{
+
+.nghi-hoc {
 	background: #ffb200;
 	color: white;
 }
+
 .stat-value.number,
 .stat-value p:first-child {
 	font-size: 24px;
 	font-weight: 700;
 	line-height: 1;
 }
-.student, .number{
+
+.student,
+.number {
 	color: #545353;
 }
-.stat-content h4{
+
+.stat-content h4 {
 	color: #666;
 	font-size: 0px;
 }
