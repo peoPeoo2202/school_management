@@ -29,7 +29,7 @@ if (!isset($data)) {
     // Lấy tham số lọc từ GET
     $hocKy = isset($_GET['hocKy']) ? intval($_GET['hocKy']) : (isset($_SESSION['hocKy']) ? $_SESSION['hocKy'] : 1);
     $namHoc = isset($_GET['namHoc']) ? trim($_GET['namHoc']) : (isset($_SESSION['namHoc']) ? $_SESSION['namHoc'] : '2024-2025');
-    $maLop = isset($_GET['maLop']) ? intval($_GET['maLop']) : null;
+    $maLop = (isset($_GET['maLop']) && $_GET['maLop'] !== '') ? intval($_GET['maLop']) : null;
     $thu = isset($_GET['thu']) ? intval($_GET['thu']) : null;
 
     // Lấy lịch dạy
