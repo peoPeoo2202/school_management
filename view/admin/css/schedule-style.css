@@ -1,0 +1,666 @@
+/**
+ * CSS for Schedule Management (Timetable & Exam Schedule)
+ */
+
+/* ========================================
+   TIMETABLE GRID
+   ======================================== */
+.timetable-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.timetable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.timetable-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.timetable-grid {
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.timetable-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.timetable-table th,
+.timetable-table td {
+    border: 1px solid #e9ecef;
+    padding: 12px 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.timetable-table th {
+    background: #3498db;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.timetable-table th.col-tiet {
+    width: 80px;
+    background: #2c3e50;
+}
+
+.timetable-table td.tiet-cell {
+    background: #2c3e50;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.timetable-table td.empty-cell {
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 80px;
+    height: 80px;
+}
+
+.timetable-table td.empty-cell:hover {
+    background: #e3f2fd;
+    border-color: #3498db;
+}
+
+.timetable-table td.scheduled-cell {
+    background: #e8f5e9;
+    padding: 8px;
+}
+
+.lesson-card {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    position: relative;
+    min-height: 60px;
+}
+
+.lesson-card.multi-tiet {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.lesson-card .subject {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.lesson-card .teacher {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.lesson-card .room {
+    font-size: 11px;
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
+.lesson-card .actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+.lesson-card:hover .actions {
+    display: flex;
+    gap: 4px;
+}
+
+.lesson-card .actions button {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lesson-card .actions .btn-edit-lesson {
+    background: rgba(255,255,255,0.9);
+    color: #3498db;
+}
+
+.lesson-card .actions .btn-delete-lesson {
+    background: rgba(255,255,255,0.9);
+    color: #e74c3c;
+}
+
+/* Legend */
+.timetable-legend {
+    display: flex;
+    gap: 24px;
+    padding: 16px 24px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-color.scheduled {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.legend-color.available {
+    background: #f8f9fa;
+    border: 1px dashed #bdc3c7;
+}
+
+/* ========================================
+   EXAM SCHEDULE
+   ======================================== */
+.exam-info-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.exam-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.exam-info-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.exam-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.2);
+}
+
+.exam-status.active {
+    background: #27ae60;
+}
+
+.exam-status.completed {
+    background: #7f8c8d;
+}
+
+.exam-info-details {
+    display: flex;
+    gap: 40px;
+    padding: 20px 24px;
+    flex-wrap: wrap;
+}
+
+.exam-info-details .info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.exam-info-details .info-item i {
+    color: #e74c3c;
+    width: 20px;
+}
+
+/* ========================================
+   CONTENT SECTION
+   ======================================== */
+.content-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+    font-size: 15px;
+}
+
+/* ========================================
+   FORM ENHANCEMENTS
+   ======================================== */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-text {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 4px;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-top: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+.alert-warning i {
+    color: #ffc107;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+    .timetable-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .exam-info-details {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   CELL CLICK INDICATOR
+   ======================================== */
+.empty-cell::before {
+    content: '+';
+    font-size: 24px;
+    color: #bdc3c7;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.empty-cell:hover::before {
+    opacity: 1;
+}
+
+/* ========================================
+   ROOM AVAILABILITY
+   ======================================== */
+.room-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.room-status.available {
+    background: #d4edda;
+    color: #155724;
+}
+
+.room-status.occupied {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.room-status.maintenance {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* ========================================
+   TOAST NOTIFICATION
+   ======================================== */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    background: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 10000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    background: #27ae60;
+}
+
+.toast-error {
+    background: #e74c3c;
+}
+
+.toast-warning {
+    background: #f39c12;
+}
+
+.toast-info {
+    background: #3498db;
+}
+
+.toast i {
+    font-size: 20px;
+}
+
+/* ========================================
+   LOADING SPINNER
+   ======================================== */
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.loading-spinner i {
+    font-size: 32px;
+    color: #3498db;
+}
+
+/* ========================================
+   MODAL STYLES
+   ======================================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content.modal-small {
+    max-width: 400px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    color: #7f8c8d;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #e9ecef;
+    color: #2c3e50;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    max-height: calc(90vh - 150px);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+/* Form in Modal */
+.modal .form-group {
+    margin-bottom: 16px;
+}
+
+.modal .form-group label {
+    display: block;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.modal .form-group label .required {
+    color: #e74c3c;
+}
+
+.modal .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.modal .form-control:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.modal .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+/* Warning icon in delete modal */
+.warning-icon {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.warning-icon i {
+    font-size: 48px;
+    color: #f39c12;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #219a52;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
