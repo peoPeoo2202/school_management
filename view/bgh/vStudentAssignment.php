@@ -35,7 +35,6 @@ unset($_SESSION['success'], $_SESSION['error']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân công Lớp cho Học sinh - BGH</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * {
             margin: 0;
@@ -402,13 +401,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-
-        <!-- Main Content -->
-        <div class="content-area">
-        <div class="container">
+    <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>
@@ -808,8 +801,5 @@ unset($_SESSION['success'], $_SESSION['error']);
             }
         }
     </script>
-        </div>
-    </div>
-</div>
 </body>
 </html>

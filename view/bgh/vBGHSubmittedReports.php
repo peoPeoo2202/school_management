@@ -9,13 +9,10 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Báo cáo đã nộp</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
-        .main-wrapper { display: flex; min-height: 100vh; }
-        .content-area { flex: 1; padding: 20px; }
         .header { background: white; padding: 20px 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: #1e3c72; font-size: 24px; }
         .btn { padding: 10px 18px; border: none; border-radius: 8px; text-decoration: none; font-size: 14px; transition: all 0.3s; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
@@ -54,14 +51,11 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-        <div class="content-area">
-            <div class="container">
+    <div class="container">
         <div class="header">
             <h1><i class="fas fa-file-upload"></i> Báo cáo đã nộp</h1>
             <div class="btn-group">
-                <a href="../../controller/cBGHReport.php?action=index" class="btn btn-secondary">
+                <a href="../controller/cBGHReport.php?action=index" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
                 <a href="../public/index.php?logout=1" class="logout-btn">
@@ -198,8 +192,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>
-            </div>
         </div>
     </div>
 </body>

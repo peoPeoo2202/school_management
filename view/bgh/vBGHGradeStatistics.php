@@ -1,27 +1,10 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-if ($_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
-$hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
-?>
+<?php $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu'; ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thống kê điểm môn học</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../teacher/style.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -71,12 +54,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-
-        <!-- Main Content -->
-        <div class="content-area">
     <?php
     $tongMonHoc = 0; $monCaoDiem = ['ten' => '-', 'diem' => 0]; $monThapDiem = ['ten' => '-', 'diem' => 10];
     $duLieuGopMon = [];
@@ -240,7 +217,5 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
             <?php endif; ?>
         });
     </script>
-        </div>
-    </div>
 </body>
 </html>

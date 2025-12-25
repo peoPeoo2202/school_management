@@ -1,5 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
+if (!isset($_SESSION)) {
     session_start();
 }
 require_once(__DIR__ . '/../../config.php');
@@ -12,8 +12,19 @@ require_once(__DIR__ . '/../../config.php');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xử lý yêu cầu - Hệ thống quản lý trường học</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../teacher/style.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
         .top-header {
             background: white;
@@ -37,7 +48,43 @@ require_once(__DIR__ . '/../../config.php');
             gap: 10px;
         }
 
-       
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .request-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
 
 
         /* Thống kê */
@@ -72,7 +119,46 @@ require_once(__DIR__ . '/../../config.php');
             color: #1f2937;
         }
 
-       
+        /* Bộ lọc */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filter-section h3 {
+            margin: 0 0 15px 0;
+            color: #1f2937;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
         .btn-filter {
             padding: 10px 20px;
             background: #667eea;
@@ -210,13 +296,7 @@ require_once(__DIR__ . '/../../config.php');
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-
-        <!-- Main Content -->
-        <div class="content-area">
-        <div class="top-header">
+    <div class="top-header">
         <h1><i class="fas fa-clipboard-check"></i> Xử lý yêu cầu</h1>
         <div class="btn-group">
             <a href="../view/bgh/vBGHDashboard.php" class="btn btn-secondary">
@@ -402,8 +482,6 @@ require_once(__DIR__ . '/../../config.php');
                 </tbody>
             </table>
         </div>
-        </div>
     </div>
-</div>
 </body>
 </html>

@@ -1,23 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['login']) || $_SESSION['login'] !== true) {
-    header("Location: ../../public/index.php");
-    exit();
-}
-
-// Kiểm tra quyền truy cập - Chỉ Ban giám hiệu
-if ($_SESSION['loaiTaiKhoan'] !== 'bangiamhieu') {
-    header("Location: ../../public/index.php?error=access_denied");
-    exit();
-}
-
+// Lấy thông tin từ session (đã được kiểm tra ở controller)
 $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -25,107 +9,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Ban giám hiệu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../student/style.css">
-</head>
-<body>
-    <div class="main-wrapper">
-        <!-- Sidebar Navigation -->
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-
-        <!-- Main Content -->
-        <div class="content-area">
-            <!-- Header Section -->
-            <div class="header-section">
-                <div class="header-left">
-                    <h2><i class="fas fa-school"></i> Dashboard Ban giám hiệu</h2>
-                    <p>Quản lý và giám sát hoạt động giáo dục của nhà trường</p>
-                </div>
-                <div class="header-right">
-                    <p class="welcome-text">Xin chào,</p>
-                    <p class="user-name"><?php echo htmlspecialchars($hoTen); ?></p>
-                </div>
-            </div>
-
-            <!-- Welcome Section Card -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <i class="fas fa-info-circle"></i> Trang chủ Ban giám hiệu
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <h3 style="color: #1e3c72; font-size: 24px; margin-bottom: 15px;">
-                            Chào mừng Ban giám hiệu!
-                        </h3>
-                        <p style="color: #555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                            Hệ thống cung cấp các công cụ quản lý và báo cáo toàn diện về hoạt động giáo dục của nhà trường.
-                        </p>
-                    </div>
-
-                    <!-- Quick Links -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 30px;">
-                        <a href="../../controller/cBGHReport.php?action=index" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; align-items: center; text-align: center;">
-                            <i style="font-size: 40px; margin-bottom: 12px;" class="fas fa-chart-line"></i>
-                            <h3 style="font-size: 18px; margin-bottom: 8px;">Xem báo cáo</h3>
-                            <p style="font-size: 13px; opacity: 0.9;">Xem các báo cáo và thống kê chi tiết</p>
-                        </a>
-
-                        <a href="../../controller/cChonDe.php?action=index" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 12px; color: white; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; align-items: center; text-align: center;">
-                            <i style="font-size: 40px; margin-bottom: 12px;" class="fas fa-file-alt"></i>
-                            <h3 style="font-size: 18px; margin-bottom: 8px;">Chọn đề thi</h3>
-                            <p style="font-size: 13px; opacity: 0.9;">Chọn và gán đề thi phù hợp</p>
-                        </a>
-
-                        <a href="../../controller/cYeuCau.php?action=danhsach" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 25px; border-radius: 12px; color: white; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; align-items: center; text-align: center;">
-                            <i style="font-size: 40px; margin-bottom: 12px;" class="fas fa-clipboard-check"></i>
-                            <h3 style="font-size: 18px; margin-bottom: 8px;">Xử lý yêu cầu</h3>
-                            <p style="font-size: 13px; opacity: 0.9;">Xử lý các yêu cầu từ giáo viên</p>
-                        </a>
-
-                        <a href="vTeachingAssignment.php" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); padding: 25px; border-radius: 12px; color: white; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; align-items: center; text-align: center;">
-                            <i style="font-size: 40px; margin-bottom: 12px;" class="fas fa-chalkboard-teacher"></i>
-                            <h3 style="font-size: 18px; margin-bottom: 8px;">Phân công Giảng dạy</h3>
-                            <p style="font-size: 13px; opacity: 0.9;">Phân công lớp, giáo viên</p>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Menu toggle functionality for mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.querySelector('.bgh-navbar');
-            
-            if (window.innerWidth <= 768) {
-                const toggleBtn = document.createElement('button');
-                toggleBtn.className = 'navbar-toggle';
-                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                document.body.appendChild(toggleBtn);
-                
-                toggleBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    sidebar.classList.toggle('active');
-                });
-                
-                document.addEventListener('click', function(e) {
-                    if (!sidebar.contains(e.target) && !e.target.classList.contains('navbar-toggle')) {
-                        sidebar.classList.remove('active');
-                    }
-                });
-            }
-            
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    sidebar.classList.remove('active');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+    <style>
         * {
             margin: 0;
             padding: 0;

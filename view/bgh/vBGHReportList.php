@@ -9,7 +9,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh sách báo cáo - Ban giám hiệu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../teacher/style.css">
     <style>
         * {
             margin: 0;
@@ -27,16 +26,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
         .container {
             max-width: 1400px;
             margin: 0 auto;
-        }
-
-        .main-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        .content-area {
-            flex: 1;
-            padding: 20px;
         }
 
         .header {
@@ -233,10 +222,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <?php include(__DIR__ . '/../layouts/navigate/navigateBGH.php'); ?>
-        <div class="content-area">
-            <div class="container">
+    <div class="container">
         <!-- Header -->
         <div class="header">
             <h1>
@@ -344,18 +330,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                     </a>
                 </div>
 
-                <!-- Thống kê số liệu học sinh -->
-                <div class="report-card">
-                    <h3>
-                        <i class="fas fa-users"></i>
-                        Thống kê số liệu học sinh
-                    </h3>
-                    <p>Thống kê tổng quan về học sinh: sĩ số, tỷ lệ nam/nữ, tình hình chuyên cần theo lớp.</p>
-                    <a href="cBGHReport.php?action=thong-ke-hoc-sinh" class="btn btn-primary">
-                        <i class="fas fa-arrow-right"></i> Xem thống kê
-                    </a>
-                </div>
-
                 <!-- Báo cáo đã nộp -->
                 <div class="report-card">
                     <h3>
@@ -367,8 +341,6 @@ $hoTen = $_SESSION['hoTen'] ?? 'Ban giám hiệu';
                         <i class="fas fa-arrow-right"></i> Xem báo cáo
                     </a>
                 </div>
-            </div>
-        </div>
             </div>
         </div>
     </div>
