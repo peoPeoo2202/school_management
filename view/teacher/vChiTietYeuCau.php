@@ -23,10 +23,7 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
-        .info-value {
-            word-break: break-all;
-            white-space: pre-line;
-        }
+      
     </style>
 </head>
 
@@ -114,9 +111,8 @@ $hoTen = $_SESSION['hoTen'] ?? 'Giáo viên';
                             </div>
 
                             <div class="info-item">
-                                <p class="info-label">Người xử lý</p>
+                                <p class="info-label">Người xử lý: </p>
                                 <span class="info-value nguoi-xu-ly">
-                                    <i class="fas fa-user"></i>
                                     <p><?php echo htmlspecialchars($yeuCau['nguoiXuLy']); ?></p>
                                 </span>
                                 </span>
